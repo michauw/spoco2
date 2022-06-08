@@ -9,15 +9,15 @@ import { QueryRowComponent } from './query-row/query-row.component';
 import { CqpQueryComponent } from './cqp-query/cqp-query.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    QueryRowComponent,
-    CqpQueryComponent
+    declarations: [
+        AppComponent,
+        QueryRowComponent,
+        CqpQueryComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    ReactiveFormsModule
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
