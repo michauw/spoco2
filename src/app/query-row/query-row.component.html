@@ -1,0 +1,15 @@
+<div class="sm-col-12">
+    <form [formGroup]="queryRowForm">
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-{{pattrClasses.lg}} col-xl-{{pattrClasses.xl}}" [ngClass]="pattrClasses" *ngFor="let pattr of positional_attributes">
+                <input class="form-control" type="text" placeholder="{{ pattr.description }}" formControlName="{{ pattr.name }}">
+            </div>
+        </div>
+        <div class="row" formGroupName="modifiers">
+            <div class="col-sm-6 col-md-2" *ngFor="let modifier of modifiers">
+                <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
+                <label for="" class="form-label">{{ modifier.description }}</label>
+            </div>
+        </div>
+    </form>
+</div>
