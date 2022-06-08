@@ -1,15 +1,34 @@
 <div class="sm-col-12">
     <form [formGroup]="queryRowForm">
+
+        <!-- single row of input fields (for each poistional attribute of type 'text') -->
+
         <div class="row">
-            <div class="col-sm-12 col-md-6 col-lg-{{pattrClasses.lg}} col-xl-{{pattrClasses.xl}}" [ngClass]="pattrClasses" *ngFor="let pattr of positional_attributes">
-                <input class="form-control" type="text" placeholder="{{ pattr.description }}" formControlName="{{ pattr.name }}">
+            <div
+                class="col-sm-12 col-md-6 col-lg-{{pattrClasses.lg}} col-xl-{{pattrClasses.xl}}"
+                [ngClass]="pattrClasses"
+                formGroupName="{{ pattr.name }}"
+                *ngFor="let pattr of positional_attributes">
+                    <input class="form-control" type="text" placeholder="{{ pattr.description }}" formControlName="value" (focusin)="currentGroup = pattr.name">
             </div>
         </div>
-        <div class="row" formGroupName="modifiers">
-            <div class="col-sm-6 col-md-2" *ngFor="let modifier of modifiers">
-                <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
-                <label for="" class="form-label">{{ modifier.description }}</label>
-            </div>
-        </div>
+
+        <!--
+            Additional row for modifiers (case sensitive, beginning etc.)
+            Since each positional attribute has its own set od modifiers, and there is a place only for the one set,
+            the modifiers of 'active' pattr are displayed
+        -->
+
+        <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of positional_attributes">
+            <span formGroupName="modifiers" *ngIf="pattr.name == currentGroup">
+                <div class="row">
+                    <div class="col-sm-6 col-md-2" *ngFor="let modifier of modifiers">
+                        <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
+                        <label for="" class="form-label">{{ modifier.description }}</label>
+                    </div>
+                </div>
+            </span>
+        </span>
+
     </form>
 </div>
