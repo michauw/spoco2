@@ -27,13 +27,13 @@ export class QueryRowComponent implements OnInit {
     constructor(private queryKeeper: QueryKeeperService) { }
 
     ngOnInit(): void {
-      let fields: { [key: string]: FormControl | FormGroup } = {};
-      this.positional_attributes = this.positional_attributes.filter (el => {return el.use === undefined || el.use});     // filter out fields with use=false
+      let fields: { [key: string]: FormGroup } = {};
+      this.positionalAttributes = this.positionalAttributes.filter (el => {return el.use === undefined || el.use});     // filter out fields with use=false
       this.modifiers = this.modifiers.filter (el => {return el.use === undefined || el.use});
-      for (let elem of this.positional_attributes) {
+      for (let elem of this.positionalAttributes) {
           let modifiers: { [key: string]: FormControl } = {};
-          for (let elem of this.modifiers) {
-              modifiers[elem.name] = new FormControl (elem.initValue);
+          for (let mod_elem of this.modifiers) {
+              modifiers[mod_elem.name] = new FormControl (mod_elem.initValue);
           }
           fields[elem.name] = new FormGroup ({
               'value': new FormControl (elem.initValue),
@@ -41,13 +41,14 @@ export class QueryRowComponent implements OnInit {
           });
       }
       this.queryRowForm = new FormGroup (fields);
-      this.currentGroup = this.positional_attributes[0].name;
+      this.currentGroup = this.positionalAttributes[0].name;
       this.queryRowForm.valueChanges.subscribe (data => {
           this.queryKeeper.setValue (data);
+          console.log (data);
       });
     }
 
-    positional_attributes: PAttribute[] = [
+    positionalAttributes: PAttribute[] = [
       {name: 'word', type: 'text', initValue: '', description: 'Word form'},
       {name: 'lemma', type: 'text', initValue: '', description: 'Lemma'},
       {name: 'tag', type: 'text', initValue: '', description: 'Grammatic tag'}
@@ -58,11 +59,11 @@ export class QueryRowComponent implements OnInit {
       {name: 'ending', type: 'checkbox', initValue: false, description: 'ends with'},
       {name: 'caseSensitive', type: 'checkbox', initValue: false, description: 'case sensitive'},
       {name: 'ignoreDiacritics', type: 'checkbox', initValue: false, description: 'ignore diacritics', use: false}
-    ]
+  ];
 
     pattrClasses = {
-      lg: Math.max (Math.round (12 / this.positional_attributes.length), 3),
-      xl: Math.max (Math.round (12 / this.positional_attributes.length), 2)
+      lg: Math.max (Math.round (12 / this.positionalAttributes.length), 3),
+      xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
     };
 
     queryRowForm!: FormGroup;
