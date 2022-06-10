@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
+interface QueryRowType {        // TODO: should be in its own file?
+    [key: string]: {
+        value: string,
+        modifiers: {
+            [key: string]: boolean
+        }
+    }
+};
+
 @Injectable({
     providedIn: 'root'
 })
@@ -8,23 +17,23 @@ export class QueryKeeperService {
 
     constructor() { }
 
-    queryRows: Object[] = [];
+    queryRows: QueryRowType[] = [];
     valueChanged = new Subject<boolean> ();
 
-    private getRowQuery (queryRow: any) {
+    private getRowQuery (queryRow: QueryRowType) {
         let elements: string[] = [];
         for (let pattr in queryRow) {
         let val = queryRow[pattr]['value'];
         if (val) {
             const modifiers = queryRow[pattr]['modifiers'];
             let flags: string = '';
-            if (modifiers.hasOwnProperty ('beginning') & modifiers['beginning'])
+            if (modifiers.hasOwnProperty ('beginning') && modifiers['beginning'])
                 val += '.*';
-            if (modifiers.hasOwnProperty ('ending') & modifiers['ending'])
+            if (modifiers.hasOwnProperty ('ending') && modifiers['ending'])
                 val =  '.*' + val;
-            if (!(modifiers.hasOwnProperty ('caseSensitive') & modifiers['caseSensitive']))
+            if (!(modifiers.hasOwnProperty ('caseSensitive') && modifiers['caseSensitive']))
                 flags += 'c';
-            if (modifiers.hasOwnProperty ('ignoreDiacritics') & modifiers['ignoreDiacritics'])
+            if (modifiers.hasOwnProperty ('ignoreDiacritics') && modifiers['ignoreDiacritics'])
                 flags += 'd';
             if (flags)
                 flags = '%' + flags;
@@ -42,7 +51,7 @@ export class QueryKeeperService {
         return query;
     }
 
-    setValue (data: Object) {
+    setValue (data: QueryRowType) {
         if (!this.queryRows.length)
             this.queryRows.push (data);
         else
