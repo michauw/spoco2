@@ -1,15 +1,31 @@
 <div class="col-12">
     <div class="card col-md-10 offset-md-1">
-        <div class="card-header text-center dark">
+        <div class="card-header text-center theme-dark">
             <div class="row justify-content-center align-content-center">
                 <h5 class="card-title my-auto py-1">Basic Search</h5>
             </div>
         </div>
         <div class="card-body">
             <spoco-query-row [queryRowIndex]="ind" *ngFor="let qr of qrRange(); let ind = index"></spoco-query-row>
-            <button class="btn btn-secondary" (click)="addQueryRow()">+</button>
-            <button class="btn btn-secondary" (click)="deleteQueryRow()" [disabled]="queryRowNumber == 1">-</button>
+           <div class="plus-minus float-end">
+                <div class="btn row-button theme-dark" (click)="moreRows()">
+                    +
+                </div>
+                <div class="btn row-button theme-dark" (click)="lessRows()">
+                    -
+                </div>
+           </div>
         </div>
     </div>
-    <spoco-cqp-query></spoco-cqp-query>
+    <div class="my-3"></div>
+    <div class="card col-md-10 offset-md-1">
+        <div class="card-header text-center theme-dark">
+            <div class="row justify-content-center align-content-center">
+                <h5 class="card-title my-auto py-1">CQP Search</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <spoco-cqp-query></spoco-cqp-query>
+        </div>
+    </div>
 </div>

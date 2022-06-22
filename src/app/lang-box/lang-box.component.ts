@@ -19,11 +19,11 @@ export class LangBoxComponent implements OnInit {
     return Array (this.queryRowNumber).fill (0).map ((x, i) => i);
   }
 
-  addQueryRow () {
+  moreRows () {
     this.queryRowNumber += 1;
   }
 
-  deleteQueryRow () {
+  lessRows () {
     this.queryRowNumber -= 1;
   }
 

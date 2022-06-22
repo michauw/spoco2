@@ -1,4 +1,4 @@
-<div class="sm-col-12">
+<div class="col-12">
     <form [formGroup]="queryRowForm">
 
         <!-- single row of input fields (for each poistional attribute of type 'text') -->
@@ -19,16 +19,18 @@
             the modifiers of 'active' pattr are displayed
         -->
 
-        <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of positionalAttributes">
-            <span formGroupName="modifiers" *ngIf="pattr.name == currentGroup">    <!-- TODO: is there a way to avoid second span (currently needed because groups in formGroupName cannot be nested (?)) -->
-                <div class="row">
-                    <div class="col-sm-6 col-md-2" *ngFor="let modifier of modifiers">
+        <div class="modifiers">
+            <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of positionalAttributes">
+                <span formGroupName="modifiers" *ngIf="pattr.name == currentGroup">    <!-- TODO: is there a way to avoid second span (currently needed because groups in formGroupName cannot be nested (?)) -->
+                    <label class="modifier" *ngFor="let modifier of modifiers">
                         <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
-                        <label for="" class="form-label">{{ modifier.description }}</label>
-                    </div>
-                </div>
+                        <span class="description">
+                            {{ modifier.description }}
+                        </span>
+                    </label>
+                </span>
             </span>
-        </span>
+        </div>
 
     </form>
 </div>
