@@ -21,8 +21,10 @@ export class LangBoxComponent implements OnInit {
 
   addQueryRow () {
     this.queryRowNumber += 1;
-    console.log ('qrn:', this.queryRowNumber);
-    
+  }
+
+  deleteQueryRow () {
+    this.queryRowNumber -= 1;
   }
 
 }

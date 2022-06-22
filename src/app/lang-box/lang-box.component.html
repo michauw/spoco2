@@ -8,6 +8,7 @@
         <div class="card-body">
             <spoco-query-row [queryRowIndex]="ind" *ngFor="let qr of qrRange(); let ind = index"></spoco-query-row>
             <button class="btn btn-secondary" (click)="addQueryRow()">+</button>
+            <button class="btn btn-secondary" (click)="deleteQueryRow()" [disabled]="queryRowNumber == 1">-</button>
         </div>
     </div>
     <spoco-cqp-query></spoco-cqp-query>

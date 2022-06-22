@@ -41,18 +41,24 @@ export class QueryRowComponent implements OnInit {
           });
       }
       this.queryRowForm = new FormGroup (fields);
-      this.currentGroup = this.positionalAttributes[0].name;
+      this.currentGroup = this.positionalAttributes[0].name;    // at the beginning the current group is the first one
+
+      // subscription for tracking changes in the form
+
       this.queryRowForm.valueChanges.subscribe (data => {
-          this.queryKeeper.setValue (data);
-          console.log (data);
+          this.queryKeeper.setValue (data, this.queryRowIndex);
       });
     }
+
+    // TODO: this should be configurable and loaded from a json file
 
     positionalAttributes: PAttribute[] = [
       {name: 'word', type: 'text', initValue: '', description: 'Word form'},
       {name: 'lemma', type: 'text', initValue: '', description: 'Lemma'},
       {name: 'tag', type: 'text', initValue: '', description: 'Grammatic tag'}
     ];
+
+    // TODO: ditto
 
     modifiers: PAttribute[] = [
       {name: 'beginning', type: 'checkbox', initValue: false, description: 'begins with'},
@@ -61,12 +67,14 @@ export class QueryRowComponent implements OnInit {
       {name: 'ignoreDiacritics', type: 'checkbox', initValue: false, description: 'ignore diacritics', use: false}
   ];
 
+  // for proper division on the different size screens
+
     pattrClasses = {
       lg: Math.max (Math.round (12 / this.positionalAttributes.length), 3),
       xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
     };
 
-    queryRowForm!: FormGroup;
-    currentGroup!: string;
-    @Input() queryRowIndex: number = 0;
+    queryRowForm!: FormGroup;   // stores the form
+    currentGroup!: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
+    @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
 }

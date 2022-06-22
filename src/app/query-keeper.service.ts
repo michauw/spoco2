@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-interface QueryRowType {        // TODO: should be in its own file?
+interface QueryRow {        // TODO: should be in its own file?
     [key: string]: {
         value: string,
         modifiers: {
@@ -17,10 +17,12 @@ export class QueryKeeperService {
 
     constructor() { }
 
-    queryRows: QueryRowType[] = [];
+    queryRows: QueryRow[] = [];     // stores the data from all the query-row forms
     valueChanged = new Subject<boolean> ();
 
-    private getRowQuery (queryRow: QueryRowType) {
+    // constructs CQP query for one query-row
+
+    private getRowQuery (queryRow: QueryRow) {
         let elements: string[] = [];
         for (let pattr in queryRow) {
         let val = queryRow[pattr]['value'];
@@ -43,6 +45,8 @@ export class QueryKeeperService {
       return '[' + elements.join (' & ') + ']'
     }
 
+    // constructs final CQP query
+
     getQuery () {
         let query: string = '';
         for (let queryRow of this.queryRows)
@@ -51,12 +55,11 @@ export class QueryKeeperService {
         return query;
     }
 
-    setValue (data: QueryRowType) {
-        if (!this.queryRows.length)
+    setValue (data: QueryRow, index: number) {
+        if (this.queryRows.length <= index)
             this.queryRows.push (data);
         else
-            this.queryRows[0] = data;
+            this.queryRows[index] = data;
         this.valueChanged.next (true);
     }
-
 }
