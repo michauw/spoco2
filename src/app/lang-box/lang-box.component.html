@@ -1,0 +1,14 @@
+<div class="col-12">
+    <div class="card col-md-10 offset-md-1">
+        <div class="card-header text-center dark">
+            <div class="row justify-content-center align-content-center">
+                <h5 class="card-title my-auto py-1">Basic Search</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <spoco-query-row [queryRowIndex]="ind" *ngFor="let qr of qrRange(); let ind = index"></spoco-query-row>
+            <button class="btn btn-secondary" (click)="addQueryRow()">+</button>
+        </div>
+    </div>
+    <spoco-cqp-query></spoco-cqp-query>
+</div>

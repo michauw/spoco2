@@ -7,12 +7,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { QueryRowComponent } from './query-row/query-row.component';
 import { CqpQueryComponent } from './cqp-query/cqp-query.component';
+import { LangBoxComponent } from './lang-box/lang-box.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         QueryRowComponent,
-        CqpQueryComponent
+        CqpQueryComponent,
+        LangBoxComponent
   ],
     imports: [
         BrowserModule,

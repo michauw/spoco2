@@ -2,7 +2,7 @@
 * Component used for rendering single row (i.e. one token in the CQP query)
 **/
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { QueryKeeperService } from '../query-keeper.service';
 
@@ -68,4 +68,5 @@ export class QueryRowComponent implements OnInit {
 
     queryRowForm!: FormGroup;
     currentGroup!: string;
+    @Input() queryRowIndex: number = 0;
 }
