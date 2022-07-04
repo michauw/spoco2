@@ -2,8 +2,9 @@
 * Component used for rendering single row (i.e. one token in the CQP query)
 **/
 
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { QueryKeeperService } from '../query-keeper.service';
 
 type attrType = 'text' | 'checkbox';    // supported types for positional attributes input fields
@@ -22,7 +23,7 @@ interface PAttribute {
     templateUrl: './query-row.component.html',
     styleUrls: ['./query-row.component.scss']
 })
-export class QueryRowComponent implements OnInit {
+export class QueryRowComponent implements OnInit, OnDestroy {
 
     constructor(private queryKeeper: QueryKeeperService) { }
 
@@ -48,6 +49,13 @@ export class QueryRowComponent implements OnInit {
       this.queryRowForm.valueChanges.subscribe (data => {
           this.queryKeeper.setValue (data, this.queryRowIndex);
       });
+      this.clearSubscription = this.queryKeeper.clearData.subscribe (() => {
+        this.queryRowForm.reset ();
+      });
+    }
+
+    ngOnDestroy(): void {
+        this.clearSubscription.unsubscribe ();
     }
 
     // TODO: this should be configurable and loaded from a json file
@@ -74,7 +82,8 @@ export class QueryRowComponent implements OnInit {
       xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
     };
 
-    queryRowForm!: FormGroup;   // stores the form
-    currentGroup!: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
+    queryRowForm: FormGroup;   // stores the form
+    currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
     @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
+    clearSubscription: Subscription;
 }

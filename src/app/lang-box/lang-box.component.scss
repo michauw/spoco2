@@ -9,7 +9,7 @@ $theme-dark-back-2: #70777c;
     }
 }
 
-div.row-button {
+button.row-button {
     font-weight: 600;
     margin-left: 2px;
     margin-right: 2px;
@@ -19,6 +19,9 @@ div.row-button {
         background-color: $theme-dark-back-2;
         border-color: $theme-dark-back-2;
         opacity: .8;
+    }
+    &:disabled {
+        opacity: .6;
     }
 }
 
