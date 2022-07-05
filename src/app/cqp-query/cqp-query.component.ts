@@ -15,7 +15,7 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
     constructor(private queryKeeper: QueryKeeperService) { }
 
     ngOnInit(): void {
-        this.valueChanged = this.queryKeeper.valueChanged.subscribe (data => {
+        this.valueChanged = this.queryKeeper.valueChanged.subscribe (_changeType => {
             const cqpQuery: string = this.queryKeeper.getQuery ();
             this.cqpQueryForm.setValue ({cqp: cqpQuery});
         });

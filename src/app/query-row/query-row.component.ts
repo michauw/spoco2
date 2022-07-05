@@ -49,13 +49,14 @@ export class QueryRowComponent implements OnInit, OnDestroy {
       this.queryRowForm.valueChanges.subscribe (data => {
           this.queryKeeper.setValue (data, this.queryRowIndex);
       });
-      this.clearSubscription = this.queryKeeper.clearData.subscribe (() => {
-        this.queryRowForm.reset ();
+      this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
+          if (changeType == 'clear')
+            this.queryRowForm.reset ();
       });
     }
 
     ngOnDestroy(): void {
-        this.clearSubscription.unsubscribe ();
+        this.valueChanged.unsubscribe ();
     }
 
     // TODO: this should be configurable and loaded from a json file
@@ -85,5 +86,5 @@ export class QueryRowComponent implements OnInit, OnDestroy {
     queryRowForm: FormGroup;   // stores the form
     currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
     @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
-    clearSubscription: Subscription;
+    valueChanged: Subscription;   // needed for clearing the form
 }

@@ -18,38 +18,69 @@ export class QueryKeeperService {
     constructor() { }
 
     queryRows: QueryRow[] = [];     // stores the data from all the query-row forms
-    valueChanged = new Subject<void> ();
-    clearData = new Subject<void> ();
+    valueChanged = new Subject<string> ();
+    // clearData = new Subject<void> ();
 
     // constructs CQP query for one query-row
 
     private getRowQuery (queryRow: QueryRow): string {
-        let elements: string[] = [];
-        for (let pattr in queryRow) {
-            let val = queryRow[pattr]['value'];
-            if (val) {
-                const modifiers = queryRow[pattr]['modifiers'];
-                let flags: string = '';
-                if (modifiers.hasOwnProperty ('beginning') && modifiers['beginning'])
-                    val += '.*';
-                if (modifiers.hasOwnProperty ('ending') && modifiers['ending'])
-                    val =  '.*' + val;
-                if (!(modifiers.hasOwnProperty ('caseSensitive') && modifiers['caseSensitive']))
+
+        /*  Each row can store one or more values (separated by space).
+            These values are stored in the matrix of shape m x n, 
+            where m is a number of values (i.e. separate tokens), 
+            and n is a number of positional attributes
+        */
+
+        let queryRowMatrix = [];
+        const pattrs = Object.keys (queryRow);
+
+        // build the matrix
+
+        for (let pattr_i = 0; pattr_i <pattrs.length; ++pattr_i) {
+            const values = queryRow[pattrs[pattr_i]]['value'].trimEnd ().split (' ');
+            const modifiers = queryRow[pattrs[pattr_i]].modifiers;
+            let flags: string = '';
+            if (!(modifiers.hasOwnProperty ('caseSensitive') && modifiers['caseSensitive']))
                     flags += 'c';
-                if (modifiers.hasOwnProperty ('ignoreDiacritics') && modifiers['ignoreDiacritics'])
-                    flags += 'd';
-                if (flags)
-                    flags = '%' + flags;
-            elements.push (`${pattr}="${val}"${flags}`);
+            if (modifiers.hasOwnProperty ('ignoreDiacritics') && modifiers['ignoreDiacritics'])
+                flags += 'd';
+            if (flags)
+                flags = '%' + flags;
+            for (let val_i = 0; val_i < values.length; ++val_i) {
+                let value = values[val_i];
+                if (value === '')
+                    continue;
+                if (modifiers.hasOwnProperty ('beginning') && modifiers['beginning'])
+                    value += '.*';
+                if (modifiers.hasOwnProperty ('ending') && modifiers['ending'])
+                    value =  '.*' + value;
+                if (queryRowMatrix.length <= val_i)
+                    queryRowMatrix.push (Array (pattrs.length));
+                queryRowMatrix[val_i][pattr_i] = [value, flags];
             }
         }
-        return elements.length ? '[' + elements.join (' & ') + ']' : '';
+
+        // build the actual query from the matrix
+
+        let query = '';
+        for (let row of queryRowMatrix) {
+            let query_elements = [];
+            for (let pattr_i = 0; pattr_i < pattrs.length; ++pattr_i) {
+                if (row[pattr_i] !== undefined)
+                    query_elements.push (`${pattrs[pattr_i]}="${row[pattr_i][0]}"${row[pattr_i][1]}`)
+            }
+            if (query_elements.length) {
+                query += '[' + query_elements.join (' & ') + ']';
+            }
+        }
+        
+        return query;
     }
 
     clear () {
         this.queryRows = [];
-        this.valueChanged.next ();
-        this.clearData.next ();
+        this.valueChanged.next ('clear');
+        // this.clearData.next ();
     }
 
     // constructs final CQP query
@@ -64,7 +95,7 @@ export class QueryKeeperService {
 
     pop () {
         this.queryRows.pop ();
-        this.valueChanged.next ();
+        this.valueChanged.next ('pop');
     }
 
     setValue (data: QueryRow, index: number) {
@@ -72,6 +103,6 @@ export class QueryKeeperService {
             this.queryRows.push (data);
         else
             this.queryRows[index] = data;
-        this.valueChanged.next ();
+        this.valueChanged.next ('set');
     }
 }
