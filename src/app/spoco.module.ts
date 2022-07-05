@@ -3,8 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import { SpocoRoutingModule } from './spoco-routing.module';
+import { SpocoComponent } from './spoco.component';
 import { QueryRowComponent } from './query-row/query-row.component';
 import { CqpQueryComponent } from './cqp-query/cqp-query.component';
 import { LangBoxComponent } from './lang-box/lang-box.component';
@@ -12,7 +12,7 @@ import { BasicQueryComponent } from './basic-query/basic-query.component';
 
 @NgModule({
     declarations: [
-        AppComponent,
+        SpocoComponent,
         QueryRowComponent,
         CqpQueryComponent,
         LangBoxComponent,
@@ -20,10 +20,10 @@ import { BasicQueryComponent } from './basic-query/basic-query.component';
   ],
     imports: [
         BrowserModule,
-        AppRoutingModule,
+        SpocoRoutingModule,
         ReactiveFormsModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [SpocoComponent]
 })
-export class AppModule { }
+export class SpocoModule { }
