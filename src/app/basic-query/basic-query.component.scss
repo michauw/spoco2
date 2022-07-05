@@ -1,0 +1,32 @@
+$theme-dark-back-1: #5A6268;
+$theme-dark-back-2: #70777c;
+
+.card-header {
+    &.theme-dark {
+    background-color: $theme-dark-back-1;
+    color: white;
+    opacity: .8;
+    }
+}
+
+button.row-button {
+    font-weight: 600;
+    margin-left: 2px;
+    margin-right: 2px;
+    min-width: 2.4rem;
+    &.theme-dark {
+        color: white;
+        background-color: $theme-dark-back-2;
+        border-color: $theme-dark-back-2;
+        opacity: .8;
+    }
+    &:disabled {
+        opacity: .6;
+    }
+    &:hover {
+        background-color: darken($theme-dark-back-2, 10%);
+    }
+    &:focus {
+        box-shadow: 0 0 0 0.15rem lighten($theme-dark-back-2, 20%);
+    }
+}
