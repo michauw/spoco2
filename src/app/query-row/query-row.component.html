@@ -8,7 +8,7 @@
                 class="col-12 col-md-6 col-lg-{{pattrClasses.lg}} col-xl-{{pattrClasses.xl}} my-1"
                 [ngClass]="pattrClasses"
                 formGroupName="{{ pattr.name }}"
-                *ngFor="let pattr of positionalAttributes">
+                *ngFor="let pattr of filterByType ('text')">
                     <input class="form-control" type="text" placeholder="{{ pattr.description }}" formControlName="value" (focusin)="currentGroup = pattr.name">
             </div>
         </div>
@@ -20,7 +20,7 @@
         -->
 
         <div class="modifiers">
-            <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of positionalAttributes">
+            <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of filterByType ('text')">
                 <span formGroupName="modifiers" *ngIf="pattr.name == currentGroup">    <!-- TODO: is there a way to avoid second span (currently needed because groups in formGroupName cannot be nested (?)) -->
                     <label class="modifier" *ngFor="let modifier of modifiers">
                         <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
@@ -28,6 +28,12 @@
                             {{ modifier.description }}
                         </span>
                     </label>
+                </span>
+            </span>
+            <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of filterByType ('checkbox')">
+                <input type="checkbox" class="form-check-input" formControlName="value">
+                <span class="description">
+                    {{ pattr.description }}
                 </span>
             </span>
         </div>

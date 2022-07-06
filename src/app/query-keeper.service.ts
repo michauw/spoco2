@@ -6,7 +6,8 @@ interface QueryRow {        // TODO: should be in its own file?
         value: string,
         modifiers: {
             [key: string]: boolean
-        }
+        },
+        global?: boolean;
     }
 };
 
@@ -32,11 +33,16 @@ export class QueryKeeperService {
         */
 
         let queryRowMatrix = [];
+        let globals: number[] = [];
         const pattrs = Object.keys (queryRow);
 
         // build the matrix
 
         for (let pattr_i = 0; pattr_i <pattrs.length; ++pattr_i) {
+            if (queryRow[pattrs[pattr_i]].global) {
+                globals.push (pattr_i);
+                continue;
+            }
             const values = queryRow[pattrs[pattr_i]]['value'].trimEnd ().split (' ');
             const modifiers = queryRow[pattrs[pattr_i]].modifiers;
             let flags: string = '';
@@ -58,6 +64,12 @@ export class QueryKeeperService {
                     queryRowMatrix.push (Array (pattrs.length));
                 queryRowMatrix[val_i][pattr_i] = [value, flags];
             }
+        }
+
+        for (let glob_i of globals) {
+            for (let row_i = 0; row_i < queryRowMatrix.length; ++row_i)
+                if (queryRow[pattrs[glob_i]].value)
+                    queryRowMatrix[row_i][glob_i] = [queryRow[pattrs[glob_i]].value, ''];
         }
 
         // build the actual query from the matrix
