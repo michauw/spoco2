@@ -9,6 +9,7 @@ import { QueryRowComponent } from './query-row/query-row.component';
 import { CqpQueryComponent } from './cqp-query/cqp-query.component';
 import { LangBoxComponent } from './lang-box/lang-box.component';
 import { BasicQueryComponent } from './basic-query/basic-query.component';
+import { QueryPageComponent } from './query-page/query-page.component';
 
 @NgModule({
     declarations: [
@@ -16,7 +17,8 @@ import { BasicQueryComponent } from './basic-query/basic-query.component';
         QueryRowComponent,
         CqpQueryComponent,
         LangBoxComponent,
-        BasicQueryComponent
+        BasicQueryComponent,
+        QueryPageComponent
   ],
     imports: [
         BrowserModule,
