@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { QueryKeeperService } from '../query-keeper.service';
+import { QueryKeeperService } from '../../../query-keeper.service';
 
 @Component({
   selector: 'spoco-basic-query',

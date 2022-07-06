@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { QueryKeeperService } from '../query-keeper.service';
+import { QueryKeeperService } from '../../../query-keeper.service';
 
 @Component({
     selector: 'spoco-cqp-query',

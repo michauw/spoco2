@@ -5,7 +5,7 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { QueryKeeperService } from '../query-keeper.service';
+import { QueryKeeperService } from '../../../../query-keeper.service';
 
 type attrType = 'text' | 'checkbox' | 'select' | 'multiselect';    // supported types for positional attributes input fields
 
