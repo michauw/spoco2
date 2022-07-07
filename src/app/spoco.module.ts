@@ -11,7 +11,7 @@ import { LangBoxComponent } from './query-page/lang-box/lang-box.component';
 import { CqpQueryComponent } from './query-page/lang-box/cqp-query/cqp-query.component';
 import { BasicQueryComponent } from './query-page/lang-box/basic-query/basic-query.component';
 import { QueryRowComponent } from './query-page/lang-box/basic-query/query-row/query-row.component';
-import { SettingsResolver } from './settings-resolver.service';
+import { ConfigResolver } from './config-resolver.service';
 
 @NgModule({
     declarations: [
@@ -28,7 +28,7 @@ import { SettingsResolver } from './settings-resolver.service';
         ReactiveFormsModule,
         HttpClientModule
   ],
-  providers: [SettingsResolver],
+  providers: [ConfigResolver],
   bootstrap: [SpocoComponent]
 })
 export class SpocoModule { }

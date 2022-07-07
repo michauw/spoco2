@@ -5,11 +5,18 @@ div.modifiers {
 
 label.modifier {
     margin-right: .5rem;
-    &>.description {
-        font-size: small;
-    }
 }
 
 .query-row {
     margin-bottom: 2rem;
+}
+
+span.pattr-checkboxes {
+    display: inline-block;
+    margin-left: 2rem;
+    margin-right: .5rem;
+}
+
+.description {
+    font-size: small;
 }

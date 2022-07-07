@@ -1,0 +1,15 @@
+{
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
+            {"name": "lemma", "type": "checkbox", "initValue": "", "description": "Lemma", "valueTrue": "lemma_on", "valueFalse": ""},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag"}
+        ],
+    "modifiers": 
+    [
+        {"name": "beginning", "type": "checkbox", "initValue": false, "description": "begins with"},
+        {"name": "ending", "type": "checkbox", "initValue": false, "description": "ends with"},
+        {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
+        {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
+    ]
+}

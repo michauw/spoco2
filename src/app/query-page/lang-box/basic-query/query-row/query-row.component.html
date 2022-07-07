@@ -30,10 +30,12 @@
                     </label>
                 </span>
             </span>
-            <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of filterByType ('checkbox')">
-                <input type="checkbox" class="form-check-input" formControlName="value">
-                <span class="description">
-                    {{ pattr.description }}
+            <span *ngIf="filterByType('checkbox')" class="pattr-checkboxes">
+                <span formGroupName="{{ pattr.name }}" *ngFor="let pattr of filterByType ('checkbox')">
+                    <input type="checkbox" class="form-check-input" formControlName="value">
+                    <span class="description">
+                        {{ pattr.description }}
+                    </span>
                 </span>
             </span>
         </div>

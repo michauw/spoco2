@@ -6,19 +6,8 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { QueryKeeperService } from '../../../../query-keeper.service';
-
-type attrType = 'text' | 'checkbox' | 'select' | 'multiselect';    // supported types for positional attributes input fields
-
-// structure of the positional attribute
-interface PAttribute {
-    name: string,
-    type: attrType,
-    initValue: string | boolean,        // string for text types, boolean for checkboxes
-    description: string,                // placeholders for text types and labels for checkboxex
-    use?: boolean,                      // optional, as for now only ignoreDiacritics has use=false set by default
-    valueTrue?: string,                 // only for checkboxes: map boolean true value to the corresponding string
-    valueFalse?: string                 // as above, but for the false val
-};
+import { PAttribute } from '../../../../dataTypes.d';
+import { ConfigService } from 'src/app/config.service';
 
 @Component({
     selector: 'spoco-query-row',
@@ -27,12 +16,18 @@ interface PAttribute {
 })
 export class QueryRowComponent implements OnInit, OnDestroy {
 
-    constructor(private queryKeeper: QueryKeeperService) { }
+    constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService) { }
 
     ngOnInit(): void {
         let fields: { [key: string]: FormGroup } = {};
+        this.positionalAttributes = this.configService.fetch ('positionalAttributes');
+        this.modifiers = this.configService.fetch ('modifiers');
         this.positionalAttributes = this.positionalAttributes.filter (el => {return el.use === undefined || el.use});     // filter out fields with use=false
         this.modifiers = this.modifiers.filter (el => {return el.use === undefined || el.use});
+        this.pattrClasses =  {
+            lg: Math.max (Math.round (12 / this.positionalAttributes.length), 3),
+            xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
+        };
         for (let elem of this.positionalAttributes) {
             let modifiers: { [key: string]: FormControl } = {};
             for (let mod_elem of this.modifiers) {
@@ -80,26 +75,17 @@ export class QueryRowComponent implements OnInit, OnDestroy {
 
     // TODO: this should be configurable and loaded from a json file
 
-    positionalAttributes: PAttribute[] = [
-        {name: 'word', type: 'text', initValue: '', description: 'Word form'},
-        {name: 'lemma', type: 'checkbox', initValue: '', description: 'Lemma', valueTrue: 'lemma_on', valueFalse: ''},
-        {name: 'tag', type: 'text', initValue: '', description: 'Grammatic tag'}
-    ];
+    positionalAttributes: PAttribute[];
 
     // TODO: ditto
 
-    modifiers: PAttribute[] = [
-        {name: 'beginning', type: 'checkbox', initValue: false, description: 'begins with'},
-        {name: 'ending', type: 'checkbox', initValue: false, description: 'ends with'},
-        {name: 'caseSensitive', type: 'checkbox', initValue: false, description: 'case sensitive'},
-        {name: 'ignoreDiacritics', type: 'checkbox', initValue: false, description: 'ignore diacritics', use: false}
-  ];
+    modifiers: PAttribute[];
 
   // for proper division on the different size screens
 
-    pattrClasses = {
-        lg: Math.max (Math.round (12 / this.positionalAttributes.length), 3),
-        xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
+    pattrClasses: {
+        lg: number,
+        xl: number
     };
 
     queryRowForm: FormGroup;   // stores the form
