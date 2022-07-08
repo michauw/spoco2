@@ -67,6 +67,8 @@ export class QueryKeeperService {
         }
 
         for (let glob_i of globals) {
+            if (!queryRowMatrix.length)
+                queryRowMatrix.push (Array (pattrs.length));
             for (let row_i = 0; row_i < queryRowMatrix.length; ++row_i)
                 if (queryRow[pattrs[glob_i]].value)
                     queryRowMatrix[row_i][glob_i] = [queryRow[pattrs[glob_i]].value, ''];

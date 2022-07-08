@@ -39,6 +39,20 @@
                 </span>
             </span>
         </div>
-
+        <div class="row selection" *ngIf="filterByType('selection')">
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3 mt-3" formGroupName="{{ pattr.name }}" *ngFor="let pattr of filterByType('selection')">
+                <select class="form-select" *ngIf="pattr.type === 'select'" formControlName="value">
+                    <option value="" disabled selected>{{ pattr.description }}</option>     <-- TODO: doesn't work after clearing -->
+                    <option *ngFor="let option of pattr.options" [ngValue]="option.value">{{ option.label }}</option>
+                </select>
+                <ng-multiselect-dropdown *ngIf="pattr.type === 'multiselect'"
+                    [placeholder]="pattr.description"
+                    [settings]="multiselectSettings"
+                    [data]="multiselectOptions[pattr.name]"
+                    formControlName="value"
+                >
+                </ng-multiselect-dropdown>
+            </div>
+        </div>
     </form>
 </div>

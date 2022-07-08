@@ -3,7 +3,9 @@
         [
             {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
             {"name": "lemma", "type": "checkbox", "initValue": "", "description": "Lemma", "valueTrue": "lemma_on", "valueFalse": ""},
-            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag"}
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag"},
+            {"name": "aspect", "type": "multiselect", "initValue": "", "description": "Aspect", 
+                "options": [{"label": "perfective", "value": "pf"}, {"label": "imperfective", "value": "ipf"}, {"label": "other", "value": "oth"}]}
         ],
     "modifiers": 
     [

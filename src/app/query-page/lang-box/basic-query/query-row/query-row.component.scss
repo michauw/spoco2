@@ -20,3 +20,16 @@ span.pattr-checkboxes {
 .description {
     font-size: small;
 }
+
+.selected-item {
+    font-size: .75rem;
+    margin-top: .125rem;
+    margin-bottom: .125rem;
+}
+
+// TODO: increase specificity to avoid !important
+
+.multiselect-item-checkbox input[type='checkbox'] + div:before {
+    top: 55% !important;
+    border: 2px solid black !important;
+  }

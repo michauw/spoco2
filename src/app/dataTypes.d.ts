@@ -1,4 +1,5 @@
-type attrType = 'text' | 'checkbox' | 'select' | 'multiselect';    // supported types for positional attributes input fields
+type attrType = 'text' | 'checkbox' | 'select' | 'multiselect'    // supported types for positional attributes input fields
+export interface Option {label: string, value: string}         // label - used for displaying, value - for cwb query
 
 // structure of the positional attribute
 export interface PAttribute {
@@ -8,7 +9,8 @@ export interface PAttribute {
     description: string,                // placeholders for text types and labels for checkboxex
     use?: boolean,                      // optional, as for now only ignoreDiacritics has use=false set by default
     valueTrue?: string,                 // only for checkboxes: map boolean true value to the corresponding string
-    valueFalse?: string                 // as above, but for the false val
+    valueFalse?: string,                // as above, but for the false val
+    options?: Option[]                  // for select and multiselect
 }
 
 export interface ConfigObj {

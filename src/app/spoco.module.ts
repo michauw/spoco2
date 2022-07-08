@@ -3,6 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+
 
 import { SpocoRoutingModule } from './spoco-routing.module';
 import { SpocoComponent } from './spoco.component';
@@ -12,6 +14,7 @@ import { CqpQueryComponent } from './query-page/lang-box/cqp-query/cqp-query.com
 import { BasicQueryComponent } from './query-page/lang-box/basic-query/basic-query.component';
 import { QueryRowComponent } from './query-page/lang-box/basic-query/query-row/query-row.component';
 import { ConfigResolver } from './config-resolver.service';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
     declarations: [
@@ -26,7 +29,8 @@ import { ConfigResolver } from './config-resolver.service';
         BrowserModule,
         SpocoRoutingModule,
         ReactiveFormsModule,
-        HttpClientModule
+        HttpClientModule,
+        NgMultiSelectDropDownModule.forRoot()
   ],
   providers: [ConfigResolver],
   bootstrap: [SpocoComponent]

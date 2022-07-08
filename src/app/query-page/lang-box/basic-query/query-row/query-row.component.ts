@@ -2,19 +2,58 @@
 * Component used for rendering single row (i.e. one token in the CQP query)
 **/
 
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { QueryKeeperService } from '../../../../query-keeper.service';
 import { PAttribute } from '../../../../dataTypes.d';
 import { ConfigService } from 'src/app/config.service';
+import { IDropdownSettings } from 'ng-multiselect-dropdown';
 
 @Component({
     selector: 'spoco-query-row',
     templateUrl: './query-row.component.html',
-    styleUrls: ['./query-row.component.scss']
+    styleUrls: ['./query-row.component.scss'],
+    encapsulation: ViewEncapsulation.None   // allows to change style of ng-multiselect-dropdown
 })
 export class QueryRowComponent implements OnInit, OnDestroy {
+
+    private updateFormData (data: any) {
+        let updatedData: {[key: string]: {value: string, modifiers: {[key: string]: boolean}, global: boolean}} = {};
+        let value;
+        let global: boolean;
+
+        for (let key in data) {
+            if (!data[key].value)
+                continue;
+            let correspondingPattr!: PAttribute;
+            for (let pattr of this.positionalAttributes) {
+                if (pattr.name === key) {
+                    correspondingPattr = pattr;
+                    break;
+                }
+            }
+            if (correspondingPattr.type === 'checkbox') {
+               value = data[key].value ? correspondingPattr.valueTrue : correspondingPattr.valueFalse; 
+               global = true;
+            }
+            else if (correspondingPattr.type === 'select') {
+                value = data[key].value;
+                global = true;
+            }
+            else if (correspondingPattr.type === 'multiselect') {
+                value = data[key].value.map ((obj: {label: string, value: string}) => { return obj.value }).join ('|');
+                global = true;
+            }
+            else {
+                value = data[key].value;
+                global = false;
+            }
+            updatedData[key] = ({value: value, modifiers: data[key].modifiers, global: global});
+        }
+
+        return updatedData;
+    }
 
     constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService) { }
 
@@ -35,8 +74,11 @@ export class QueryRowComponent implements OnInit, OnDestroy {
             }
             fields[elem.name] = new FormGroup ({
                 'value': new FormControl (elem.initValue),
-                'modifiers': new FormGroup (modifiers)
+                'modifiers': new FormGroup (modifiers) 
             });
+            if (elem.type === 'multiselect') {
+                this.multiselectOptions[elem.name] = elem.options;
+            }
         }
         this.queryRowForm = new FormGroup (fields);
         this.currentGroup = this.positionalAttributes[0].name;    // at the beginning the current group is the first one
@@ -44,24 +86,8 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         // subscription for tracking changes in the form
 
         this.queryRowForm.valueChanges.subscribe (data => {
-            for (let key in data) {
-                if (typeof data[key].value === 'boolean') {
-                    let mappedValue: string | undefined = '';
-                    for (let pkey of this.positionalAttributes) {
-                        if (pkey.name === key) {
-                            if (data[key].value)
-                                mappedValue = pkey.valueTrue;
-                            else
-                                mappedValue = pkey.valueFalse;
-                            break;
-                        }
-                    }
-                    data[key].value = mappedValue;
-                    data[key].global = true;
-                }
-                else data[key].global = false;
-            }
-            this.queryKeeper.setValue (data, this.queryRowIndex);
+            let updatedData = this.updateFormData (data);
+            this.queryKeeper.setValue (updatedData, this.queryRowIndex);
         });
         this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
             if (changeType == 'clear')
@@ -73,12 +99,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         this.valueChanged.unsubscribe ();
     }
 
-    // TODO: this should be configurable and loaded from a json file
-
     positionalAttributes: PAttribute[];
-
-    // TODO: ditto
-
     modifiers: PAttribute[];
 
   // for proper division on the different size screens
@@ -92,8 +113,20 @@ export class QueryRowComponent implements OnInit, OnDestroy {
     currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
     @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
     valueChanged: Subscription;   // needed for clearing the form
+    multiselectOptions: any = {};   // TODO: fix type
+    multiselectSettings: IDropdownSettings = {
+        singleSelection: false,
+        idField: 'value',
+        textField: 'label',
+        itemsShowLimit: 2,
+        allowSearchFilter: false,
+        enableCheckAll: false
+      };
 
-    filterByType (attrType: string): PAttribute[] {        
-        return this.positionalAttributes.filter (attr => { return attr.type === attrType});
+    filterByType (attrType: string): PAttribute[] { 
+        if (attrType === 'selection')
+            return this.positionalAttributes.filter ((attr) => { return attr.type == 'select' || attr.type === 'multiselect'});
+        else     
+            return this.positionalAttributes.filter (attr => { return attr.type === attrType});
     }
 }
