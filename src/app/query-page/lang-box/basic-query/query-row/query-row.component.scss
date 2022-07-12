@@ -1,3 +1,7 @@
+$pattr-border-color: #aaa;
+$pattr-border-color-init: rgb(170, 170, 170);
+$pattr-box-shadow: #f0f0f0;
+
 div.modifiers {
     margin-top: .8rem;
     margin-left: .8rem;
@@ -25,6 +29,24 @@ span.pattr-checkboxes {
     font-size: .75rem;
     margin-top: .125rem;
     margin-bottom: .125rem;
+}
+
+.pattr-input {
+    transition: all .7s ease-out;
+    & .multiselect-dropdown {
+        transition: all .7s ease-out;
+        & .dropdown-btn {
+            border: 1px solid $pattr-border-color-init;
+        }
+    }
+}
+
+.pattr-input:hover, .pattr-input:focus {
+    border: 1px solid $pattr-border-color;
+    box-shadow: 2px 2px 2px $pattr-box-shadow;
+    & .multiselect-dropdown {
+        box-shadow: 2px 2px 2px $pattr-box-shadow;
+    }
 }
 
 // TODO: increase specificity to avoid !important

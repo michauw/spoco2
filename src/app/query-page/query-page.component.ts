@@ -16,6 +16,7 @@ export class QueryPageComponent implements OnInit {
             (data: Data) => { 
                 this.configService.store ('positionalAttributes', data['config']['positionalAttributes']);
                 this.configService.store ('modifiers', data['config']['modifiers']);
+                this.configService.store ('filters', data['config']['filters']);
             }
         );
     }

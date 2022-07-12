@@ -6,13 +6,19 @@
     </div>
     <div class="card-body">
         <spoco-query-row [queryRowIndex]="qr" *ngFor="let qr of qrRange()"></spoco-query-row>
-       <div class="plus-minus float-end">
+        <div class="plus-minus float-end">
             <button class="btn row-button theme-dark" (click)="moreRows()">
                 +
             </button>
             <button class="btn row-button theme-dark" (click)="lessRows()" [disabled]="queryRowNumber <= 1">
                 -
             </button>
-       </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-6 offset-md-3">
+                <hr>
+            </div>
+        </div>
+        <spoco-filters></spoco-filters>
     </div>
 </div>

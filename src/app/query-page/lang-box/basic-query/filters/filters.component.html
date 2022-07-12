@@ -1,0 +1,30 @@
+<div class="">
+    <div class="row">
+        <div class="col-4 ml-4 mb-2">
+            <b>Filters</b>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-8 my-2 ml-4">
+            <span *ngFor="let group of groups; let ind=index"
+            class="filters-header {{ ind === active_group ? 'active' : ''}}"
+            (click)="chooseActive(group.name)"
+            >
+                {{ group.name }}
+            </span>
+        </div>
+    </div>
+    <form [formGroup]="filtersForm">
+        <div class="row" formGroupName="{{ groups[active_group].name }}">
+            <div class="col-1 col-md-4 col-lg-3 col-xl-2" *ngFor="let field of groups[active_group].fields">
+                <ng-multiselect-dropdown
+                    [placeholder]="field.name"
+                    [settings]="multiselectSettings"
+                    [data]="filtersOptions[groups[active_group].name][field.name]"
+                    formControlName="{{field.name}}"
+                 >
+                </ng-multiselect-dropdown>
+            </div>
+        </div>
+    </form>
+</div>

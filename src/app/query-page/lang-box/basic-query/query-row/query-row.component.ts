@@ -18,7 +18,20 @@ import { IDropdownSettings } from 'ng-multiselect-dropdown';
 })
 export class QueryRowComponent implements OnInit, OnDestroy {
 
-    private updateFormData (data: any) {
+    private updateFormData (data: any) {    
+
+        /*
+            maps the form data to the values defined in the config file
+            and adding the 'global' attribute (needed for handling multiword data)
+            necessary for checkbox and (multi)select types
+            checkboxes: true   -> valueTrue
+                        false  -> valueFalse
+                        global -> true
+            select: global -> true
+            multiselect: label  -> value
+                         global -> true
+        */
+       
         let updatedData: {[key: string]: {value: string, modifiers: {[key: string]: boolean}, global: boolean}} = {};
         let value;
         let global: boolean;
@@ -64,8 +77,8 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         this.positionalAttributes = this.positionalAttributes.filter (el => {return el.use === undefined || el.use});     // filter out fields with use=false
         this.modifiers = this.modifiers.filter (el => {return el.use === undefined || el.use});
         this.pattrClasses =  {
-            lg: Math.max (Math.round (12 / this.positionalAttributes.length), 3),
-            xl: Math.max (Math.round (12 / this.positionalAttributes.length), 2)
+            lg: Math.max (Math.round (12 / this.positionalAttributes.filter (el => { return el.type === 'text' }).length), 3),
+            xl: Math.max (Math.round (12 / this.positionalAttributes.filter (el => { return el.type === 'text' }).length), 2)
         };
         for (let elem of this.positionalAttributes) {
             let modifiers: { [key: string]: FormControl } = {};
