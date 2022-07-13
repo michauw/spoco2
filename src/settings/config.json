@@ -21,12 +21,12 @@
     ],
     "filters": [
         {"name": "main", "fields": [
-            {"name": "main_field_1", "options": [{"label": "m_a", "value":1}, {"label": "m_b", "value":2}]},
-            {"name": "main_field_2", "options": [{"label": "m_x", "value":10}, {"label": "m_y", "value":20}]}
+            {"name": "main_field_1", "description": "main_field_1", "type": "select", "options": [{"label": "m_a", "value":1}, {"label": "m_b", "value":2}]},
+            {"name": "main_field_2", "description": "main_field_1", "type": "multiselect", "options": [{"label": "m_x", "value":10}, {"label": "m_y", "value":20}]}
         ]},
         {"name": "secondary", "fields": [
-            {"name": "secondary_field_1", "options": [{"label": "s_a", "value":100}, {"label": "s_b", "value":200}]},
-            {"name": "secondary_field_2", "options": [{"label": "s_x", "value":10000}, {"label": "s_y", "value":20000}]}
+            {"name": "secondary_field_1", "description": "secondary_field_1", "type": "multiselect", "options": [{"label": "s_a", "value":100}, {"label": "s_b", "value":200}]},
+            {"name": "secondary_field_2", "description": "secondary_field_1", "type": "select", "options": [{"label": "s_x", "value":10000}, {"label": "s_y", "value":20000}]}
         ]}
     ]
 }

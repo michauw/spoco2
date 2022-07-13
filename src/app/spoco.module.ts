@@ -16,6 +16,7 @@ import { QueryRowComponent } from './query-page/lang-box/basic-query/query-row/q
 import { ConfigResolver } from './config-resolver.service';
 import { CommonModule } from '@angular/common';
 import { FiltersComponent } from './query-page/lang-box/basic-query/filters/filters.component';
+import { SelectComponent } from './query-page/lang-box/basic-query/select/select.component';
 
 @NgModule({
     declarations: [
@@ -25,7 +26,8 @@ import { FiltersComponent } from './query-page/lang-box/basic-query/filters/filt
         LangBoxComponent,
         BasicQueryComponent,
         QueryPageComponent,
-        FiltersComponent
+        FiltersComponent,
+        SelectComponent
   ],
     imports: [
         BrowserModule,

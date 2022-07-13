@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { ConfigService } from 'src/app/config.service';
-import { Option } from '../../../../dataTypes.d';
+import { Option, PAttribute } from '../../../../dataTypes.d';
 
 @Component({
     selector: 'spoco-filters',
@@ -30,8 +30,8 @@ export class FiltersComponent implements OnInit {
         this.filtersForm = new FormGroup (formGroups);
     }
 
-    groups: {name: string, fields: [{name: string, options: Option[]}]}[];
-    filtersOptions: {[key: string]: {[key: string]: Option[]}} = {};
+    groups: {name: string, fields: PAttribute[]}[];
+    filtersOptions: {[key: string]: {[key: string]: Option[] | undefined}} = {};
     filtersForm: FormGroup;
     active_group: number;
     multiselectSettings: IDropdownSettings = {
