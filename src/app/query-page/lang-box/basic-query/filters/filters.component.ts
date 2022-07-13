@@ -2,7 +2,8 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { ConfigService } from 'src/app/config.service';
-import { Option, PAttribute } from '../../../../dataTypes.d';
+import { QueryKeeperService } from 'src/app/query-keeper.service';
+import { Filters, Option, PAttribute } from '../../../../dataTypes.d';
 
 @Component({
     selector: 'spoco-filters',
@@ -12,7 +13,7 @@ import { Option, PAttribute } from '../../../../dataTypes.d';
 })
 export class FiltersComponent implements OnInit {
 
-    constructor(private configService: ConfigService) { }
+    constructor(private configService: ConfigService, private queryKeeper: QueryKeeperService) { }
 
     ngOnInit(): void {
         this.groups = this.configService.fetch ('filters');
@@ -28,6 +29,27 @@ export class FiltersComponent implements OnInit {
             formGroups[group.name] = new FormGroup (controls);
         }
         this.filtersForm = new FormGroup (formGroups);
+        // console.log(this.filtersForm)
+
+        this.filtersForm.valueChanges.subscribe(data => {
+            let filters: Filters = {};
+            for (let group in data) {
+                for (let field in data[group]) {
+                    let value = data[group][field];
+                    if (value === null)
+                        continue;
+                    if (typeof value === 'number' || typeof value === 'string') {
+                        filters[field] = `${value}`;
+                    }
+                    else if (value.constructor.name === 'Array') {
+                        filters[field] = value.map ((elem:any) => { return elem.value}).join ('|');
+                    }
+                }
+            }
+            this.queryKeeper.setFilters (filters);
+
+        })
+
     }
 
     groups: {name: string, fields: PAttribute[]}[];

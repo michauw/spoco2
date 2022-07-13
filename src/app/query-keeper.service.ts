@@ -1,15 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Filters, QueryRow } from './dataTypes';
 
-interface QueryRow {        // TODO: should be in its own file?
-    [key: string]: {
-        value: string,
-        modifiers: {
-            [key: string]: boolean
-        },
-        global?: boolean;
-    }
-};
+
+
 
 @Injectable({
     providedIn: 'root'
@@ -17,7 +11,7 @@ interface QueryRow {        // TODO: should be in its own file?
 export class QueryKeeperService {
 
     constructor() { }
-
+    filters: Filters;
     queryRows: QueryRow[] = [];     // stores the data from all the query-row forms
     valueChanged = new Subject<string> ();
     // clearData = new Subject<void> ();
@@ -91,6 +85,19 @@ export class QueryKeeperService {
         return query;
     }
 
+    private getFilters (): string {
+        let queryFilters: string = '';
+        let filtersArray: string[] = [];
+        for (let key in this.filters) {
+            filtersArray.push (`match.${key}="${this.filters[key]}"`);
+        }
+        if (filtersArray.length) {
+            queryFilters += '::' + filtersArray.join (' & ');
+        }
+
+        return queryFilters;
+    }
+
     clear () {
         this.queryRows = [];
         this.valueChanged.next ('clear');
@@ -104,6 +111,11 @@ export class QueryKeeperService {
         for (let queryRow of this.queryRows)
             query += this.getRowQuery (queryRow);
 
+        let filtersPart: string = this.getFilters ();
+        if (query === '' && filtersPart !== '')
+            query = '[]';
+        query += filtersPart;
+        
         return query;
     }
 
@@ -117,6 +129,11 @@ export class QueryKeeperService {
             this.queryRows.push (data);
         else
             this.queryRows[index] = data;
+        this.valueChanged.next ('set');
+    }
+
+    setFilters (data: Filters) {
+        this.filters = data;
         this.valueChanged.next ('set');
     }
 }

@@ -17,3 +17,17 @@ export interface ConfigObj {
     positionalAttributes: PAttribute[],
     modifiers: PAttribute[];
 }
+
+export interface QueryRow {        // TODO: should be in its own file?
+    [key: string]: {
+        value: string,
+        modifiers: {
+            [key: string]: boolean
+        },
+        global?: boolean;
+    }
+}
+
+export interface Filters {
+    [key: string] : string;
+}

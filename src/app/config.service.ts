@@ -7,7 +7,7 @@ export class ConfigService {
 
     constructor() { }
 
-    configSettings: any = {};
+    configSettings: any = {};   // TODO: type
 
     fetch (name: string) {
         return this.configSettings[name];
