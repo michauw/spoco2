@@ -100,7 +100,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
 
         this.queryRowForm.valueChanges.subscribe (data => {
             let updatedData = this.updateFormData (data);
-            this.queryKeeper.setValue (updatedData, this.queryRowIndex);
+            this.queryKeeper.setQueryRow (updatedData, this.queryRowIndex);
         });
         this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
             if (changeType == 'clear')

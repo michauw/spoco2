@@ -14,6 +14,7 @@ export class QueryKeeperService {
     filters: Filters;
     queryRows: QueryRow[] = [];     // stores the data from all the query-row forms
     valueChanged = new Subject<string> ();
+    query: string = '';
     // clearData = new Subject<void> ();
 
     // constructs CQP query for one query-row
@@ -100,13 +101,15 @@ export class QueryKeeperService {
 
     clear () {
         this.queryRows = [];
+        this.query = '';
+        this.filters = {};
         this.valueChanged.next ('clear');
-        // this.clearData.next ();
     }
 
-    // constructs final CQP query
+    getBasicQuery () {
 
-    getQuery () {
+        // constructs final CQP query
+
         let query: string = '';
         for (let queryRow of this.queryRows)
             query += this.getRowQuery (queryRow);
@@ -119,21 +122,31 @@ export class QueryKeeperService {
         return query;
     }
 
+    getQuery () {
+        return this.query;
+    }
+
     pop () {
         this.queryRows.pop ();
         this.valueChanged.next ('pop');
     }
 
-    setValue (data: QueryRow, index: number) {
+    setQueryRow (data: QueryRow, index: number) {
         if (this.queryRows.length <= index)
             this.queryRows.push (data);
         else
             this.queryRows[index] = data;
+        this.query = this.getBasicQuery ();
         this.valueChanged.next ('set');
     }
 
     setFilters (data: Filters) {
         this.filters = data;
+        this.query = this.getBasicQuery ();
         this.valueChanged.next ('set');
+    }
+
+    setQuery (query: string) {
+        this.query = query;
     }
 }

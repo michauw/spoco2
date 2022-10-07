@@ -4,7 +4,7 @@
             <b>Filters</b>
         </div>
     </div>
-    <div class="row" *ngIf="groups.length > 1">
+    <div class="row mb-4" *ngIf="groups.length > 1">
         <div class="col-8 my-2 ml-4">
             <span *ngFor="let group of groups; let ind=index"
             class="filters-header {{ ind === active_group ? 'active' : ''}}"
