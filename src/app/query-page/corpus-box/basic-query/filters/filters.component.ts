@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
+import { Subscription } from 'rxjs';
 import { ConfigService } from 'src/app/config.service';
+import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 import { QueryKeeperService } from 'src/app/query-keeper.service';
-import { Filters, Option, PAttribute } from '../../../../dataTypes.d';
+import { Filters, Corpus, Option, PAttribute } from '../../../../dataTypes.d';
 
 @Component({
     selector: 'spoco-filters',
@@ -11,9 +13,9 @@ import { Filters, Option, PAttribute } from '../../../../dataTypes.d';
     styleUrls: ['./filters.component.scss'],
     encapsulation: ViewEncapsulation.None   // allows to change style of ng-multiselect-dropdown
 })
-export class FiltersComponent implements OnInit {
+export class FiltersComponent implements OnInit, OnDestroy {
 
-    constructor(private configService: ConfigService, private queryKeeper: QueryKeeperService) { }
+    constructor(private configService: ConfigService, private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
         this.groups = this.configService.fetch ('filters');
@@ -29,7 +31,7 @@ export class FiltersComponent implements OnInit {
             formGroups[group.name] = new FormGroup (controls);
         }
         this.filtersForm = new FormGroup (formGroups);
-        // console.log(this.filtersForm)
+        this.currentCorpus = this.corporaKeeper.getCurrent ();
 
         this.filtersForm.valueChanges.subscribe(data => {
             let filters: Filters = {};
@@ -46,12 +48,19 @@ export class FiltersComponent implements OnInit {
                     }
                 }
             }
-            this.queryKeeper.setFilters (filters);
+            this.queryKeeper.setFilters (filters, this.currentCorpus.id);
 
-        })
+        });
+        this.currentCorpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => this.currentCorpus = corpus);
 
     }
 
+    ngOnDestroy(): void {
+        this.currentCorpusChanged.unsubscribe ();
+    }
+
+    currentCorpus: Corpus;
+    currentCorpusChanged: Subscription;
     groups: {name: string, fields: PAttribute[]}[];
     filtersOptions: {[key: string]: {[key: string]: Option[] | undefined}} = {};
     filtersForm: FormGroup;

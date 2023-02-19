@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Data } from '@angular/router';
+import { Router, Data } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../config.service';
+import { QueryKeeperService } from '../query-keeper.service';
 
 @Component({
     selector: 'spoco-query-page',
@@ -9,16 +11,22 @@ import { ConfigService } from '../config.service';
 })
 export class QueryPageComponent implements OnInit {
 
-    constructor(private route: ActivatedRoute, private configService: ConfigService) { }
-
+    constructor (
+        private router: Router, 
+        private http: HttpClient,
+        private queryKeeper: QueryKeeperService,
+        private configService: ConfigService
+    ) { }
+    
     ngOnInit(): void {
-        this.route.data.subscribe (
-            (data: Data) => { 
-                this.configService.store ('positionalAttributes', data['config']['positionalAttributes']);
-                this.configService.store ('modifiers', data['config']['modifiers']);
-                this.configService.store ('filters', data['config']['filters']);
-            }
-        );
+    }
+
+    clear () {
+        this.queryKeeper.clear ();
+      }
+    
+    search () {
+        this.router.navigate (['/', 'results']);
     }
 
 }

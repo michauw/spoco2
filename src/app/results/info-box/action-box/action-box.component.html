@@ -1,0 +1,7 @@
+<div class="action-box float-end text-end">
+    <fa-icon class="icon enlarge" ngClass="exchange.enabled ? '' : 'gray'" [icon]="exchange.icon" (click)="switchDisplayMode()"></fa-icon>
+    <fa-icon class="icon enlarge {{ info.enabled ? '' : 'gray' }}" ngClass="info.enabled ? '' : 'gray'" [icon]="info.icon" (click)="switchMeta()"></fa-icon>    
+    <fa-icon class="icon enlarge" ngClass="eye.enabled ? '' : 'gray'" [icon]="eye.icon"></fa-icon>
+    <fa-icon class="icon enlarge" ngClass="checkbox.enabled ? '' : 'gray'" [icon]="checkbox.icon"></fa-icon>
+    <fa-icon class="icon enlarge" ngClass="download.enabled ? '' : 'gray'" [icon]="download.icon"></fa-icon>
+</div>

@@ -6,9 +6,10 @@ import { Component, OnInit, Input, OnDestroy, ViewEncapsulation } from '@angular
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { QueryKeeperService } from '../../../../query-keeper.service';
-import { PAttribute } from '../../../../dataTypes.d';
+import { Corpus, PAttribute } from '../../../../dataTypes.d';
 import { ConfigService } from 'src/app/config.service';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
+import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 
 @Component({
     selector: 'spoco-query-row',
@@ -68,7 +69,43 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         return updatedData;
     }
 
-    constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService) { }
+    private adjustFields () {
+
+        // on corpus switch (in the 'ribbon' mode): updates all the form fields
+        // according to the queryRow state in the queryKeeper
+
+        //TODO: doesn't work with select and multi-select fields; number of queryRows is not connected to the corpus
+
+        let qrData: any = {};
+        try {
+            qrData = this.queryKeeper.corpusQueryRows[this.corpus.id][this.queryRowIndex];
+        } catch (error) {};
+        for (let pa of this.positionalAttributes) {
+            let controlValue = {};
+            if (qrData[pa.name] !== undefined) {
+                let value = qrData[pa.name].value;
+                let modifiers: {[key: string]: string | boolean} = {};
+                for (let mod of this.modifiers) {
+                    let mod_val = qrData[pa.name].modifiers[mod.name]
+                    if (mod_val !== undefined)
+                        modifiers[mod.name] = mod_val;
+                    else
+                        modifiers[mod.name] = mod.initValue;
+                }
+                controlValue = {value: value, modifiers: modifiers};
+            }
+            else {
+                let modifiers: {[key: string]: string | boolean} = {};
+                for (let mod of this.modifiers)
+                    modifiers[mod.name] = mod.initValue;
+                controlValue = {value: pa.initValue, modifiers: modifiers};
+            }
+            this.adjusted = true;
+            this.queryRowForm.controls[pa.name].setValue (controlValue);
+        }
+    }
+
+    constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
         let fields: { [key: string]: FormGroup } = {};
@@ -95,25 +132,37 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         }
         this.queryRowForm = new FormGroup (fields);
         this.currentGroup = this.positionalAttributes[0].name;    // at the beginning the current group is the first one
+        this.corpus = this.corporaKeeper.getCurrent ();
+        this.adjusted = false;
 
         // subscription for tracking changes in the form
 
         this.queryRowForm.valueChanges.subscribe (data => {
-            let updatedData = this.updateFormData (data);
-            this.queryKeeper.setQueryRow (updatedData, this.queryRowIndex);
+            if (this.adjusted)
+                this.adjusted = false;
+            else {
+                let updatedData = this.updateFormData (data);
+                this.queryKeeper.setQueryRow (updatedData, this.queryRowIndex, this.corpus.id);
+            }
         });
         this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
             if (changeType == 'clear')
                 this.queryRowForm.reset ();
         });
+        this.corpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => {
+            this.corpus = corpus;
+            this.adjustFields ();
+        })
     }
 
     ngOnDestroy(): void {
         this.valueChanged.unsubscribe ();
+        this.corpusChanged.unsubscribe ();
     }
 
     positionalAttributes: PAttribute[];
     modifiers: PAttribute[];
+    corpus: Corpus;
 
   // for proper division on the different size screens
 
@@ -126,6 +175,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
     currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
     @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
     valueChanged: Subscription;   // needed for clearing the form
+    corpusChanged: Subscription;    // watches for current corpus
     multiselectOptions: any = {};   // TODO: fix type
     multiselectSettings: IDropdownSettings = {
         singleSelection: false,
@@ -135,6 +185,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         allowSearchFilter: false,
         enableCheckAll: false
       };
+      adjusted: Boolean;
 
     filterByType (attrType: string): PAttribute[] { 
         if (attrType === 'selection')

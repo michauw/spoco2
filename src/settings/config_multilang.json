@@ -1,13 +1,23 @@
 {
     "corpora": 
         [
-            {"name": "Polish", "id": "pl", "corpus":"boy", "primary": true}
+            {"name": "Polish", "id": "pl", "primary": true},
+            {"name": "English", "id": "en", "primary": false},
+            {"name": "German", "id": "de", "primary": false},
+            {"name": "French", "id": "fr", "primary": false},
+            {"name": "Italian", "id": "it", "primary": false},
+            {"name": "Ukrainian", "id": "uk", "primary": false},
+            {"name": "Spanish", "id": "es", "primary": false},
+            {"name": "Hungarian", "id": "hu", "primary": false},
+            {"name": "Czech", "id": "cz", "primary": false},
+            {"name": "Finnish", "id": "fi", "primary": false},
+            {"name": "Chinese", "id": "zh", "primary": false}
         ],
     "positionalAttributes":
         [
             {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
-            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults":true},
-            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults":true},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma"},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag"},
             {"name": "diff", "type": "checkbox", "initValue": false, "description": "differential", "valueTrue": "1", "valueFalse": ""},
             {"name": "aspect", "type": "multiselect", "initValue": "", "description": "Aspect", 
                 "options": [{"label": "perfective", "value": "pf"}, {"label": "imperfective", "value": "ipf"}, {"label": "biaspect", "value": "bi"}]
@@ -23,14 +33,6 @@
         {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
         {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
     ],
-    "structuralAttributes":
-        [
-            {"name": "s_id", "type": "number", "inResults": false, "context": true},
-            {"name": "meta_autor", "type": "text", "inResults":true},
-            {"name": "meta_tytul", "type": "text", "inResults":true},
-            {"name": "meta_data_wydania", "type": "text", "inResults":true},
-            {"name": "meta_data_tlumaczenia", "type": "text", "inResults":true}
-        ],
     "filters": [
         {"name": "main", "fields": [
             {"name": "main_field_1", "description": "main_field_1", "type": "select", "options": [{"label": "m_a", "value":1}, {"label": "m_b", "value":2}]},
@@ -41,11 +43,5 @@
             {"name": "secondary_field_2", "description": "secondary_field_2", "type": "select", "options": [{"label": "s_x", "value":10000}, {"label": "s_y", "value":20000}]}
         ]}
     ],
-    "cwb": {
-        "paths": {
-            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
-            "registry-path":"D:\\Praca\\zasoby\\korpusy\\boy\\Registry"
-        },
-        "context":"s"
-    }
+    "tmp": "abc"
 }

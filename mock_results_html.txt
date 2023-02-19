@@ -1,0 +1,5 @@
+<HR><UL>
+<LI><EM>1:</EM> W/w/ADP pewnej/pewien/DET <B>norze/nora/NOUN</B> ziemnej/ziemny/ADJ mieszkał/mieszkać/VERB sobie/siebie/PRON pewien/pewny/DET hobbit/hobbit/NOUN ././PUNCT
+<LI><EM>2:</EM> Nie/nie/PART była/być/AUX to/to/AUX szkaradna/szkaradny/ADJ ,/,/PUNCT brudna/brudny/ADJ ,/,/PUNCT wilgotna/wilgotny/ADJ <B>nora/nora/NOUN</B> ,/,/PUNCT rojąca/roć/ADJ się/się/PRON od/od/ADP robaków/robak/NOUN i/i/CCONJ cuchnąca/cuchnący/ADJ błotem/błoto/NOUN ,/,/PUNCT ani/ani/CCONJ tez/tez/INTJ sucha/suchy/ADJ ,/,/PUNCT naga/nagy/ADJ ,/,/PUNCT piaszczysta/piaszczysty/ADJ nora/nora/NOUN bez/bez/ADP stołka/stołek/NOUN ,/,/PUNCT na/na/ADP którym/który/DET by/by/AUX można/można/VERB usiąść/usiąść/VERB ,/,/PUNCT i/i/CCONJ bez/bez/ADP dobrze/dobrze/ADV zaopatrzonej/zaopatrzoć/ADJ spiżarni/spiżarnia/NOUN ;/;/PUNCT była/być/AUX to/to/AUX nora/nora/NOUN hobbita/hobbit/NOUN ,/,/PUNCT a/a/CCONJ to/to/PRON znaczy/znaczyć/VERB :/:/PUNCT nora/nora/NOUN z/z/ADP wygodami/wygod/NOUN ././PUNCT
+</UL>
+<HR>

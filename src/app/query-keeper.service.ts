@@ -1,27 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Filters, QueryRow } from './dataTypes';
-
-
-
+import { Filters, Corpus, QueryRow } from './dataTypes';
+import { CorporaKeeperService } from './corpora-keeper.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class QueryKeeperService {
 
-    constructor() { }
+    constructor (private corporaKeeper: CorporaKeeperService) { }
     filters: Filters;
-    queryRows: QueryRow[] = [];     // stores the data from all the query-row forms
-    valueChanged = new Subject<string> ();
-    query: string = '';
-    // clearData = new Subject<void> ();
+    corpusQueryRows: {[corpus: string]: QueryRow[]} = {};   // stores the query row data for each corpus box
+    corpusQuery: {[corpus: string]: string} = {};   // stores the cqp query for each corpus
+    valueChanged = new Subject<string> ();  
 
     // constructs CQP query for one query-row
 
     private getRowQuery (queryRow: QueryRow): string {
 
-        /*  Each row can store one or more values (separated by space).
+        /*  Each row can store one or more tokens (separated by space).
             These values are stored in the matrix of shape m x n, 
             where m is a number of values (i.e. separate tokens), 
             and n is a number of positional attributes
@@ -100,18 +97,23 @@ export class QueryKeeperService {
     }
 
     clear () {
-        this.queryRows = [];
-        this.query = '';
+        for (let corpusName in this.corpusQueryRows) {
+            this.corpusQueryRows[corpusName] = [];
+            this.corpusQuery[corpusName] = '';
+        }
         this.filters = {};
         this.valueChanged.next ('clear');
     }
 
-    getBasicQuery () {
+    getBasicQuery (corpus: string) {
 
         // constructs final CQP query
 
+        const corpusQueryRows = this.corpusQueryRows[corpus];
+        if (corpusQueryRows === undefined)
+            return '';
         let query: string = '';
-        for (let queryRow of this.queryRows)
+        for (let queryRow of corpusQueryRows)
             query += this.getRowQuery (queryRow);
 
         let filtersPart: string = this.getFilters ();
@@ -122,31 +124,64 @@ export class QueryKeeperService {
         return query;
     }
 
-    getQuery () {
-        return this.query;
+    getFinalQuery () {
+        const primary = this.corporaKeeper.getPrimary ();
+        const secondary = this.corporaKeeper.getSecondary ();
+        let query = this.getBasicQuery (primary.id);
+        for (let corp of secondary) {
+            let lang_query = this.getBasicQuery (corp.id);
+            if (lang_query)
+                query += `:${corp.name} ${lang_query}`;
+        }
+
+        return query;   
     }
 
-    pop () {
-        this.queryRows.pop ();
+    getCorpusQueries () {
+
+        // return all the pairs of type corpus,query, separately for the primary and secondary corpora
+
+        const primary = this.corporaKeeper.getPrimary ();
+        let secondary: {'corpus': string, 'query': string}[] = [];
+        for (let corpus in this.corpusQueryRows) {
+            if (corpus === primary.id)
+                continue;
+            secondary.push ({'corpus': corpus, 'query': this.corpusQuery[corpus]});
+        }
+        return {
+            'primary': {'corpus': primary.corpus, 'query': this.corpusQuery[primary.id]},
+            'secondary': secondary
+        };
+    }
+
+    getQuery (corpus: string) {
+        return this.corpusQuery[corpus];
+    }
+
+    pop (corpus: string) {
+        this.corpusQueryRows[corpus].pop ();
         this.valueChanged.next ('pop');
     }
 
-    setQueryRow (data: QueryRow, index: number) {
-        if (this.queryRows.length <= index)
-            this.queryRows.push (data);
+    setQueryRow (data: QueryRow, index: number, corpus: string) {
+        if (!this.corpusQueryRows.hasOwnProperty (corpus))
+            this.corpusQueryRows[corpus] = [];
+        let corpusQueryRows = this.corpusQueryRows[corpus];
+        if (corpusQueryRows.length <= index)
+            corpusQueryRows.push (data);
         else
-            this.queryRows[index] = data;
-        this.query = this.getBasicQuery ();
+            corpusQueryRows[index] = data;
+        this.corpusQuery[corpus] = this.getBasicQuery (corpus);
         this.valueChanged.next ('set');
     }
 
-    setFilters (data: Filters) {
+    setFilters (data: Filters, corpus: string) {
         this.filters = data;
-        this.query = this.getBasicQuery ();
+        this.corpusQuery[corpus] = this.getBasicQuery (corpus);
         this.valueChanged.next ('set');
     }
 
-    setQuery (query: string) {
-        this.query = query;
+    setQuery (query: string, corpus: string) {
+        this.corpusQuery[corpus] = query;
     }
 }

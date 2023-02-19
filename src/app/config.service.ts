@@ -10,6 +10,8 @@ export class ConfigService {
     configSettings: any = {};   // TODO: type
 
     fetch (name: string) {
+        if (!this.configSettings.hasOwnProperty (name))
+            return [];
         return this.configSettings[name];
     }
 

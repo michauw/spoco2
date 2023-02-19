@@ -1,0 +1,17 @@
+.info-box {
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    margin-top: 1rem;
+    padding: 1.25rem;
+}
+
+.info-row {
+    & .key {
+        font-weight: 600;
+        margin-right: 4px;
+    }
+    & .value {
+        font-style: italic;
+        color: grey;
+    }
+}
