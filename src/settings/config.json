@@ -1,7 +1,8 @@
 {
+    "projectName": "Basic Corpus",
     "corpora": 
         [
-            {"name": "Polish", "id": "pl", "corpus":"boy", "primary": true}
+            {"name": "Polish", "id": "boy", "corpus":"boy", "primary": true}
         ],
     "positionalAttributes":
         [

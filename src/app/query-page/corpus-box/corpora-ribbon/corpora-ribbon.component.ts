@@ -16,7 +16,7 @@ export class CorporaRibbonComponent implements OnInit, OnDestroy {
         this.corpora = this.corporaKeeper.getCorpora ();
         this.primaryCorpus = this.corporaKeeper.getPrimary ();
         this.currentCorpus = this.corporaKeeper.getCurrent ();
-        this.ribbonSpan = [1, this.ribbonMaxCorpora + 1];
+        this.ribbonSpan = [1, Math.min (this.ribbonMaxCorpora + 1, this.corpora.length)];
 
         const sub_corpus: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => this.corpora = corpora);
         const sub_primary: Subscription = this.corporaKeeper.primaryChange.subscribe (primary => this.primaryCorpus = primary);

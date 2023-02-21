@@ -1,8 +1,10 @@
 <div class="container-fluid">
+    <spoco-header></spoco-header>
     <div class="col-md-10 offset-md-1">
         <spoco-info-box [results_fetched]="results_fetched" [results_number]="results.length"></spoco-info-box>
     </div>
     <div class="col-md-10 offset-md-1">
-        <spoco-concordance-mono [results]="results"></spoco-concordance-mono>
+        <spoco-concordance-mono [results]="results" *ngIf="corpusType == 'mono'"></spoco-concordance-mono>
+        <spoco-concordance-parallel [results]="results" *ngIf="corpusType=='parallel'"></spoco-concordance-parallel>
     </div>
 </div>

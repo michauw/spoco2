@@ -1,8 +1,9 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActionService } from 'src/app/action.service';
-import { OutputLine, Word } from 'src/app/dataTypes';
+import { ConcordanceEntry, Corpus, Word } from 'src/app/dataTypes';
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from '@angular/material/tooltip';
+import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 
 export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
     showDelay: 500,
@@ -18,12 +19,13 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
 })
 export class ConcordanceMonoComponent implements OnInit, OnDestroy {
 
-    constructor(private actions: ActionService) { }
+    constructor(private actions: ActionService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
         this.mode = this.actions.displayMode;
         this.showMeta = false;
         this.maxContextSize = 8;
+        this.corpora = this.corporaKeeper.getCorpora ();
         this.displayModeChanged = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
         this.showMetaChanged = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
     }
@@ -32,12 +34,13 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
         this.displayModeChanged.unsubscribe ();
     }
 
-    @Input() results: OutputLine[];
+    @Input() results: ConcordanceEntry[];
     mode: string;
     showMeta: boolean;
     displayModeChanged: Subscription;
     showMetaChanged: Subscription;
     maxContextSize: number;
+    corpora: Corpus[];
 
     cutContext (context: Word[], side: string) {
         console.log ('r:', this.results[0]['left_context'][0]);

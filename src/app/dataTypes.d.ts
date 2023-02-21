@@ -7,38 +7,39 @@ export interface Option {label: string, value: string}         // label - used f
 
 // structure of the positional attribute
 export interface PAttribute {
-    name: string,
-    type: attrType,
-    initValue: string | boolean,        // string for text types, boolean for checkboxes
-    description: string,                // placeholders for text types and labels for checkboxex
-    use?: boolean,                      // optional, as for now only ignoreDiacritics has use=false set by default
-    valueTrue?: string,                 // only for checkboxes: map boolean true value to the corresponding string
-    valueFalse?: string,                // as above, but for the false val
-    options?: Option[],                 // for select and multiselect
-    inResults?: boolean                 // whether to show the attribute value in a tooltip on the results page
+    name: string;
+    type: attrType;
+    initValue: string | boolean;        // string for text types, boolean for checkboxes
+    description: string;                // placeholders for text types and labels for checkboxex
+    use?: boolean;                      // optional, as for now only ignoreDiacritics has use=false set by default
+    valueTrue?: string;                 // only for checkboxes: map boolean true value to the corresponding string
+    valueFalse?: string;                // as above, but for the false val
+    options?: Option[];                 // for select and multiselect
+    inResults?: boolean;                 // whether to show the attribute value in a tooltip on the results page
 }
 
 export interface SAttribute {
-    name: string,
-    type: sattrType,
-    inResults: boolean,
-    context?: boolean
+    name: string;
+    description: string;
+    type: sattrType;
+    inResults: boolean;
+    context?: boolean;
 }
 
 export interface ConfigObj {
-    positionalAttributes: PAttribute[],
-    modifiers: PAttribute[],
-    structuralAttributes: SAttribute[],
-    filters: Filters[],
+    positionalAttributes: PAttribute[];
+    modifiers: PAttribute[];
+    structuralAttributes: SAttribute[];
+    filters: Filters[];
     corpora: Corpus[];
 }
 
 export interface QueryRow {        // TODO: should be in its own file?
     [key: string]: {
-        value: string,
+        value: string;
         modifiers: {
             [key: string]: boolean
-        },
+        };
         global?: boolean;
     }
 }
@@ -48,9 +49,9 @@ export interface Filters {
 }
 
 export interface Corpus {
-    name: string,
-    id: string,
-    corpus: string;
+    name: string;
+    id: string;
+    'cwb-corpus': string;
     primary: boolean;
 }
 
@@ -59,10 +60,11 @@ export interface Word {
     [key: string]: string;  // additional positional attributes
 }
 
-interface OutputLine {
-    left_context: Word[], 
-    match: Word[], 
-    right_context: Word[], 
-    id: string,
-    meta: {[key: string]: string};
+interface ConcordanceEntry {
+    left_context: Word[] 
+    match: Word[] 
+    right_context: Word[],
+    id: string
+    meta: {[key: string]: string}
+    aligned: {corpus_name: string, content: Word[]}[];
 }

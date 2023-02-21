@@ -26,6 +26,9 @@ import { ConcordanceMonoComponent } from './results/concordance-mono/concordance
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { MetaShowComponent } from './results/meta-show/meta-show.component';
+import { ConcordanceParallelComponent } from './results/concordance-parallel/concordance-parallel.component';
+import { HeaderComponent } from './header/header.component';
+import { ConfigCreatorComponent } from './config-creator/config-creator.component';
 
 @NgModule({
     declarations: [
@@ -42,7 +45,10 @@ import { MetaShowComponent } from './results/meta-show/meta-show.component';
         InfoBoxComponent,
         ActionBoxComponent,
         ConcordanceMonoComponent,
-        MetaShowComponent
+        MetaShowComponent,
+        ConcordanceParallelComponent,
+        HeaderComponent,
+        ConfigCreatorComponent
   ],
     imports: [
         BrowserModule,

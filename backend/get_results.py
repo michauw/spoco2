@@ -12,6 +12,7 @@ class Data (BaseModel):
     context: str
     to_show: List
     print_structures: List
+    corpora: List
 
 class ContextData (BaseModel):
     paths: Dict
@@ -50,19 +51,32 @@ async def get_results (data: Data):
         with open ('mock_results_html.txt', encoding = 'utf8') as fin:
             results = fin.read ()
         return results
+    query = primary
+    for aligned_query in data.query['secondary']:
+        query += f': {aligned_query["corpus"].upper ()} {aligned_query["query"]}'
 
     PATH = data.paths['cqp-path']
     REGISTRY = data.paths['registry-path']
-    CORPUS_NAME = data.query['primary']['corpus'].upper ()
+    for corpus in data.corpora:
+        if corpus['primary']:
+            CORPUS_NAME = corpus['cwb-corpus'].upper ()
+            break
+    else:
+        CORPUS_NAME = ''
     CONTEXT = f'set Context {data.context}' if data.context else ''
-    TO_SHOW = ' '.join (['+' + el for el in data.to_show])
+    to_show = data.to_show
+    for corpus in data.corpora:
+        if not corpus['primary']:
+            to_show.append (corpus['cwb-corpus'])
+    TO_SHOW = ' '.join (['+' + el for el in to_show])
     if TO_SHOW:
         TO_SHOW = 'show ' + TO_SHOW
     PRINT_STRUCTURES = ', '.join (data.print_structures)
     if PRINT_STRUCTURES:
         PRINT_STRUCTURES = f'set PrintStructures "{PRINT_STRUCTURES}"'
 
-    cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {PRINT_STRUCTURES}; set pm html; {primary};'
+    cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {PRINT_STRUCTURES}; set pm html; {query};'
+    print ('query:', cwb_query)
     command = [PATH, '-r', REGISTRY, cwb_query]
 
     # return StreamingResponse (itercqp (command), media_type = 'text/plain')
@@ -77,7 +91,12 @@ async def get_context (data: ContextData):
 
     PATH = data.paths['cqp-path']
     REGISTRY = data.paths['registry-path']
-    CORPUS_NAME = data.query['primary']['corpus'].upper ()
+    for corpus in data.corpora:
+        if corpus['primary']:
+            CORPUS_NAME = corpus['id'].upper ()
+            break
+    else:
+        CORPUS_NAME = ''
     CONTEXT = data.context
     WINDOW_SIZE = data.window_size
     TO_SHOW = ' '.join (['+' + el for el in data.to_show])

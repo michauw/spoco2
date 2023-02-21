@@ -131,7 +131,7 @@ export class QueryKeeperService {
         for (let corp of secondary) {
             let lang_query = this.getBasicQuery (corp.id);
             if (lang_query)
-                query += `:${corp.name} ${lang_query}`;
+                query += `:${corp['cwb-corpus'].toUpperCase ()} ${lang_query}`;
         }
 
         return query;   
@@ -143,13 +143,15 @@ export class QueryKeeperService {
 
         const primary = this.corporaKeeper.getPrimary ();
         let secondary: {'corpus': string, 'query': string}[] = [];
-        for (let corpus in this.corpusQueryRows) {
-            if (corpus === primary.id)
+        for (let corpus of this.corporaKeeper.getSecondary ()) {
+            if (corpus.id === primary.id)
                 continue;
-            secondary.push ({'corpus': corpus, 'query': this.corpusQuery[corpus]});
+            const aligned_query = this.corpusQuery[corpus.id];
+            if (aligned_query !== '' && aligned_query !== undefined)
+                secondary.push ({'corpus': corpus['cwb-corpus'], 'query': this.corpusQuery[corpus.id]});
         }
         return {
-            'primary': {'corpus': primary.corpus, 'query': this.corpusQuery[primary.id]},
+            'primary': {'corpus': primary['cwb-corpus'], 'query': this.corpusQuery[primary.id]},
             'secondary': secondary
         };
     }
