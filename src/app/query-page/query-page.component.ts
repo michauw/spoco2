@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, Data } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../config.service';
@@ -27,6 +27,16 @@ export class QueryPageComponent implements OnInit {
     
     search () {
         this.router.navigate (['/', 'results']);
+    }
+
+    @HostListener ('window:keyup.enter')
+    onEnter () {
+        this.search ();
+    }
+
+    @HostListener ('window:keyup.escape')
+    onEscape () {
+        this.clear ();
     }
 
 }
