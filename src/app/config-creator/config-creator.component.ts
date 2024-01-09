@@ -1,3 +1,8 @@
+/* 
+    Component that faciliates creation of the config file which can get complicated.
+
+*/
+
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';

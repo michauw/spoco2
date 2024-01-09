@@ -29,6 +29,8 @@ import { MetaShowComponent } from './results/meta-show/meta-show.component';
 import { ConcordanceParallelComponent } from './results/concordance-parallel/concordance-parallel.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
+import { PaginatorComponent } from './results/paginator/paginator.component';
+import { PreferencesResolver } from './preferences-resolver.service';
 
 @NgModule({
     declarations: [
@@ -48,7 +50,8 @@ import { ConfigCreatorComponent } from './config-creator/config-creator.componen
         MetaShowComponent,
         ConcordanceParallelComponent,
         HeaderComponent,
-        ConfigCreatorComponent
+        ConfigCreatorComponent,
+        PaginatorComponent
   ],
     imports: [
         BrowserModule,
@@ -60,7 +63,7 @@ import { ConfigCreatorComponent } from './config-creator/config-creator.componen
         BrowserAnimationsModule,
         MatTooltipModule
   ],
-  providers: [ConfigResolver],
+  providers: [ConfigResolver, PreferencesResolver],
   bootstrap: [SpocoComponent]
 })
 export class SpocoModule { }

@@ -34,6 +34,10 @@ export interface ConfigObj {
     corpora: Corpus[];
 }
 
+export interface PreferencesObj {
+    results_per_page: number;
+}
+
 export interface QueryRow {        // TODO: should be in its own file?
     [key: string]: {
         value: string;
@@ -67,4 +71,5 @@ interface ConcordanceEntry {
     id: string
     meta: {[key: string]: string}
     aligned: {corpus_name: string, content: Word[]}[];
+    selected: boolean;
 }

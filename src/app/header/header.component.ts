@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Data } from '@angular/router';
 import { ConfigService } from '../config.service';
+import { PreferencesObj } from '../dataTypes';
 
 @Component({
     selector: 'spoco-header',
@@ -16,10 +17,13 @@ export class HeaderComponent implements OnInit {
             (data: Data) => { 
                 this.name = data['config']['projectName'];
                 this.config.store ('projectName', this.name);
+                this.preferences = data['preferences'];
+                this.config.store ('preferences', this.preferences);
             });
             
     }
 
     name: string;
+    preferences: PreferencesObj;
 
 }

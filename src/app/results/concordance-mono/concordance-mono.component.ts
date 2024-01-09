@@ -26,19 +26,20 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
         this.showMeta = false;
         this.maxContextSize = 8;
         this.corpora = this.corporaKeeper.getCorpora ();
-        this.displayModeChanged = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
-        this.showMetaChanged = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
+        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
+        this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
     }
 
     ngOnDestroy(): void {
-        this.displayModeChanged.unsubscribe ();
+        this.displayModeChangedSub.unsubscribe ();
+        this.showMetaChangedSub.unsubscribe ();
     }
 
     @Input() results: ConcordanceEntry[];
     mode: string;
     showMeta: boolean;
-    displayModeChanged: Subscription;
-    showMetaChanged: Subscription;
+    displayModeChangedSub: Subscription;
+    showMetaChangedSub: Subscription;
     maxContextSize: number;
     corpora: Corpus[];
 
@@ -57,5 +58,4 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
 
         return lst;
     }
-
 }

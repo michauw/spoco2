@@ -24,7 +24,7 @@
             </span>
         </td>
         <td>
-            <input type="checkbox">
+            <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
         </td>
     </tr>
 </table>

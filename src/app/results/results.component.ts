@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActionService } from '../action.service';
 import { ConfigService } from '../config.service';
 import { CorporaKeeperService } from '../corpora-keeper.service';
 import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word } from '../dataTypes';
 import { QueryKeeperService } from '../query-keeper.service';
+import { Subscription } from 'rxjs';
+import { utils, writeFile, writeFileXLSX } from 'xlsx';
 
 
 interface Tmp {
@@ -16,7 +18,7 @@ interface Tmp {
     templateUrl: './results.component.html',
     styleUrls: ['./results.component.scss']
 })
-export class ResultsComponent implements OnInit {
+export class ResultsComponent implements OnInit, OnDestroy {
 
     private get_meta (text: string, mode: string) {
         const pattern_html = /&lt;(.*?) (.*?)&gt;/g
@@ -50,9 +52,52 @@ export class ResultsComponent implements OnInit {
         return words;
     }
 
+    private words_to_string (words: Word[]) {
+        return words.map (w => w.word).join (' ');
+    }
+
+    private get_aoa (entries: ConcordanceEntry[]) {
+        let data = [];
+        let header = ['Left Context', 'Match', 'Right Context'];
+        for (let aligned of entries[0].aligned)
+            header.push (aligned.corpus_name);
+        for (let meta_key in entries[0].meta)
+            header.push (meta_key);
+        data.push (header);
+        for (let entry of entries) {
+            let parsed_entry = [];
+            parsed_entry.push (this.words_to_string (entry.left_context));
+            parsed_entry.push (this.words_to_string (entry.match));
+            parsed_entry.push (this.words_to_string (entry.right_context));
+            for (let aligned of entry.aligned) {
+                parsed_entry.push (this.words_to_string (aligned.content));
+            }
+            for (let meta in entry.meta) {
+                parsed_entry.push (entry.meta[meta]);
+            }
+            data.push (parsed_entry);
+        }
+        return data;
+    }
+
+    private aoa_to_string (aoa_data: any, delimiter = '\t') {
+        let rows = [];
+        for (let row of aoa_data)
+            rows.push (row.join (delimiter));
+        
+        return rows.join ('\n');
+    }
+
+    private aoa_to_xlsx (aoa_data: any) {
+        const data = utils.aoa_to_sheet (aoa_data);
+        const workbook = utils.book_new ();
+        utils.book_append_sheet (workbook, data);
+        writeFileXLSX (workbook, 'results.xlsx');
+    }
+
     private parse_primary_line (line: string): ConcordanceEntry {
         const pattern = /^<LI><EM>(\d+):<\/EM>(?:<EM>(.*?)<\/EM>)? *(.*)<B>(.*)<\/B>(.*)/;
-        let line_out: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: []};
+        let line_out: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
         const match = pattern.exec (line);
         if (!match)
             return line_out;
@@ -83,7 +128,7 @@ export class ResultsComponent implements OnInit {
 
     private parse_parallel_line (batch: string[], no_of_corpora: number) {
         const pattern_aligned = /<P><B><EM>--&gt;(.*?)<\/EM><\/B>&nbsp;&nbsp;(.*)/
-        let parsed: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: []};
+        let parsed: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
         for (let i = 0; i < no_of_corpora; ++i) {
             const line = batch[i];
             if (i === 0) {
@@ -100,13 +145,12 @@ export class ResultsComponent implements OnInit {
         return parsed;
     }
 
-
     private parse_results (data: any, mode = 'html', no_of_corpora = 1) {
         let output: ConcordanceEntry[] = [];
         const corpusType = (no_of_corpora === 1) ? 'mono' : 'parallel';
         if (mode !== 'html')
             for (let line of data.split ('\n')) {
-                output.push ({left_context: [], match: line, right_context: [], id: '-1', meta: {}, aligned: []});
+                output.push ({left_context: [], match: line, right_context: [], id: '-1', meta: {}, aligned: [], selected: false });
             }
         else {
             const lines = data.split ('\n');
@@ -152,8 +196,8 @@ export class ResultsComponent implements OnInit {
             this.actions.setDisplayMode ('plain');
         if (!this.corpusType.length)
             this.corpusType = 'parallel';
+        this.sliceSize = this.config.fetch ('preferences')['results_per_page'];
         const corpora = this.corporaKeeper.getCorpora ();
-        console.log ('corpora:', corpora);
         let query = null;
         let mock = false;
         try {
@@ -162,8 +206,8 @@ export class ResultsComponent implements OnInit {
         catch (error) {
             mock = true;
         }
-        console.log ('query:', query);
         this.results = [];
+        this.currentSlice = [];
         this.results_fetched = false;
         this.pattrs_to_show = this.config.fetch ('positionalAttributes').filter ((el: PAttribute) => el.inResults).map ((el: PAttribute) => el.name);
         if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
@@ -197,19 +241,62 @@ export class ResultsComponent implements OnInit {
             
         }
         this.results = [];
-        // console.log ('data:', post_data);
         this.http.post ('http://localhost:8000/results', post_data).subscribe (responseData => {
             // console.log ('results:', responseData, typeof responseData);
             this.results = this.parse_results (responseData, 'html', corpora.length);
             this.results_fetched = true;
-            console.log ('parsed', this.results);
+            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         });
-  }
+        this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));
+    }
+    ngOnDestroy(): void {
+        this.downloadResultsSub.unsubscribe ();
+    }
 
-  results_fetched: Boolean;
-  results: ConcordanceEntry[];
-  pattrs_to_show: string[];
-  sattrs_to_show: SAttribute[];
-  corpusType: corpusType;
+    results_fetched: Boolean;
+    results: ConcordanceEntry[];
+    currentSlice: ConcordanceEntry[];
+    currentSliceBegin: number = 0;
+    sliceSize: number = 20;
+    pattrs_to_show: string[];
+    sattrs_to_show: SAttribute[];
+    corpusType: corpusType;
+    downloadResultsSub: Subscription; 
 
+    pageChanged (pageNumber: number) {
+        this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
+        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        window.scroll({ 
+            top: 0, 
+            left: 0, 
+            behavior: 'auto' 
+          });
+    }
+
+    downloadResults (mode: 'all' | 'checked', format: 'tsv' | 'xlsx' = 'xlsx') {
+        let toSave = [];
+        let file_data: any;
+        if (mode === 'all') {
+            toSave = this.results;
+        }
+        else {
+            toSave = this.results.filter (row => row.selected);
+        }
+        let aoa_data = this.get_aoa (toSave);
+        if (format === 'tsv') {
+            file_data = this.aoa_to_string (aoa_data);
+            const blob = new Blob ([file_data], {type: 'text/csv'});
+            let a = document.createElement ('a');
+            document.body.appendChild (a);
+            a.setAttribute ('style', 'display: none'); 
+            const url= window.URL.createObjectURL (blob);
+            a.href = url;
+            a.download = 'results.tsv';
+            a.click ();
+            document.body.removeChild (a);
+        }
+        else {
+            this.aoa_to_xlsx (aoa_data);
+        }
+    }
 }

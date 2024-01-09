@@ -19,7 +19,7 @@
             <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
         </td>
         <td>
-            <input type="checkbox">
+            <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
         </td>
     </tr>
 </table>

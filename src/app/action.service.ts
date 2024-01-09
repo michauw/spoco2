@@ -13,7 +13,7 @@ export class ActionService {
     showMeta: boolean = false;
     displayModeChanged = new Subject<resultsDisplayMode> ();
     showMetaChanged = new Subject<boolean> ();
-    downloadResults = new Subject<string> ();
+    downloadResults = new Subject< 'all' | 'checked' > ();
 
     setDisplayMode (dm: resultsDisplayMode) {
         this.displayMode = dm;
@@ -33,7 +33,7 @@ export class ActionService {
         this.showMetaChanged.next (this.showMeta);
     }
 
-    download (mode: string) {
+    download (mode: 'all' | 'checked') {
         this.downloadResults.next (mode);
     }
     

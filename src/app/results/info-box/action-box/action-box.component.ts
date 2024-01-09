@@ -36,4 +36,8 @@ export class ActionBoxComponent implements OnInit {
         this.info.enabled = !this.info.enabled;
     }
 
+    downloadResults (mode: 'all' | 'checked') {
+        this.actions.download (mode);
+    }
+
 }

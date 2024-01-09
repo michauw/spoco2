@@ -78,6 +78,7 @@ async def get_results (data: Data):
     cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {PRINT_STRUCTURES}; set pm html; {query};'
     print ('query:', cwb_query)
     command = [PATH, '-r', REGISTRY, cwb_query]
+    print ('command:', command)
 
     # return StreamingResponse (itercqp (command), media_type = 'text/plain')
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
