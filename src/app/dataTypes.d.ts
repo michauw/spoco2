@@ -1,8 +1,9 @@
-type attrType = 'text' | 'checkbox' | 'select' | 'multiselect'    // supported types for positional attributes input fields
-type sattrType = 'text' | 'number'
-type queryPageDisplayMode = 'mono' | 'ribbon' | 'select' | 'boxes' // supported display modes for the multicorpora version
-type resultsDisplayMode = 'plain' | 'kwic'
-type corpusType = 'mono' | 'spoken' | 'parallel'
+type attrType = 'text' | 'checkbox' | 'select' | 'multiselect';    // supported types for positional attributes input fields
+type sattrType = 'text' | 'number';
+type queryPageDisplayMode = 'mono' | 'ribbon' | 'select' | 'boxes'; // supported display modes for the multicorpora version
+type resultsDisplayMode = 'plain' | 'kwic';
+type corpusType = 'mono' | 'spoken' | 'parallel';
+type metaObj = {[key: string]: {value: string, description: string, show: boolean}};
 export interface Option {label: string, value: string}         // label - used for displaying, value - for cwb query
 
 // structure of the positional attribute
@@ -24,6 +25,7 @@ export interface SAttribute {
     type: sattrType;
     inResults: boolean;
     context?: boolean;
+    audio?: boolean;
 }
 
 export interface ConfigObj {
@@ -65,11 +67,11 @@ export interface Word {
 }
 
 interface ConcordanceEntry {
-    left_context: Word[] 
-    match: Word[] 
-    right_context: Word[],
-    id: string
-    meta: {[key: string]: string}
+    left_context: Word[] ;
+    match: Word[] ;
+    right_context: Word[];
+    id: string;
+    meta: metaObj;
     aligned: {corpus_name: string, content: Word[]}[];
     selected: boolean;
 }

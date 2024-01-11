@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActionService } from '../action.service';
 import { ConfigService } from '../config.service';
 import { CorporaKeeperService } from '../corpora-keeper.service';
-import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word } from '../dataTypes';
+import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word, metaObj } from '../dataTypes';
 import { QueryKeeperService } from '../query-keeper.service';
 import { Subscription } from 'rxjs';
 import { utils, writeFile, writeFileXLSX } from 'xlsx';
@@ -20,23 +20,23 @@ interface Tmp {
 })
 export class ResultsComponent implements OnInit, OnDestroy {
 
-    private get_meta (text: string, mode: string) {
+    private get_sattrs (text: string, mode: string) {
         const pattern_html = /&lt;(.*?) (.*?)&gt;/g
-        let meta: {[key: string]: string} = {};
+        let sattrs: metaObj = {};
         let match;
-        let end = 0;
         while ((match = pattern_html.exec (text)) !== null) {
-            let desc = match[1];
-            for (let sattr of this.sattrs_to_show) {
-                if (match[1] == sattr.name) {
-                    desc = sattr.description;
-                    break;
-                }
+            const name = match[1];
+            const value = match[2];
+            let description = '';
+            let show = false;
+            const pos = this.sattrs_to_show.map (el => el.name).indexOf (name);
+            if (pos !== -1) {
+                description = this.sattrs_to_show[pos].description;
+                show = true;
             }
-            meta[desc] = match[2];
+            sattrs[name] = {value: value, description: description, show: show};
         }
-
-        return meta;
+        return sattrs;
     }
 
     private to_words (text: string) {
@@ -101,9 +101,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
         const match = pattern.exec (line);
         if (!match)
             return line_out;
-        let meta = {};
+        let sattrs = {};
         if (match[2] !== undefined)
-            meta = this.get_meta (match[2], 'html')
+            sattrs = this.get_sattrs (match[2], 'html')
         let parts = match.slice (3);    // left_context ; match ; right context
         for (let ipart = 0; ipart < parts.length; ++ipart) {
             let words: Word[] = this.to_words (parts[ipart]);
@@ -120,7 +120,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
             }
         }
         line_out['id'] = match[1];
-        line_out['meta'] = meta;
+        line_out['meta'] = sattrs;
         line_out['aligned'] = [];
 
         return line_out;
@@ -213,9 +213,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
         if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
             this.pattrs_to_show = ['word'].concat (this.pattrs_to_show);
         const cwb_settings = this.config.fetch ('cwb');
-        this.sattrs_to_show = this.config.fetch ('structuralAttributes').filter ((el: SAttribute) => el.inResults || el.context);
-        let sattr_names = this.sattrs_to_show.map (el => el.name);
-        let post_data = {query: query, paths: cwb_settings.paths, context: cwb_settings.context, to_show: this.pattrs_to_show, print_structures: sattr_names, corpora: corpora};
+        const sattrs = this.config.fetch ('structuralAttributes');
+        let sattrs_cwb = sattrs.filter ((el: SAttribute) => el.inResults || el.context || el.audio).map ((el: SAttribute) => el.name);
+        this.sattrs_to_show = sattrs.filter ((el: SAttribute) => el.inResults);
+        let post_data = {query: query, paths: cwb_settings.paths, context: cwb_settings.context, to_show: this.pattrs_to_show, print_structures: sattrs_cwb, corpora: corpora};
         if (mock) {
             this.pattrs_to_show = ['word', 'lemma', 'tag'];
             const post_data_mono = {

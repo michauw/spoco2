@@ -31,6 +31,7 @@ import { HeaderComponent } from './header/header.component';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
 import { PaginatorComponent } from './results/paginator/paginator.component';
 import { PreferencesResolver } from './preferences-resolver.service';
+import { ConcordanceSpokenComponent } from './results/concordance-spoken/concordance-spoken.component';
 
 @NgModule({
     declarations: [
@@ -51,7 +52,8 @@ import { PreferencesResolver } from './preferences-resolver.service';
         ConcordanceParallelComponent,
         HeaderComponent,
         ConfigCreatorComponent,
-        PaginatorComponent
+        PaginatorComponent,
+        ConcordanceSpokenComponent
   ],
     imports: [
         BrowserModule,

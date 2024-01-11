@@ -1,7 +1,7 @@
 import { Component, OnInit, Injectable } from '@angular/core';
 import { ActivatedRoute, Data } from '@angular/router';
 import { ConfigService } from 'src/app/config.service';
-import { Corpus, corpusType, queryPageDisplayMode } from 'src/app/dataTypes';
+import { Corpus, SAttribute, corpusType, queryPageDisplayMode } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 
 @Component({
@@ -12,6 +12,10 @@ import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 
 @Injectable()
 export class CorpusBoxComponent implements OnInit {
+
+    corpora: Corpus[];
+    displayMode: queryPageDisplayMode;
+    corpusType: corpusType;
 
     constructor (private route: ActivatedRoute, private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
@@ -25,8 +29,11 @@ export class CorpusBoxComponent implements OnInit {
                 this.configService.store ('cwb', data['config']['cwb']);
                 this.corpora = data['config']['corpora'];
                 this.corpora = this.corporaKeeper.setCorpora (this.corpora);    // setCorpora changes corpora order (primary corpous goes first)
-                if (data['config'].hasOwnProperty ('audio')) {
-                    this.configService.store ('audio', data['config']['audio']);
+                const audio_attribute = this.is_spoken (data['config']['structuralAttributes']);
+                if (audio_attribute) {
+                    let audio_object = data['config']['audio'];
+                    audio_object['attribute'] = audio_attribute.name;
+                    this.configService.store ('audio', audio_object);
                     this.corpusType = 'spoken';
                 }
                 else {
@@ -50,7 +57,11 @@ export class CorpusBoxComponent implements OnInit {
         }
     }
 
-    corpora: Corpus[];
-    displayMode: queryPageDisplayMode;
-    corpusType: corpusType;
+    private is_spoken (sattributes: SAttribute[]) {
+        for (let sattr of sattributes) {
+            if (sattr.audio !== undefined)
+                return sattr;
+        }
+        return null;
+    }
 }

@@ -31,7 +31,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
+              {
+                "followSymlinks": true,
+                "input": "src/assets",
+                "glob": "**/*",
+                "output": "/assets/"
+              },
               "src/settings"
             ],
             "styles": [

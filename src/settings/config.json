@@ -2,51 +2,42 @@
     "projectName": "Basic Corpus",
     "corpora": 
         [
-            {"name": "Polish", "id": "boy", "corpus":"boy", "primary": true}
+            {"name": "Polish", "id": "Dariah", "cwb-corpus":"dariah", "primary": true}
         ],
     "positionalAttributes":
         [
             {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
             {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults":true},
-            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults":true},
-            {"name": "diff", "type": "checkbox", "initValue": false, "description": "differential", "valueTrue": "1", "valueFalse": ""},
-            {"name": "aspect", "type": "multiselect", "initValue": "", "description": "Aspect", 
-                "options": [{"label": "perfective", "value": "pf"}, {"label": "imperfective", "value": "ipf"}, {"label": "biaspect", "value": "bi"}]
-            },
-            {"name": "aspect2", "type": "select", "initValue": "", "description": "Aspect2", 
-            "options": [{"label": "perfective", "value": "pf"}, {"label": "imperfective", "value": "ipf"}, {"label": "biaspect", "value": "bi"}]
-             }
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults":true}
         ],
     "modifiers": 
-    [
-        {"name": "beginning", "type": "checkbox", "initValue": false, "description": "begins with"},
-        {"name": "ending", "type": "checkbox", "initValue": false, "description": "ends with"},
-        {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
-        {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
-    ],
+        [
+            {"name": "beginning", "type": "checkbox", "initValue": false, "description": "begins with"},
+            {"name": "ending", "type": "checkbox", "initValue": false, "description": "ends with"},
+            {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
+            {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
+        ],
     "structuralAttributes":
         [
-            {"name": "s_id", "type": "number", "inResults": false, "context": true},
-            {"name": "meta_autor", "type": "text", "inResults":true},
-            {"name": "meta_tytul", "type": "text", "inResults":true},
-            {"name": "meta_data_wydania", "type": "text", "inResults":true},
-            {"name": "meta_data_tlumaczenia", "type": "text", "inResults":true}
+            {"name": "phrase_id", "description":"Nr segmentu", "type": "number", "inResults": false, "context": true},
+            {"name": "phrase_file", "description":"Plik audio", "type": "text", "inResults":false, "audio": true}
         ],
+    "audio": 
+        {
+            "attribute": "phrase_id",
+            "path": "audioBits"
+        },
     "filters": [
         {"name": "main", "fields": [
             {"name": "main_field_1", "description": "main_field_1", "type": "select", "options": [{"label": "m_a", "value":1}, {"label": "m_b", "value":2}]},
             {"name": "main_field_2", "description": "main_field_2", "type": "multiselect", "options": [{"label": "m_x", "value":10}, {"label": "m_y", "value":20}]}
-        ]},
-        {"name": "secondary", "fields": [
-            {"name": "secondary_field_1", "description": "secondary_field_1", "type": "multiselect", "options": [{"label": "s_a", "value":100}, {"label": "s_b", "value":200}]},
-            {"name": "secondary_field_2", "description": "secondary_field_2", "type": "select", "options": [{"label": "s_x", "value":10000}, {"label": "s_y", "value":20000}]}
         ]}
     ],
     "cwb": {
         "paths": {
             "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
-            "registry-path":"D:\\Praca\\zasoby\\korpusy\\boy\\Registry"
+            "registry-path":"D:\\Praca\\IJP\\Dariah\\korpus_testowy\\Corpus\\Registry"
         },
-        "context":"s"
+        "context":"phrase"
     }
 }

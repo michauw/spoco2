@@ -12,6 +12,6 @@ export class ConfigResolver implements Resolve<ConfigObj> {
     constructor (private http: HttpClient) {}
 
     resolve (route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ConfigObj> | ConfigObj {
-        return this.http.get<ConfigObj> ('/settings/config_letrint.json');
+        return this.http.get<ConfigObj> ('/settings/config.json');
     }
 }
