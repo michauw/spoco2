@@ -110,13 +110,19 @@ def prepare_response (data: Data):
 
     command = get_command (data)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
-    return pr.communicate ()[0]
+    return pr.communicate ()[0].splitlines ()
+
+def prepare_response_stream (data: Data, batch_size = 1000)
+    command = get_command (data)
+    pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
+    results = pr.communicate ()[0].splitlines ()
+    for i in range (len (results) / batch_size):
+        yield results[i * batch_size : (i + 1) * batch_size]
 
 @backend.post ('/results')
 async def get_concordance (data: Data):
 
-    resp = prepare_response (data).splitlines ()
-    return resp
+    return StreamingResponse (prepare_response_stream (data), media_type = 'application/x-ndjson')
 
 @backend.post ('/collocations')
 async def get_collocations (data: CollocationData):
