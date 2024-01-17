@@ -17,34 +17,11 @@ export class CorpusBoxComponent implements OnInit {
     displayMode: queryPageDisplayMode;
     corpusType: corpusType;
 
-    constructor (private route: ActivatedRoute, private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
+    constructor (private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit (): void {
-        this.route.data.subscribe (     // loading settings from settings/config.json and storing them in configService (shouldn't be in the query-page component?)
-            (data: Data) => { 
-                this.configService.store ('positionalAttributes', data['config']['positionalAttributes']);
-                this.configService.store ('modifiers', data['config']['modifiers']);
-                this.configService.store ('structuralAttributes', data['config']['structuralAttributes']);
-                this.configService.store ('filters', data['config']['filters']);
-                this.configService.store ('cwb', data['config']['cwb']);
-                this.corpora = data['config']['corpora'];
-                this.corpora = this.corporaKeeper.setCorpora (this.corpora);    // setCorpora changes corpora order (primary corpous goes first)
-                const audio_attribute = this.is_spoken (data['config']['structuralAttributes']);
-                if (audio_attribute) {
-                    let audio_object = data['config']['audio'];
-                    audio_object['attribute'] = audio_attribute.name;
-                    this.configService.store ('audio', audio_object);
-                    this.corpusType = 'spoken';
-                }
-                else {
-                    if (this.corpora.length == 1)
-                        this.corpusType = 'mono';
-                    else
-                        this.corpusType = 'parallel';
-                }
-                this.configService.store ('corpusType', this.corpusType);
-            }
-        );
+        this.corpora = this.configService.fetch ('corpora'); 
+        this.corpora = this.corporaKeeper.getCorpora ();    
         switch (this.corpora.length) {    // default query page display mode depends on the number of corpora
             case 1: 
                 this.displayMode = 'mono';  // one corpus
@@ -55,13 +32,5 @@ export class CorpusBoxComponent implements OnInit {
             default:
                 this.displayMode = 'ribbon';    // three or more corpora: corpora ribbon
         }
-    }
-
-    private is_spoken (sattributes: SAttribute[]) {
-        for (let sattr of sattributes) {
-            if (sattr.audio !== undefined)
-                return sattr;
-        }
-        return null;
     }
 }

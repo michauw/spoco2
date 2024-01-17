@@ -1,8 +1,16 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { Router, Data } from '@angular/router';
+import { Router, Data, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../config.service';
 import { QueryKeeperService } from '../query-keeper.service';
+import { MatDialog } from '@angular/material/dialog';
+import { Corpus, PAttribute, SAttribute, corpusType } from '../dataTypes';
+import { SettingsBoxComponent } from './settings-box/settings-box.component';
+import { CorporaKeeperService } from '../corpora-keeper.service';
+import { faSliders } from '@fortawesome/free-solid-svg-icons';
+
+
+type collocationsSettings = {pattr: string, window_size: number, frequency_filter: number, pos: string[]};
 
 @Component({
     selector: 'spoco-query-page',
@@ -11,14 +19,61 @@ import { QueryKeeperService } from '../query-keeper.service';
 })
 export class QueryPageComponent implements OnInit {
 
+    collocations_settings: collocationsSettings;
+    pattrs: PAttribute[];
+    sliders = faSliders;
+    
     constructor (
         private router: Router, 
+        private route: ActivatedRoute,
         private http: HttpClient,
         private queryKeeper: QueryKeeperService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private corporaKeeper: CorporaKeeperService,
+        public dialog: MatDialog
     ) { }
     
     ngOnInit(): void {
+        this.route.data.subscribe (     // loading settings from settings/config.json and storing them in configService (shouldn't be in the query-page component?)
+            (data: Data) => {  
+                this.pattrs = data['config']['positionalAttributes'];
+                let used_numbers: number[] = [];
+                for (let ind = 0; ind < this.pattrs.length; ++ind) {
+                    if (this.pattrs[ind].position === undefined) {
+                        const pos = used_numbers.length ? Math.max.apply (Math, used_numbers) + 1 : 0;
+                        this.pattrs[ind].position = pos;
+                        used_numbers.push (pos);
+                    }
+                    else
+                        used_numbers.push (this.pattrs[ind].position);
+                }
+                this.configService.store ('positionalAttributes', this.pattrs);
+                this.configService.store ('modifiers', data['config']['modifiers']);
+                this.configService.store ('structuralAttributes', data['config']['structuralAttributes']);
+                this.configService.store ('filters', data['config']['filters']);
+                this.configService.store ('cwb', data['config']['cwb']);
+                let corpora: Corpus[] = data['config']['corpora'];
+                corpora = this.corporaKeeper.setCorpora (corpora);    // setCorpora changes corpora order (primary corpous goes first)
+                const audio_attribute = this.is_spoken (data['config']['structuralAttributes']);
+                let corpusType: corpusType;
+                if (audio_attribute) {
+                    let audio_object = data['config']['audio'];
+                    audio_object['attribute'] = audio_attribute.name;
+                    this.configService.store ('audio', audio_object);
+                    corpusType = 'spoken';
+                }
+                else {
+                    if (corpora.length == 1)
+                        corpusType = 'mono';
+                    else
+                        corpusType = 'parallel';
+                }
+                this.configService.store ('corpusType', corpusType);
+            }
+        );
+        const default_pattr = this.pattrs.map ((el: PAttribute) => el.name).includes ('lemma') ? 'lemma' : this.pattrs[0].name;
+        this.collocations_settings = {pattr: default_pattr, window_size: 3, frequency_filter: 5, pos: ['noun', 'verb', 'adj']};
+        this.configService.store ('collocations_settings', this.collocations_settings)
     }
 
     clear () {
@@ -26,7 +81,15 @@ export class QueryPageComponent implements OnInit {
       }
     
     search () {
-        this.router.navigate (['/', 'results']);
+        this.router.navigate (['/', 'results', 'concordance']);
+    }
+
+    collocations () {
+        this.router.navigate (['/', 'results', 'collocations']);
+    }
+
+    frequency_list () {
+        this.router.navigate (['/', 'results', 'frequency']);
     }
 
     @HostListener ('window:keyup.enter')
@@ -37,6 +100,42 @@ export class QueryPageComponent implements OnInit {
     @HostListener ('window:keyup.escape')
     onEscape () {
         this.clear ();
+    }
+
+    set_collocations_settings () {
+        const dialogRef = this.dialog.open (SettingsBoxComponent, {
+            data: {
+                    pattr: {description: 'Atrybut', type: 'select', value: this.collocations_settings.pattr, options: this.pattrs.map (el => { return {name: el.name, label: el.description}})},
+                    window_size: {description: 'Przedział', type: 'number', value: this.collocations_settings.window_size},
+                    frequency_filter: {description: 'Pomiń kolokacje rzadsze niż', type: 'number', value: this.collocations_settings.frequency_filter},
+                    pos: {
+                        description: 'Części mowy', 
+                        type: 'multiselect', 
+                        value_obj: {},
+                        options: [
+                            {name: 'noun', label: 'rzeczownik', initial_check: true}, 
+                            {name: 'verb', label: 'czasownik', initial_check: true}, 
+                            {name: 'adjective', label: 'przymiotnik', initial_check: true}, 
+                            {name: 'rest', label: 'pozostałe', initial_check: false}
+                        ]
+                    }
+            }
+        });
+        dialogRef.afterClosed ().subscribe (data => {
+            this.collocations_settings.pattr = data.pattr.value;
+            this.collocations_settings.window_size = data.window_size.value;
+            this.collocations_settings.frequency_filter = data.frequency_filter.value;
+            this.collocations_settings.pos = Object.keys (data.pos.value_obj).filter ((el) => {return data.pos.value_obj[el]});
+            this.configService.store ('collocations_settings', this.collocations_settings);
+        });
+    }
+
+    private is_spoken (sattributes: SAttribute[]) {
+        for (let sattr of sattributes) {
+            if (sattr.audio !== undefined)
+                return sattr;
+        }
+        return null;
     }
 
 }

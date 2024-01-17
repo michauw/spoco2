@@ -1,8 +1,11 @@
 <spoco-header></spoco-header>
 <div class="container-fluid">
     <spoco-corpus-box></spoco-corpus-box>
-    <div class="col-md-10 offset-md-1">
-        <button class="btn btn-success m-1" (click)="search()">Search</button>
-        <button class="btn btn-secondary" (click)="clear()">Clear</button>
+    <div class="col-md-10 offset-md-1 search-buttons">
+        <button class="btn btn-success" (click)="search()">Szukaj</button>
+        <button class="btn btn-success" (click)="collocations()">Kolokacje</button>
+        <fa-icon class="icon enlarge sliders" ngClass="exchange.enabled ? '' : 'gray'" [icon]="sliders" (click)="set_collocations_settings()" animation="spin"></fa-icon>
+        <button class="btn btn-success" (click)="frequency_list()">Lista frekwencyjna</button>
+        <button class="btn btn-secondary ml-4" (click)="clear()">Wyczyść</button>
     </div>
 </div>

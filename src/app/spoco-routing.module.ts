@@ -3,12 +3,12 @@ import { RouterModule, Routes } from '@angular/router';
 import { QueryPageComponent } from './query-page/query-page.component';
 import { ConfigResolver } from './config-resolver.service';
 import { PreferencesResolver } from './preferences-resolver.service';
-import { ResultsComponent } from './results/results.component';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
+import { ResultsPageComponent } from './results-page/results-page.component';
 
 const routes: Routes = [
     {path: '', component: QueryPageComponent, resolve: {config: ConfigResolver, preferences: PreferencesResolver }},
-    {path: 'results', component: ResultsComponent, resolve: {config: ConfigResolver }},
+    {path: 'results/:module', component: ResultsPageComponent, resolve: {config: ConfigResolver }},
     {path: 'config', component: ConfigCreatorComponent}
 ];
 

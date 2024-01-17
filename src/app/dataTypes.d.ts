@@ -12,6 +12,7 @@ export interface PAttribute {
     type: attrType;
     initValue: string | boolean;        // string for text types, boolean for checkboxes
     description: string;                // placeholders for text types and labels for checkboxex
+    position: number;                   // position of the attribute in a CWB output
     use?: boolean;                      // optional, as for now only ignoreDiacritics has use=false set by default
     valueTrue?: string;                 // only for checkboxes: map boolean true value to the corresponding string
     valueFalse?: string;                // as above, but for the false val
@@ -34,6 +35,7 @@ export interface ConfigObj {
     structuralAttributes: SAttribute[];
     filters: Filters[];
     corpora: Corpus[];
+    position: number;
 }
 
 export interface PreferencesObj {
@@ -74,4 +76,9 @@ interface ConcordanceEntry {
     meta: metaObj;
     aligned: {corpus_name: string, content: Word[]}[];
     selected: boolean;
+}
+
+export interface Query {
+    primary: {'corpus': string, 'query': string};
+    secondary: {'corpus': string, 'query': string}[];
 }

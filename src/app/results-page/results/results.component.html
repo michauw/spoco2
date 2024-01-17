@@ -1,0 +1,22 @@
+<div class="col-md-10 offset-md-1" *ngIf="module === 'concordance'">
+    <spoco-concordance-mono [results]="currentSlice" *ngIf="corpusType == 'mono'"></spoco-concordance-mono>
+    <spoco-concordance-spoken [results]="currentSlice" *ngIf="corpusType == 'spoken'"></spoco-concordance-spoken>
+    <spoco-concordance-parallel [results]="currentSlice" *ngIf="corpusType=='parallel'"></spoco-concordance-parallel>
+</div>
+<div class="col-md-6 offset-md-3" *ngIf="module === 'collocations'">
+    <table class="table results mt-4 collocations">
+        <tr class="header">
+            <th>Kolokat</th>
+            <th>Siła kolokacji</th>
+            <th>Frekwencja</th>
+        </tr>
+        <tr *ngFor="let col of currentSliceCol">
+            <td><span class="clickable-underline" (click)="get_concordance_from_collocation (col)">{{ col.token }}</span></td>
+            <td>{{ col.am | number: '1.2-2' }}</td>
+            <td>{{ col.freq | number: '1.0-0' }}</td>
+        </tr>
+    </table>
+</div>
+<div class="col-md-6 offset-md-5">
+    <spoco-paginator [resLen]="get_results_number()" [perPage]="sliceSize" *ngIf="results_fetched && get_results_number() > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
+</div>

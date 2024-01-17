@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Filters, Corpus, QueryRow } from './dataTypes';
+import { Filters, Corpus, QueryRow, Query } from './dataTypes';
 import { CorporaKeeperService } from './corpora-keeper.service';
 
 @Injectable({
@@ -137,7 +137,7 @@ export class QueryKeeperService {
         return query;   
     }
 
-    getCorpusQueries () {
+    getCorpusQueries (): Query {
 
         // return all the pairs of type corpus,query, separately for the primary and secondary corpora
 

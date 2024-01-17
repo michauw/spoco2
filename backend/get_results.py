@@ -5,6 +5,12 @@ from pydantic import BaseModel
 from typing import List, Dict
 import subprocess as sbp
 import time
+from . import stats
+import json
+
+class PAttribute (BaseModel):
+    name: str
+    position: int
 
 class Data (BaseModel):
     query: Dict
@@ -21,6 +27,17 @@ class ContextData (BaseModel):
     context: str
     print_structures: List
 
+class CollocationData (Data):
+    window_size: int
+    frequency_filter: int
+    # association_measure: str
+    grouping_attribute: PAttribute
+    pos: List
+
+class FrequencyData (Data):
+    grouping_attribute: PAttribute
+
+
 backend = FastAPI()
 origins = ['http://localhost:4200']
 backend.add_middleware(
@@ -31,13 +48,19 @@ backend.add_middleware(
     allow_headers=["*"],
 )
 
+FREQ_PATH = 'src/assets/freq.json'
+try:
+    with open (FREQ_PATH, encoding = 'utf8') as fjson:
+        freq = json.load (fjson)
+except FileNotFoundError:
+    import os
+    print (f'(get results) warning: frequency file not found ({FREQ_PATH})')
+ 
 @backend.get ('/')
 async def root ():
     return {'message': 'Hello SpoCo'}
 
-@backend.post ('/results')
-async def get_results (data: Data):
-
+def get_command (data: Data):
     def itercqp (command):
         with sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8') as pr:
             while True:
@@ -80,9 +103,39 @@ async def get_results (data: Data):
     command = [PATH, '-r', REGISTRY, cwb_query]
     print ('command:', command)
 
-    # return StreamingResponse (itercqp (command), media_type = 'text/plain')
+    return command
+
+def prepare_response (data: Data):
+
+    command = get_command (data)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
     return pr.communicate ()[0]
+
+@backend.post ('/results')
+async def get_concordance (data: Data):
+
+    return prepare_response (data)
+
+@backend.post ('/collocations')
+async def get_collocations (data: CollocationData):
+
+    response = prepare_response (data)
+    lines = response.splitlines ()[1:-2]  # in html mode first and two last lines should be discarded
+    pname = data.grouping_attribute.name
+    position = data.grouping_attribute.position
+    window_size = data.window_size
+    frequency_filter = data.frequency_filter
+    pos = data.pos
+
+    return stats.get_collocations (lines, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
+
+async def get_frequency_list (data: FrequencyData):
+
+    response = prepare_response (data)
+    lines = response.splitlines ()[1:-2]
+    position = data.grouping_attribute.position
+    
+    return stats.get_frequency (lines, pattr_no = position)
 
 @backend.post ('/context')
 async def get_context (data: ContextData):

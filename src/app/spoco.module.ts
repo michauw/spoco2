@@ -18,20 +18,25 @@ import { CommonModule } from '@angular/common';
 import { FiltersComponent } from './query-page/corpus-box/basic-query/filters/filters.component';
 import { SelectComponent } from './query-page/corpus-box/basic-query/select/select.component';
 import { CorporaRibbonComponent } from './query-page/corpus-box/corpora-ribbon/corpora-ribbon.component';
-import { ResultsComponent } from './results/results.component';
-import { InfoBoxComponent } from './results/info-box/info-box.component';
-import { ActionBoxComponent } from './results/info-box/action-box/action-box.component';
+import { ResultsPageComponent } from './results-page/results-page.component';
+import { ResultsComponent } from './results-page/results/results.component';
+import { InfoBoxComponent } from './results-page/results/info-box/info-box.component';
+import { ActionBoxComponent } from './results-page/results/info-box/action-box/action-box.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { ConcordanceMonoComponent } from './results/concordance-mono/concordance-mono.component';
+import { ConcordanceMonoComponent } from './results-page/results/concordance-mono/concordance-mono.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import { MetaShowComponent } from './results/meta-show/meta-show.component';
-import { ConcordanceParallelComponent } from './results/concordance-parallel/concordance-parallel.component';
+import { MetaShowComponent } from './results-page/results/meta-show/meta-show.component';
+import { ConcordanceParallelComponent } from './results-page/results/concordance-parallel/concordance-parallel.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
-import { PaginatorComponent } from './results/paginator/paginator.component';
+import { PaginatorComponent } from './results-page/results/paginator/paginator.component';
 import { PreferencesResolver } from './preferences-resolver.service';
-import { ConcordanceSpokenComponent } from './results/concordance-spoken/concordance-spoken.component';
+import { ConcordanceSpokenComponent } from './results-page/results/concordance-spoken/concordance-spoken.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { SettingsBoxComponent } from './query-page/settings-box/settings-box.component';
+import {MatTabsModule} from '@angular/material/tabs';
+
 
 @NgModule({
     declarations: [
@@ -44,6 +49,7 @@ import { ConcordanceSpokenComponent } from './results/concordance-spoken/concord
         FiltersComponent,
         SelectComponent,
         CorporaRibbonComponent,
+        ResultsPageComponent,
         ResultsComponent,
         InfoBoxComponent,
         ActionBoxComponent,
@@ -53,7 +59,8 @@ import { ConcordanceSpokenComponent } from './results/concordance-spoken/concord
         HeaderComponent,
         ConfigCreatorComponent,
         PaginatorComponent,
-        ConcordanceSpokenComponent
+        ConcordanceSpokenComponent,
+        SettingsBoxComponent
   ],
     imports: [
         BrowserModule,
@@ -63,7 +70,9 @@ import { ConcordanceSpokenComponent } from './results/concordance-spoken/concord
         NgMultiSelectDropDownModule.forRoot(),
         FontAwesomeModule,
         BrowserAnimationsModule,
-        MatTooltipModule
+        MatTooltipModule,
+        MatDialogModule,
+        MatTabsModule
   ],
   providers: [ConfigResolver, PreferencesResolver],
   bootstrap: [SpocoComponent]
