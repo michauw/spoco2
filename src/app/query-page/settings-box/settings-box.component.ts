@@ -2,13 +2,18 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
+type fieldData = {
+    type: 'select' | 'number' | 'multiselect',
+    value?: string | number,
+    value_obj?: {[key: string]: boolean},
+    description: string,
+    options?: {name: string, label: string, initial_check?: boolean}[]
+}
+
 export interface DialogData {
     [key: string]: {
-        type: 'select' | 'number' | 'multiselect',
-        value?: string | number,
-        value_obj?: {[key: string]: boolean},
-        description: string,
-        options?: {name: string, label: string, initial_check?: boolean}[]
+        header: string,
+        fields: {[key: string]: fieldData}
     }
 }
 
@@ -28,24 +33,28 @@ export class SettingsBoxComponent implements OnInit {
 
     ngOnInit(): void {
         let controls: {[key: string]: FormControl} = {};
-        for (let field_name in this.data) {
-            if (this.data[field_name].type !== 'multiselect')
-                controls[field_name] = new FormControl (this.data[field_name].value);
-            else {
-                for (let option_checkbox of this.data[field_name].options!) {
-                    controls[`${field_name}_${option_checkbox.name}`] = new FormControl (option_checkbox.initial_check);
+        for (let group_name in this.data) {
+            for (let field_name in this.data[group_name].fields) {
+                const field: fieldData = this.data[group_name]['fields'][field_name];
+                if (field.type !== 'multiselect')
+                    controls[`${group_name}--${field_name}`] = new FormControl (field.value);
+                else {
+                    for (let option_checkbox of field.options!) {
+                        controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new FormControl (option_checkbox.initial_check);
+                    }
                 }
             }
         }
+        
         this.settingsForm = new FormGroup (controls);
         this.settingsForm.valueChanges.subscribe (data => {
             for (let key in data) {
-                if (this.data[key] !== undefined)
-                    this.data[key].value = data[key];
+                const parts = key.split ('--');
+                if (this.data[parts[0]].fields[parts[1]] !== undefined)
+                    this.data[parts[0]].fields[parts[1]].value = data[key];
                 else {
-                    const parts = key.split ('_');
-                    if (this.data[parts[0]].value_obj !== undefined)
-                        this.data[parts[0]].value_obj![parts[1]] = data[key];
+                    if (this.data[parts[0]].fields[parts[1]].value_obj !== undefined)
+                        this.data[parts[0]].fields[parts[1]].value_obj![parts[2]] = data[key];
                 }
             }
         });

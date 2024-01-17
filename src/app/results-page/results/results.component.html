@@ -17,6 +17,18 @@
         </tr>
     </table>
 </div>
+<div class="col-md-6 offset-md-3" *ngIf="module === 'frequency'">
+    <table class="table results mt-4 collocations">
+        <tr class="header">
+            <th>Dopasowanie</th>
+            <th>Frekwencja</th>
+        </tr>
+        <tr *ngFor="let fr of currentSliceFreq">
+            <td><span class="clickable-underline" (click)="get_concordance_from_freq (fr)">{{ fr.token }}</span></td>
+            <td>{{ fr.freq | number: '1.0-0' }}</td>
+        </tr>
+    </table>
+</div>
 <div class="col-md-6 offset-md-5">
     <spoco-paginator [resLen]="get_results_number()" [perPage]="sliceSize" *ngIf="results_fetched && get_results_number() > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
 </div>

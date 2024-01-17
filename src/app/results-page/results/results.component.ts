@@ -25,6 +25,7 @@ interface postData {
 }
 
 type collocation = {'token': string, 'am': number, 'freq': number};
+type frequency = {'token': string, 'freq': number};
 type results_data = {'query': string, 'number_of_results': number}
 
 @Component({
@@ -39,10 +40,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
     @Output() results_added_event: EventEmitter<modules> = new EventEmitter<modules> ();
 
     collocations: collocation[];
+    frequency: frequency[];
     results_fetched: Boolean;
     results: ConcordanceEntry[];
     currentSlice: ConcordanceEntry[];
     currentSliceCol: collocation[];
+    currentSliceFreq: frequency[];
     currentSliceBegin: number = 0;
     sliceSize: number = 20;
     pattrs: PAttribute[];
@@ -81,6 +84,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this.original_query = post_data.query.primary.query;
         this.results = [];
         this.collocations = [];
+        this.frequency = [];
         let url: string = '';
         if (this.module === 'concordance')
             url = 'http://localhost:8000/results';
@@ -98,6 +102,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
             else if (this.module === 'collocations') {
                 this.collocations = this.parse_collocations (responseData);
                 this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+            }
+            else if (this.module === 'frequency') {
+                this.frequency = this.parse_frequency (responseData);
+                this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
             }
             this.results_fetched = true;
             this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
@@ -139,12 +147,15 @@ export class ResultsComponent implements OnInit, OnDestroy {
     get_concordance_from_collocation (collocation: collocation) {
         const corpora = this.corporaKeeper.getCorpora ();
         const cs = this.config.fetch ('collocations_settings');
-        let post_data = this.get_post_data (corpora);
         const gap = cs.window_size ? `[]{0,${cs.window_size}}` : '';
         const col_query = `[${cs.pattr}="${collocation.token}"]${gap}${this.original_query}|${this.original_query}${gap}[${cs.pattr}="${collocation.token}"]`;
         let query = this.queryKeeper.getCorpusQueries ();
         query.primary.query = col_query;
         this.queryKeeper.setQuery (col_query, query.primary.corpus);
+        this.results_added_event.emit ('concordance');
+    }
+
+    get_concordance_from_freq (freq: frequency) {
         this.results_added_event.emit ('concordance');
     }
 
@@ -160,6 +171,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
             return this.results.length;
         if (this.module === 'collocations')
             return this.collocations.length;
+        if (this.module === 'frequency')
+            return this.frequency.length;
         return 0;
     }
 
@@ -169,6 +182,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
             this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         else if (this.module === 'collocations')
             this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        else if (this.module === 'frequency')
+            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         window.scroll({ 
             top: 0, 
             left: 0, 
@@ -224,6 +239,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
             post_data['frequency_filter'] = collocations_settings['frequency_filter'];
             post_data['grouping_attribute'] = {name: collocations_settings['pattr'], position: this.get_pattr_position (collocations_settings['pattr'])};
             post_data['pos'] = collocations_settings['pos'];
+        }
+        else if (this.module === 'frequency') {
+            const frequency_settings = this.config.fetch ('frequency_settings');
+            post_data['grouping_attribute'] = {name: frequency_settings['pattr'], position: this.get_pattr_position (frequency_settings['pattr'])};
+            post_data['frequency_filter'] = frequency_settings['frequency_filter'];
         }
         
         return post_data;
@@ -354,15 +374,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return parsed;
     }
 
-    private parse_results (data: any, mode = 'html', no_of_corpora = 1) {
+    private parse_results (lines: any, mode = 'html', no_of_corpora = 1) {
         let output: ConcordanceEntry[] = [];
         const corpusType = (no_of_corpora === 1) ? 'mono' : 'parallel';
         if (mode !== 'html')
-            for (let line of data.split ('\n')) {
+            for (let line of lines) {
                 output.push ({left_context: [], match: line, right_context: [], id: '-1', meta: {}, aligned: [], selected: false });
             }
         else {
-            const lines = data.split ('\n');
             let parallel_batch = [];
             for (let i = 1; i < lines.length - 2; ++i) {
                 let line = lines[i];
@@ -389,9 +408,17 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
 
     private parse_collocations (data: any) {
-        let output: {'token': string, 'am': number, 'freq': number}[] = [];
+        let output: collocation[] = [];
         for (let entry of data) {
             output.push ({'token': entry[0], 'am': entry[1], 'freq': entry[2]});
+        }
+        return output;
+    }
+
+    private parse_frequency (data: any) {
+        let output: frequency[] = [];
+        for (let entry of data) {
+            output.push ({'token': entry[0], 'freq': entry[1]});
         }
         return output;
     }

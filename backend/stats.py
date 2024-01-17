@@ -67,9 +67,9 @@ def get_collocations (lines, pattr_no, freq, window_size = 1, frequency_threshol
     
     return sorted ([(el[0], el[1][0], el[1][1]) for el in res.items ()], key = lambda x: -x[1])
 
-def get_frequency (lines, pattr_no):
-    patttern_html = r'.*</EM><B>(.*?)</B>'
-    res = defaultdict
+def get_frequency (lines, pattr_no, frequency_filter = 0):
+    patttern_html = r'.*</EM>.*<B>(.*?)</B>'
+    res = defaultdict (int)
     for line in lines:
         try:
             data = re.search (patttern_html, line).group (1)
@@ -77,8 +77,11 @@ def get_frequency (lines, pattr_no):
             continue
         element = data.split ('/')[pattr_no]
         res[element] += 1
+    res = [el for el in sorted (res.items (), key = lambda x: -x[1]) if el[1] >= frequency_filter]
+    print ('freq:', len (lines), pattr_no, frequency_filter, len (res))
     
-    return sorted (res.items (), key = lambda x: -x[1])
+    return res
+    
 
 
 

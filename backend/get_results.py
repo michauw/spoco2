@@ -36,6 +36,7 @@ class CollocationData (Data):
 
 class FrequencyData (Data):
     grouping_attribute: PAttribute
+    frequency_filter: int
 
 
 backend = FastAPI()
@@ -114,7 +115,8 @@ def prepare_response (data: Data):
 @backend.post ('/results')
 async def get_concordance (data: Data):
 
-    return prepare_response (data)
+    resp = prepare_response (data).splitlines ()
+    return resp
 
 @backend.post ('/collocations')
 async def get_collocations (data: CollocationData):
@@ -129,13 +131,15 @@ async def get_collocations (data: CollocationData):
 
     return stats.get_collocations (lines, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
 
+@backend.post ('/frequency')
 async def get_frequency_list (data: FrequencyData):
 
     response = prepare_response (data)
     lines = response.splitlines ()[1:-2]
     position = data.grouping_attribute.position
+    frequency_filter = data.frequency_filter
     
-    return stats.get_frequency (lines, pattr_no = position)
+    return stats.get_frequency (lines, pattr_no = position, frequency_filter = frequency_filter)
 
 @backend.post ('/context')
 async def get_context (data: ContextData):
