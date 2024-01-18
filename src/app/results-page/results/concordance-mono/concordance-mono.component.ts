@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActionService } from 'src/app/action.service';
 import { ConcordanceEntry, Corpus, Word, metaObj } from 'src/app/dataTypes';
-import {MAT_LEGACY_TOOLTIP_DEFAULT_OPTIONS as MAT_TOOLTIP_DEFAULT_OPTIONS, MatLegacyTooltipDefaultOptions as MatTooltipDefaultOptions} from '@angular/material/legacy-tooltip';
+import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from '@angular/material/tooltip';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 
 export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
