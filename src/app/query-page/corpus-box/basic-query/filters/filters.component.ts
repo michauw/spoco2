@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { Subscription } from 'rxjs';
 import { ConfigService } from 'src/app/config.service';
@@ -20,17 +20,17 @@ export class FiltersComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.groups = this.configService.fetch ('filters');
         this.active_group = 0;
-        let formGroups: { [key: string]: FormGroup } = {};
+        let formGroups: { [key: string]: UntypedFormGroup } = {};
         for (let group of this.groups) {
             this.filtersOptions[group.name] = {};
-            let controls: { [key: string]: FormControl } = {};
+            let controls: { [key: string]: UntypedFormControl } = {};
             for (let field of group.fields) {
-                controls[field.name] = new FormControl ();
+                controls[field.name] = new UntypedFormControl ();
                 this.filtersOptions[group.name][field.name] = field.options;
             }
-            formGroups[group.name] = new FormGroup (controls);
+            formGroups[group.name] = new UntypedFormGroup (controls);
         }
-        this.filtersForm = new FormGroup (formGroups);
+        this.filtersForm = new UntypedFormGroup (formGroups);
         this.currentCorpus = this.corporaKeeper.getCurrent ();
 
         this.filtersForm.valueChanges.subscribe(data => {
@@ -63,7 +63,7 @@ export class FiltersComponent implements OnInit, OnDestroy {
     currentCorpusChanged: Subscription;
     groups: {name: string, fields: PAttribute[]}[];
     filtersOptions: {[key: string]: {[key: string]: Option[] | undefined}} = {};
-    filtersForm: FormGroup;
+    filtersForm: UntypedFormGroup;
     active_group: number;
     multiselectSettings: IDropdownSettings = {
         singleSelection: false,

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Corpus } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
@@ -41,8 +41,8 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
         this.corpusChanged.unsubscribe ();
     }
 
-    cqpQueryForm: FormGroup = new FormGroup ({
-        'cqp': new FormControl (null)
+    cqpQueryForm: UntypedFormGroup = new UntypedFormGroup ({
+        'cqp': new UntypedFormControl (null)
     });
     corpus: Corpus;
     corpusChanged: Subscription;

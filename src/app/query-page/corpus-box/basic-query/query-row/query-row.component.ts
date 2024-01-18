@@ -3,7 +3,7 @@
 **/
 
 import { Component, OnInit, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { QueryKeeperService } from '../../../../query-keeper.service';
 import { Corpus, PAttribute } from '../../../../dataTypes.d';
@@ -108,7 +108,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
     constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
-        let fields: { [key: string]: FormGroup } = {};
+        let fields: { [key: string]: UntypedFormGroup } = {};
         this.positionalAttributes = this.configService.fetch ('positionalAttributes');
         this.modifiers = this.configService.fetch ('modifiers');
         this.positionalAttributes = this.positionalAttributes.filter (el => {return el.use === undefined || el.use});     // filter out fields with use=false
@@ -118,19 +118,19 @@ export class QueryRowComponent implements OnInit, OnDestroy {
             xl: Math.max (Math.round (12 / this.positionalAttributes.filter (el => { return el.type === 'text' }).length), 2)
         };
         for (let elem of this.positionalAttributes) {
-            let modifiers: { [key: string]: FormControl } = {};
+            let modifiers: { [key: string]: UntypedFormControl } = {};
             for (let mod_elem of this.modifiers) {
-                modifiers[mod_elem.name] = new FormControl (mod_elem.initValue);
+                modifiers[mod_elem.name] = new UntypedFormControl (mod_elem.initValue);
             }
-            fields[elem.name] = new FormGroup ({
-                'value': new FormControl (elem.initValue),
-                'modifiers': new FormGroup (modifiers) 
+            fields[elem.name] = new UntypedFormGroup ({
+                'value': new UntypedFormControl (elem.initValue),
+                'modifiers': new UntypedFormGroup (modifiers) 
             });
             if (elem.type === 'multiselect') {
                 this.multiselectOptions[elem.name] = elem.options;
             }
         }
-        this.queryRowForm = new FormGroup (fields);
+        this.queryRowForm = new UntypedFormGroup (fields);
         this.currentGroup = this.positionalAttributes[0].name;    // at the beginning the current group is the first one
         this.corpus = this.corporaKeeper.getCurrent ();
         this.adjusted = false;
@@ -171,7 +171,7 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         xl: number
     };
 
-    queryRowForm: FormGroup;   // stores the form
+    queryRowForm: UntypedFormGroup;   // stores the form
     currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
     @Input() queryRowIndex: number = 0;   // there can be multiple query rows, we need to know which one it is
     valueChanged: Subscription;   // needed for clearing the form

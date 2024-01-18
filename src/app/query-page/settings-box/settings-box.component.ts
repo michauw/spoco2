@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 type fieldData = {
@@ -24,7 +24,7 @@ export interface DialogData {
 })
 export class SettingsBoxComponent implements OnInit {
 
-    settingsForm: FormGroup;
+    settingsForm: UntypedFormGroup;
 
     constructor(
         public dialogRef: MatDialogRef<SettingsBoxComponent>,
@@ -32,21 +32,21 @@ export class SettingsBoxComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        let controls: {[key: string]: FormControl} = {};
+        let controls: {[key: string]: UntypedFormControl} = {};
         for (let group_name in this.data) {
             for (let field_name in this.data[group_name].fields) {
                 const field: fieldData = this.data[group_name]['fields'][field_name];
                 if (field.type !== 'multiselect')
-                    controls[`${group_name}--${field_name}`] = new FormControl (field.value);
+                    controls[`${group_name}--${field_name}`] = new UntypedFormControl (field.value);
                 else {
                     for (let option_checkbox of field.options!) {
-                        controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new FormControl (option_checkbox.initial_check);
+                        controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new UntypedFormControl (option_checkbox.initial_check);
                     }
                 }
             }
         }
         
-        this.settingsForm = new FormGroup (controls);
+        this.settingsForm = new UntypedFormGroup (controls);
         this.settingsForm.valueChanges.subscribe (data => {
             for (let key in data) {
                 const parts = key.split ('--');

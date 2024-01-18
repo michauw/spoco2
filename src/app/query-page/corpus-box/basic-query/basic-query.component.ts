@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Corpus } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
@@ -20,14 +20,14 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
     @Input() primaryCorpus: Corpus;
     @Input() corpora: Corpus[];
 
-    corpusSelect: FormGroup;
+    corpusSelect: UntypedFormGroup;
     private subscriptions: Subscription[];
 
     ngOnInit(): void {
         this.queryRowNumber = 1;
-        this.corpusSelect = new FormGroup({
-            'currentCorpus': new FormControl(this.currentCorpus),
-            'primaryCorpus': new FormControl(this.primaryCorpus)
+        this.corpusSelect = new UntypedFormGroup({
+            'currentCorpus': new UntypedFormControl(this.currentCorpus),
+            'primaryCorpus': new UntypedFormControl(this.primaryCorpus)
         });
 
         this.corpusSelect.valueChanges.subscribe(data => {

@@ -5,7 +5,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class ConfigCreatorComponent implements OnInit {
 
-    constructor(private fb: FormBuilder, private http: HttpClient) { }
+    constructor(private fb: UntypedFormBuilder, private http: HttpClient) { }
 
     ngOnInit(): void {
         this.addCorpus ();
@@ -35,15 +35,15 @@ export class ConfigCreatorComponent implements OnInit {
     private sub: Subscription;
 
     get corpora () {
-        return this.configForm.controls['corpora'] as FormArray;
+        return this.configForm.controls['corpora'] as UntypedFormArray;
     }
 
     get pattrs () {
-        return this.configForm.controls['pattrs'] as FormArray;
+        return this.configForm.controls['pattrs'] as UntypedFormArray;
     }
 
     get sattrs () {
-        return this.configForm.controls['sattrs'] as FormArray;
+        return this.configForm.controls['sattrs'] as UntypedFormArray;
     }
 
 
