@@ -3,7 +3,7 @@ import { Router, Data, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../config.service';
 import { QueryKeeperService } from '../query-keeper.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Corpus, PAttribute, SAttribute, corpusType } from '../dataTypes';
 import { SettingsBoxComponent } from './settings-box/settings-box.component';
 import { CorporaKeeperService } from '../corpora-keeper.service';

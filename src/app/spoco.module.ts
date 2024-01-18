@@ -25,7 +25,7 @@ import { ActionBoxComponent } from './results-page/results/info-box/action-box/a
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ConcordanceMonoComponent } from './results-page/results/concordance-mono/concordance-mono.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
 import { MetaShowComponent } from './results-page/results/meta-show/meta-show.component';
 import { ConcordanceParallelComponent } from './results-page/results/concordance-parallel/concordance-parallel.component';
 import { HeaderComponent } from './header/header.component';
@@ -33,9 +33,9 @@ import { ConfigCreatorComponent } from './config-creator/config-creator.componen
 import { PaginatorComponent } from './results-page/results/paginator/paginator.component';
 import { PreferencesResolver } from './preferences-resolver.service';
 import { ConcordanceSpokenComponent } from './results-page/results/concordance-spoken/concordance-spoken.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { SettingsBoxComponent } from './query-page/settings-box/settings-box.component';
-import {MatTabsModule} from '@angular/material/tabs';
+import {MatLegacyTabsModule as MatTabsModule} from '@angular/material/legacy-tabs';
 
 
 @NgModule({
