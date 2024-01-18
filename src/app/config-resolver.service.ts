@@ -1,13 +1,13 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from "@angular/router";
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from "@angular/router";
 import { Observable } from "rxjs";
 import { ConfigObj } from "./dataTypes";
 
 @Injectable({
     providedIn: 'root'
 })
-export class ConfigResolver implements Resolve<ConfigObj> {
+export class ConfigResolver  {
 
     constructor (private http: HttpClient) {}
 
