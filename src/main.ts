@@ -9,7 +9,5 @@ if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(SpocoModule, {
-  providers: [provideHttpClient (withFetch())]
-})
+platformBrowserDynamic().bootstrapModule(SpocoModule)
   .catch(err => console.error(err));
