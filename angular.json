@@ -85,10 +85,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "spoco:build:production"
+              "buildTarget": "spoco:build:production"
             },
             "development": {
-              "browserTarget": "spoco:build:development"
+              "buildTarget": "spoco:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -96,7 +96,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "spoco:build"
+            "buildTarget": "spoco:build"
           }
         },
         "test": {
