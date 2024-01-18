@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withFetch } from '@angular/common/http';
 
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 
@@ -74,7 +74,7 @@ import {MatTabsModule} from '@angular/material/tabs';
         MatDialogModule,
         MatTabsModule
   ],
-  providers: [ConfigResolver, PreferencesResolver],
+  providers: [ConfigResolver, PreferencesResolver, provideHttpClient(withFetch())],
   bootstrap: [SpocoComponent]
 })
 export class SpocoModule { }

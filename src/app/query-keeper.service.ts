@@ -87,7 +87,8 @@ export class QueryKeeperService {
         let queryFilters: string = '';
         let filtersArray: string[] = [];
         for (let key in this.filters) {
-            filtersArray.push (`match.${key}="${this.filters[key]}"`);
+            if (this.filters[key])
+                filtersArray.push (`match.${key}="${this.filters[key]}"`);
         }
         if (filtersArray.length) {
             queryFilters += '::' + filtersArray.join (' & ');
@@ -109,15 +110,18 @@ export class QueryKeeperService {
 
         // constructs final CQP query
 
-        const corpusQueryRows = this.corpusQueryRows[corpus];
-        if (corpusQueryRows === undefined)
-            return '';
+        let corpusQueryRows = this.corpusQueryRows[corpus];
+        const filtersPart: string = this.getFilters ();
         let query: string = '';
+
+        if (corpusQueryRows === undefined && !filtersPart) 
+            return '';
+        else if (filtersPart)
+            corpusQueryRows = [];
         for (let queryRow of corpusQueryRows)
             query += this.getRowQuery (queryRow);
 
-        let filtersPart: string = this.getFilters ();
-        if (query === '' && filtersPart !== '')
+        if (query === '')
             query = '[]';
         query += filtersPart;
         

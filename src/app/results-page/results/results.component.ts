@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActionService } from '../../action.service';
 import { ConfigService } from '../../config.service';
@@ -38,6 +38,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     @Input() module: modules;
     @Output() results_fetched_event: EventEmitter<results_data> = new EventEmitter<results_data> ()
     @Output() results_added_event: EventEmitter<modules> = new EventEmitter<modules> ();
+    @Output() results_updated_event: EventEmitter<number> = new EventEmitter<number> ();
 
     collocations: collocation[];
     frequency: frequency[];
@@ -54,6 +55,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     corpusType: corpusType;
     downloadResultsSub: Subscription; 
     original_query: string;
+    loading_response: boolean;
 
     constructor(
         private queryKeeper: QueryKeeperService, 
@@ -66,6 +68,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
 
+        this.loading_response = true;
         this.corpusType = this.config.fetch ('corpusType');
         if (this.corpusType == 'mono')
             this.actions.setDisplayMode ('kwic');
@@ -93,22 +96,39 @@ export class ResultsComponent implements OnInit, OnDestroy {
         }
         else if (this.module === 'frequency')
             url = 'http://localhost:8000/frequency';
-        this.http.post (url, post_data).subscribe (responseData => {
-            // console.log ('results:', responseData, typeof responseData);
-            if (this.module === 'concordance') {
-                this.results = this.parse_results (responseData, 'html', corpora.length);
-                this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        let pos = 0;
+        this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true}).subscribe ({
+            next: 
+                (event: HttpEvent<string>) => {
+                    if (event.type === HttpEventType.DownloadProgress) {
+                        // console.log ('response progress:', event, (event as HttpDownloadProgressEvent).partialText!.length);
+                        const ev = (
+                            event as HttpDownloadProgressEvent
+                          );
+                        const n = ev.partialText!.lastIndexOf ('\n');
+                        const batch = ev.partialText!.slice (pos, n).split ('\n');
+                        this.handle_results_batch (batch, corpora.length);
+                    }
+                    else if (event.type === HttpEventType.Response) {
+                        const batch = event.body!.slice (pos);
+                        this.results_fetched = true;
+                        this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()})
+                    }
+                // if (this.module === 'concordance') {
+                //     this.results = this.parse_results (responseData, 'html', corpora.length);
+                //     this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                // }
+                // else if (this.module === 'collocations') {
+                //     this.collocations = this.parse_collocations (responseData);
+                //     this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                // }
+                // else if (this.module === 'frequency') {
+                //     this.frequency = this.parse_frequency (responseData);
+                //     this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                // }
+                // this.results_fetched = true;
+                // this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
             }
-            else if (this.module === 'collocations') {
-                this.collocations = this.parse_collocations (responseData);
-                this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-            }
-            else if (this.module === 'frequency') {
-                this.frequency = this.parse_frequency (responseData);
-                this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-            }
-            this.results_fetched = true;
-            this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
         });
         this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));
     }
@@ -145,7 +165,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
 
     get_concordance_from_collocation (collocation: collocation) {
-        const corpora = this.corporaKeeper.getCorpora ();
         const cs = this.config.fetch ('collocations_settings');
         const gap = cs.window_size ? `[]{0,${cs.window_size}}` : '';
         const col_query = `[${cs.pattr}="${collocation.token}"]${gap}${this.original_query}|${this.original_query}${gap}[${cs.pattr}="${collocation.token}"]`;
@@ -156,6 +175,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
 
     get_concordance_from_freq (freq: frequency) {
+        const fs = this.config.fetch ('frequency_settings');
+        const fr_query = `[${fs.pattr}="${freq.token}"]`;
+        let query = this.queryKeeper.getCorpusQueries ();
+        query.primary.query = fr_query;
+        this.queryKeeper.setQuery (fr_query, query.primary.corpus);
         this.results_added_event.emit ('concordance');
     }
 
@@ -195,7 +219,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
         let query = {} as Query;
         let mock = false;
         try {
-            query = this.queryKeeper.getCorpusQueries ();            
+            query = this.queryKeeper.getCorpusQueries ();
+            if (!query.primary.query)
+                query.primary.query = '[]';
         }
         catch (error) {
             mock = true;
@@ -268,10 +294,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return sattrs;
     }
 
+    private handle_results_batch (batch: string[], corpora_length: number) {
+        if (this.module === 'concordance') {
+            this.results = this.results.concat (this.parse_results (batch, corpora_length));
+            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        }
+        else if (this.module === 'collocations') {
+            this.collocations = this.parse_collocations (batch);
+            this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        }
+        else if (this.module === 'frequency') {
+            this.frequency = this.parse_frequency (batch);
+            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        }
+        this.results_updated_event.emit (this.get_results_number ());
+    }
+
     private to_words (text: string) {
         let words: Word[] = [];
         for (let token of text.split (' ')) {
-            let elements = token.split ('/');
+            let elements = token.split ('\t');
             let w: Word = {word: ''};
             for (let ipattr = 0; ipattr < this.pattrs_to_show.length; ++ipattr)
                 w[this.pattrs_to_show[ipattr]] = elements[ipattr];
@@ -374,32 +416,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return parsed;
     }
 
-    private parse_results (lines: any, mode = 'html', no_of_corpora = 1) {
+    private parse_results (lines: any, no_of_corpora = 1) {
         let output: ConcordanceEntry[] = [];
         const corpusType = (no_of_corpora === 1) ? 'mono' : 'parallel';
-        if (mode !== 'html')
-            for (let line of lines) {
-                output.push ({left_context: [], match: line, right_context: [], id: '-1', meta: {}, aligned: [], selected: false });
+        let parallel_batch = [];
+        for (let i = 1; i < lines.length - 2; ++i) {
+            let line = lines[i];
+            if (!line)
+                continue;
+            if (corpusType === 'mono'){
+                const parsed = this.parse_primary_line (line);
+                if (parsed.id)
+                    output.push (parsed);
             }
-        else {
-            let parallel_batch = [];
-            for (let i = 1; i < lines.length - 2; ++i) {
-                let line = lines[i];
-                if (!line)
-                    continue;
-                if (corpusType === 'mono'){
-                    const parsed = this.parse_primary_line (line);
+            else {
+                parallel_batch.push (line);
+                if (parallel_batch.length === no_of_corpora) {
+                    const parsed = this.parse_parallel_line (parallel_batch, no_of_corpora);
                     if (parsed.id)
                         output.push (parsed);
-                }
-                else {
-                    parallel_batch.push (line);
-                    if (parallel_batch.length === no_of_corpora) {
-                        const parsed = this.parse_parallel_line (parallel_batch, no_of_corpora);
-                        if (parsed.id)
-                            output.push (parsed);
-                        parallel_batch = [];
-                    }
+                    parallel_batch = [];
                 }
             }
         }
@@ -409,7 +445,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     private parse_collocations (data: any) {
         let output: collocation[] = [];
-        for (let entry of data) {
+        for (let line of data) {
+            const entry = line.split ('\t');
             output.push ({'token': entry[0], 'am': entry[1], 'freq': entry[2]});
         }
         return output;
@@ -417,7 +454,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     private parse_frequency (data: any) {
         let output: frequency[] = [];
-        for (let entry of data) {
+        for (let line of data) {
+            const entry = line.split ('\t');
             output.push ({'token': entry[0], 'freq': entry[1]});
         }
         return output;

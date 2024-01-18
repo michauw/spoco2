@@ -7,6 +7,7 @@ import subprocess as sbp
 import time
 from . import stats
 import json
+from math import ceil
 
 class PAttribute (BaseModel):
     name: str
@@ -61,7 +62,7 @@ except FileNotFoundError:
 async def root ():
     return {'message': 'Hello SpoCo'}
 
-def get_command (data: Data):
+def get_command (data: Data, mode = 'concordance'):
     def itercqp (command):
         with sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8') as pr:
             while True:
@@ -87,7 +88,10 @@ def get_command (data: Data):
             break
     else:
         CORPUS_NAME = ''
-    CONTEXT = f'set Context {data.context}' if data.context else ''
+    if mode != 'frequency':
+        CONTEXT = f'set Context {data.context}' if data.context else ''
+    else:
+        CONTEXT = f'set Context 0'
     to_show = data.to_show
     for corpus in data.corpora:
         if not corpus['primary']:
@@ -98,8 +102,15 @@ def get_command (data: Data):
     PRINT_STRUCTURES = ', '.join (data.print_structures)
     if PRINT_STRUCTURES:
         PRINT_STRUCTURES = f'set PrintStructures "{PRINT_STRUCTURES}"'
+    PRINT_MODE = 'set pm html'
 
-    cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {PRINT_STRUCTURES}; set pm html; {query};'
+    SEPARATOR = 'set AttributeSeparator "\t"'
+    MATCH_INDICATOR = 'set ld "<#"; set rd "#>"'
+
+    if mode != 'frequency':
+        cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {SEPARATOR}; {MATCH_INDICATOR}; {PRINT_MODE}; {PRINT_STRUCTURES}; {query};'
+    else:
+        cwb_query = f'{CORPUS_NAME}; set Context 0; {PRINT_MODE}; q={query}; group q match {data.grouping_attribute.name};'
     print ('query:', cwb_query)
     command = [PATH, '-r', REGISTRY, cwb_query]
     print ('command:', command)
@@ -112,40 +123,55 @@ def prepare_response (data: Data):
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
     return pr.communicate ()[0].splitlines ()
 
-def prepare_response_stream (data: Data, batch_size = 1000)
-    command = get_command (data)
+def prepare_response_stream (data: Data, mode = 'concordance'):
+    command = get_command (data, mode)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
     results = pr.communicate ()[0].splitlines ()
-    for i in range (len (results) / batch_size):
-        yield results[i * batch_size : (i + 1) * batch_size]
+    if mode == 'concordance':
+        results.insert (0, str (len (results)))
+
+    print ('mode:', mode, 'res:', len (results))
+    return results
+    
+def stream_gen (data, batch_size = 100):
+    for i in range (ceil (len (data) / batch_size)):
+        yield '\n'.join (data[i * batch_size : (i + 1) * batch_size])
 
 @backend.post ('/results')
 async def get_concordance (data: Data):
 
-    return StreamingResponse (prepare_response_stream (data), media_type = 'application/x-ndjson')
+    results = prepare_response_stream (data)
+    stream = stream_gen (results)
+    return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
 @backend.post ('/collocations')
 async def get_collocations (data: CollocationData):
 
     response = prepare_response (data)
-    lines = response.splitlines ()[1:-2]  # in html mode first and two last lines should be discarded
+    lines = response[1:-2]  # in html mode first and two last lines should be discarded
     pname = data.grouping_attribute.name
     position = data.grouping_attribute.position
     window_size = data.window_size
     frequency_filter = data.frequency_filter
     pos = data.pos
+    results = stats.get_collocations (lines, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
+    results = [f'{entry[0]}\t{entry[1]}\t{entry[2]}' for entry in results]
+    stream = stream_gen (results)
 
-    return stats.get_collocations (lines, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
+    return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
 @backend.post ('/frequency')
 async def get_frequency_list (data: FrequencyData):
 
-    response = prepare_response (data)
-    lines = response.splitlines ()[1:-2]
-    position = data.grouping_attribute.position
+    response = prepare_response_stream (data, mode = 'frequency')
+    lines = response[2:]
+    attribute = data.grouping_attribute.name
     frequency_filter = data.frequency_filter
+    results = stats.get_frequency (lines, attribute = attribute, frequency_filter = frequency_filter)
+    results = [f'{entry[0]}\t{entry[1]}' for entry in results]
+    stream = stream_gen (results)
     
-    return stats.get_frequency (lines, pattr_no = position, frequency_filter = frequency_filter)
+    return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
 @backend.post ('/context')
 async def get_context (data: ContextData):
