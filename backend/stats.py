@@ -26,6 +26,7 @@ def get_words (text, pattr_no, allowed_pos):
                 words.append (None)
                 continue
         words.append (layers[pattr_no])
+        
     return words
 
 def get_window_words (input_words, window_size, direction):
