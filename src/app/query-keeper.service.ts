@@ -116,7 +116,7 @@ export class QueryKeeperService {
 
         if (corpusQueryRows === undefined && !filtersPart) 
             return '';
-        else if (filtersPart)
+        else if (corpusQueryRows === undefined)
             corpusQueryRows = [];
         for (let queryRow of corpusQueryRows)
             query += this.getRowQuery (queryRow);
