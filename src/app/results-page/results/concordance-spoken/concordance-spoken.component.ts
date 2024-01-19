@@ -44,7 +44,6 @@ export class ConcordanceSpokenComponent implements OnInit {
     }
 
     cutContext (context: Word[], side: string) {
-        console.log ('r:', this.results[0]['left_context'][0]);
         if (side === 'left')
             return context.slice (-this.maxContextSize - 1);
         else (side == 'right')

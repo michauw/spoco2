@@ -4,10 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 import subprocess as sbp
-import time
 from . import stats
 import json
 from math import ceil
+import re
 
 class PAttribute (BaseModel):
     name: str
@@ -39,9 +39,22 @@ class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
 
+FREQ_PATH = 'src/assets/freq.json'
+URL_PATH = 'src/environments/environment.ts'
+try:
+    with open (FREQ_PATH, encoding = 'utf8') as fjson:
+        freq = json.load (fjson)
+except FileNotFoundError:
+    import os
+    print (f'(get results) warning: frequency file not found ({FREQ_PATH})')
+
+with open (URL_PATH) as fjson:
+    pattern = r'\burl\s*:\s*["\'](.*?)["\']'
+    host = re.search (pattern, fjson.read ()).group (1)
+    origin = f'http://{host}:4200'
 
 backend = FastAPI()
-origins = ['http://localhost:4200']
+origins = [origin]
 backend.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -50,13 +63,6 @@ backend.add_middleware(
     allow_headers=["*"],
 )
 
-FREQ_PATH = 'src/assets/freq.json'
-try:
-    with open (FREQ_PATH, encoding = 'utf8') as fjson:
-        freq = json.load (fjson)
-except FileNotFoundError:
-    import os
-    print (f'(get results) warning: frequency file not found ({FREQ_PATH})')
  
 @backend.get ('/')
 async def root ():

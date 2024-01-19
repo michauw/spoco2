@@ -10,6 +10,7 @@ import { utils, writeFile, writeFileXLSX } from 'xlsx';
 import { ActivatedRoute, Params } from '@angular/router';
 import { EventEmitter } from '@angular/core';
 import { modules } from '../results-page.component';
+import { base_url } from 'src/environments/environment';
 
 interface postData {
     query: Query;
@@ -90,12 +91,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this.frequency = [];
         let url: string = '';
         if (this.module === 'concordance')
-            url = 'http://localhost:8000/results';
+            url = `${base_url}/results`;
         else if (this.module === 'collocations') {
-            url = 'http://localhost:8000/collocations';
+            url = `${base_url}/collocations`;
         }
         else if (this.module === 'frequency')
-            url = 'http://localhost:8000/frequency';
+            url = `${base_url}/frequency`;
         let pos = 0;
         this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true}).subscribe ({
             next: 
@@ -226,7 +227,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         catch (error) {
             mock = true;
         }
-        this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inResults).map ((el: PAttribute) => el.name);
+        this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
         if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
             this.pattrs_to_show = ['word'].concat (this.pattrs_to_show);
         const cwb_settings = this.config.fetch ('cwb');

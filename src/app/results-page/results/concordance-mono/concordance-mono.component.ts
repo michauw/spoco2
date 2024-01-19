@@ -36,6 +36,7 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
     }
 
     @Input() results: ConcordanceEntry[];
+    @Input() pattrs_to_show: string[];
     mode: string;
     showMeta: boolean;
     displayModeChangedSub: Subscription;
@@ -44,7 +45,6 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
     corpora: Corpus[];
 
     cutContext (context: Word[], side: string) {
-        console.log ('r:', this.results[0]['left_context'][0]);
         if (side === 'left')
             return context.slice (-this.maxContextSize - 1);
         else (side == 'right')
@@ -58,5 +58,14 @@ export class ConcordanceMonoComponent implements OnInit, OnDestroy {
                 lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
 
         return lst;
+    }
+
+    get_tooltip (word: Word) {
+        let tooltip = [];
+        for (let pattr of this.pattrs_to_show)
+            if (pattr !== 'word')
+                tooltip.push (word[pattr]);
+
+        return tooltip.join (' : ');
     }
 }

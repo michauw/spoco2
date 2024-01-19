@@ -3,8 +3,14 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+    production: false,
+    host: {
+        url: 'localhost',
+        port: '8000'
+    }
 };
+
+export const base_url = `http://${environment.host.url}:${environment.host.port}`;
 
 /*
  * For easier debugging in development mode, you can import the following file

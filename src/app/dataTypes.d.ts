@@ -17,7 +17,7 @@ export interface PAttribute {
     valueTrue?: string;                 // only for checkboxes: map boolean true value to the corresponding string
     valueFalse?: string;                // as above, but for the false val
     options?: Option[];                 // for select and multiselect
-    inResults?: boolean;                 // whether to show the attribute value in a tooltip on the results page
+    inTooltip?: boolean;                 // whether to show the attribute value in a tooltip on the results page
 }
 
 export interface SAttribute {
