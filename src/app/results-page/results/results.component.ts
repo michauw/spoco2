@@ -57,6 +57,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     downloadResultsSub: Subscription; 
     original_query: string;
     loading_response: boolean;
+    results_number: number = 0;
 
     constructor(
         private queryKeeper: QueryKeeperService, 
@@ -193,7 +194,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     get_results_number () {
         if (this.module === 'concordance')
-            return this.results.length;
+            return this.results_number;
         if (this.module === 'collocations')
             return this.collocations.length;
         if (this.module === 'frequency')
@@ -421,6 +422,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         let output: ConcordanceEntry[] = [];
         const corpusType = (no_of_corpora === 1) ? 'mono' : 'parallel';
         let parallel_batch = [];
+        this.results_number = parseInt (lines[0]);
         for (let i = 1; i < lines.length - 2; ++i) {
             let line = lines[i];
             if (!line)
