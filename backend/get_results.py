@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -131,8 +131,11 @@ def prepare_response (data: Data):
 
 def prepare_response_stream (data: Data, mode = 'concordance'):
     command = get_command (data, mode)
-    pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
-    results = pr.communicate ()[0].splitlines ()
+    pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
+    results, error = pr.communicate ()
+    if error:
+        raise HTTPException (status_code = 400, detail = error)
+    results = results.splitlines ()
     if mode == 'concordance':
         results.insert (0, str (len (results)))
 

@@ -130,6 +130,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
                 // }
                 // this.results_fetched = true;
                 // this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
+            },
+            error: (response) => {
+                console.log (response.error);
             }
         });
         this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));
