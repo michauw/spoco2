@@ -40,6 +40,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     @Output() results_fetched_event: EventEmitter<results_data> = new EventEmitter<results_data> ()
     @Output() results_added_event: EventEmitter<modules> = new EventEmitter<modules> ();
     @Output() results_updated_event: EventEmitter<number> = new EventEmitter<number> ();
+    @Output() error: EventEmitter<string> = new EventEmitter<string> ();
 
     collocations: collocation[];
     frequency: frequency[];
@@ -112,7 +113,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
                         this.handle_results_batch (batch, corpora.length);
                     }
                     else if (event.type === HttpEventType.Response) {
-                        const batch = event.body!.slice (pos);
+                        if (event.body === '0')
+                            this.results_number = 0;
+                        else {
+                            const batch = event.body!.slice (pos).split ('\n');
+                            this.handle_results_batch (batch, corpora.length);
+                        }
                         this.results_fetched = true;
                         this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()})
                     }
@@ -132,7 +138,15 @@ export class ResultsComponent implements OnInit, OnDestroy {
                 // this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
             },
             error: (response) => {
-                console.log (response.error);
+                let error = '';
+                try {
+                    error = JSON.parse (response.error).detail;
+                    error = error.replace (/[\n\t]/g, ' ');
+                }
+                catch (e) {
+                    error = ':('
+                }
+                this.error.emit (error);
             }
         });
         this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));

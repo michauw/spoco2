@@ -1,10 +1,16 @@
 <div class="col-12 info-box">
     <div class="row">
-        <div class="col-lg-9 col-md-8">
+        <div class="col-lg-9 col-md-8" *ngIf="error === ''">
             <div class="info-row"><span class="key">Zapytanie:</span><span class="value">{{ query }}</span></div>
             <div class="info-row"><span class="key">Liczba wyników:</span><span class="value">{{ results_fetched ? results_number : '...' }}</span></div>
             <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Przedział:</span><span class="value">{{ window_size }}</span></div>
             <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Filtr frekwencyjny:</span><span class="value">{{ frequency_filter }}</span></div>
+        </div>
+        <div *ngIf="error !== ''" class="col-lg-9 col-md-8 error">
+            Wystąpił błąd!
+            <div class="message">
+                {{ error }}
+            </div>
         </div>
         <div *ngIf="module === 'concordance'" class="col-lg-3 col-md-4 d-flex align-items-center justify-content-center">
             <spoco-action-box></spoco-action-box>

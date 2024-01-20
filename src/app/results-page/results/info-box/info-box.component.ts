@@ -24,8 +24,13 @@ export class InfoBoxComponent implements OnInit {
     @Input() results_number: Number;
     @Input() module: 'concordance' | 'collocations' | 'frequency';
     @Input() query: string;
+    @Input() error: string;
 
     window_size: number;
     frequency_filter: number;
+
+    error_multiline () {
+        return this.error.split ('\n');
+    }
 
 }

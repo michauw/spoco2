@@ -10,7 +10,7 @@ export type modules = 'concordance' | 'collocations' | 'frequency';
 })
 export class ResultsPageComponent implements OnInit {
 
-    tabs: {name: string, number_of_results: number, module: modules, query: string}[] = [];
+    tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
     tab_module_names: {[key: string]: string} = {concordance: 'konkordancja', collocations: 'kolokacje', frequency: 'lista frekwencyjna'}
     current_tab: number = 0;
     header_visible = false;
@@ -32,12 +32,13 @@ export class ResultsPageComponent implements OnInit {
     }
 
     add_tab (module: modules) {
-        this.tabs.push ({name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...'});
+        this.tabs.push ({name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...', error: '', results_fetched: false});
         this.current_tab = this.tabs.length - 1;
         this.header_visibility (true);
     }
 
     results_fetched (results_data: {query: string, number_of_results: number}, index: number) {
+        this.tabs[index].results_fetched = true;
         this.tabs[index].number_of_results = results_data.number_of_results;
         this.tabs[index].query = results_data.query;
     }

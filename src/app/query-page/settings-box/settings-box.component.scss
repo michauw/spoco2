@@ -1,5 +1,10 @@
 .dialog {
     background-color: white;
+    font-size: .85rem !important;
+    padding: 3rem;
+    & select {
+        font-size: .85rem !important;
+    }
 }
 
 .right {
@@ -14,12 +19,13 @@
     font-weight: 500;
 }
 
-.group {
-    margin-bottom: 2rem;
-}
 .header {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    font-size: 1.4rem;
+    padding-bottom: 1rem;
+    font-size: 1rem;
     font-weight: 500;
+    background-color: #f0f0f0;
+    opacity: .85;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 6px;
 }
