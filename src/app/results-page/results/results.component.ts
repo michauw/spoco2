@@ -169,7 +169,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
     get_concordance_from_collocation (collocation: collocation) {
         const cs = this.config.fetch ('collocations_settings');
         const gap = cs.window_size ? `[]{0,${cs.window_size}}` : '';
-        const col_query = `[${cs.pattr}="${collocation.token}"]${gap}${this.original_query}|${this.original_query}${gap}[${cs.pattr}="${collocation.token}"]`;
+        const orig_query_parts = this.original_query.split ('::');
+        let meta = '';
+        let orig_query = this.original_query;
+        if (orig_query_parts.length == 2) {
+            orig_query = orig_query_parts[0];
+            meta = '::' + orig_query_parts[1];
+        }
+        const col_query = `[${cs.pattr}="${collocation.token}"]${gap}${orig_query}|${orig_query}${gap}[${cs.pattr}="${collocation.token}"]${meta}`;
         let query = this.queryKeeper.getCorpusQueries ();
         query.primary.query = col_query;
         this.queryKeeper.setQuery (col_query, query.primary.corpus);
@@ -178,7 +185,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     get_concordance_from_freq (freq: frequency) {
         const fs = this.config.fetch ('frequency_settings');
-        const fr_query = `[${fs.pattr}="${freq.token}"]`;
+        let fr_query = `[${fs.pattr}="${freq.token}"]`;
+        const orig_query_parts = this.original_query.split ('::');
+        if (orig_query_parts.length > 1)
+            fr_query += '::' + orig_query_parts[1];
         let query = this.queryKeeper.getCorpusQueries ();
         query.primary.query = fr_query;
         this.queryKeeper.setQuery (fr_query, query.primary.corpus);

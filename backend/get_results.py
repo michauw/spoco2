@@ -147,7 +147,8 @@ def stream_gen (data, batch_size = 100):
 async def get_concordance (data: Data):
 
     results = prepare_response_stream (data)
-    results = results[:1000] + results[-1000:]
+    if len (results) > 2000:
+        results = results[:1000] + results[-1000:]
     stream = stream_gen (results)
     return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
