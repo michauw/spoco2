@@ -19,6 +19,12 @@ interface postData {
     to_show: string[];
     print_structures: string[];
     corpora: Corpus[];
+    start?: number;
+    size_limit?: number;
+    chunk_size?: number;
+    end_chunk_size?: number;
+    mode?: 'full' | 'partial';
+    separator?: string;
     window_size?: number;
     frequency_filter?: number;
     pos?: string[];
@@ -44,6 +50,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     collocations: collocation[];
     frequency: frequency[];
+    corpora: Corpus[];
     results_fetched: Boolean;
     results: ConcordanceEntry[];
     currentSlice: ConcordanceEntry[];
@@ -58,7 +65,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
     downloadResultsSub: Subscription; 
     original_query: string;
     loading_response: boolean;
-    results_number: number = 0;
+    results_number: number;
+    results_first_empty: number = 0;
+    results_ending_empty: number;
+
+    SIZE_LIMIT: number = 10000;
+    CHUNK_SIZE: number = 10000;
+    END_CHUNK_SIZE: number = 1000;
+    STREAM_SEPARATOR_TEXT = '==STREAM SEPARATOR==';
 
     constructor(
         private queryKeeper: QueryKeeperService, 
@@ -80,13 +94,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
         if (!this.corpusType.length)
             this.corpusType = 'parallel';
         this.sliceSize = this.config.fetch ('preferences')['results_per_page'];
-        const corpora = this.corporaKeeper.getCorpora ();
-        this.results = [];
+        this.corpora = this.corporaKeeper.getCorpora ();
         this.currentSlice = [];
         this.currentSliceCol = [];
         this.results_fetched = false;
         this.pattrs = this.config.fetch ('positionalAttributes')
-        let post_data = this.get_post_data (corpora);
+        let post_data = this.get_post_data ('full');
         this.original_query = post_data.query.primary.query;
         this.results = [];
         this.collocations = [];
@@ -99,56 +112,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         }
         else if (this.module === 'frequency')
             url = `${base_url}/frequency`;
-        let pos = 0;
-        this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true}).subscribe ({
-            next: 
-                (event: HttpEvent<string>) => {
-                    if (event.type === HttpEventType.DownloadProgress) {
-                        // console.log ('response progress:', event, (event as HttpDownloadProgressEvent).partialText!.length);
-                        const ev = (
-                            event as HttpDownloadProgressEvent
-                          );
-                        const n = ev.partialText!.lastIndexOf ('\n');
-                        const batch = ev.partialText!.slice (pos, n).split ('\n');
-                        this.handle_results_batch (batch, corpora.length);
-                    }
-                    else if (event.type === HttpEventType.Response) {
-                        if (event.body === '0')
-                            this.results_number = 0;
-                        else {
-                            const batch = event.body!.slice (pos).split ('\n');
-                            this.handle_results_batch (batch, corpora.length);
-                        }
-                        this.results_fetched = true;
-                        this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()})
-                    }
-                // if (this.module === 'concordance') {
-                //     this.results = this.parse_results (responseData, 'html', corpora.length);
-                //     this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-                // }
-                // else if (this.module === 'collocations') {
-                //     this.collocations = this.parse_collocations (responseData);
-                //     this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-                // }
-                // else if (this.module === 'frequency') {
-                //     this.frequency = this.parse_frequency (responseData);
-                //     this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-                // }
-                // this.results_fetched = true;
-                // this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
-            },
-            error: (response) => {
-                let error = '';
-                try {
-                    error = JSON.parse (response.error).detail;
-                    error = error.replace (/[\n\t]/g, ' ');
-                }
-                catch (e) {
-                    error = ':('
-                }
-                this.error.emit (error);
-            }
-        });
+        this.make_request (url, post_data, 'full');
         this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));
     }
 
@@ -232,7 +196,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
     pageChanged (pageNumber: number) {
         this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
         if (this.module === 'concordance')
-            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+            if (this.data_missing ()) {
+                this.load_missing_data (pageNumber);
+            }
+            else
+                this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         else if (this.module === 'collocations')
             this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         else if (this.module === 'frequency')
@@ -244,7 +212,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
           });
     }
 
-    private get_post_data (corpora: Corpus[]) {
+    private data_missing () {
+        return Boolean (this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize).filter (el => el === undefined).length);
+    }
+
+    private get_post_data (mode: 'full' | 'partial', start?: number) {
         let query = {} as Query;
         let mock = false;
         try {
@@ -262,7 +234,21 @@ export class ResultsComponent implements OnInit, OnDestroy {
         const sattrs = this.config.fetch ('structuralAttributes');
         let sattrs_cwb = sattrs.filter ((el: SAttribute) => el.inResults || el.context || el.audio).map ((el: SAttribute) => el.name);
         this.sattrs_to_show = sattrs.filter ((el: SAttribute) => el.inResults);
-        let post_data: postData = {query: query, paths: cwb_settings.paths, context: cwb_settings.context, to_show: this.pattrs_to_show, print_structures: sattrs_cwb, corpora: corpora};
+        let post_data: postData = {
+            query: query, 
+            paths: cwb_settings.paths, 
+            context: cwb_settings.context, 
+            to_show: this.pattrs_to_show, 
+            print_structures: sattrs_cwb, 
+            corpora: this.corpora,
+            size_limit: this.SIZE_LIMIT,
+            chunk_size: this.CHUNK_SIZE,
+            end_chunk_size: this.END_CHUNK_SIZE,
+            mode: mode,
+            separator: this.STREAM_SEPARATOR_TEXT
+        };
+        if (start !== undefined)
+            post_data['start'] = start;
 
         if (mock) {
             this.pattrs_to_show = ['word', 'lemma', 'tag'];
@@ -272,7 +258,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
                 context: '1s',
                 to_show: this.pattrs_to_show,
                 print_structures: ['s_id', 'meta_autor', 'meta_tytul', 'meta_data_wydania', 'meta_data_tlumaczenia'],
-                corpora: corpora
+                corpora: this.corpora
             };
             const post_data_parallel = {
                 query: {primary: {corpus: 'letrint_en', query: '[word="judge"%c]'}, secondary: []},
@@ -280,7 +266,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
                 context: '1s',
                 to_show: this.pattrs_to_show,
                 print_structures: ['Align_id', 'meta_organisation', 'meta_publication_date', 'meta_legal_function', 'meta_textual_genre', 'meta_subgenre', 'meta_title_en', 'meta_title_es', 'meta_title_fr'],
-                corpora: corpora
+                corpora: this.corpora
             };
             if (this.corpusType == 'mono')
                 post_data = post_data_mono;
@@ -323,10 +309,32 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return sattrs;
     }
 
-    private handle_results_batch (batch: string[], corpora_length: number) {
+    private handle_results_batch (batch: string, stage: 'size' | 'regular' | 'ending') {
         if (this.module === 'concordance') {
-            this.results = this.results.concat (this.parse_results (batch, corpora_length));
-            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+            const stages: ('size' | 'regular' | 'ending')[] = ['size', 'regular', 'ending'];
+            const parts = batch.split (this.STREAM_SEPARATOR_TEXT);
+            for (let i = 0; i < parts.length; ++i) {
+                const part = parts[i];
+                const lines = part.trim ().split ('\n');
+                if (stage === 'size') {
+                    this.results_number = parseInt (lines[0]);
+                    this.results = Array (this.results_number).fill (undefined);
+                    this.results_ending_empty = this.results_number - this.END_CHUNK_SIZE;
+                }
+                else {
+                    const parsed = this.parse_results (lines);
+                    if (stage === 'regular') {
+                        this.results.splice (this.results_first_empty, parsed.length, ...parsed);
+                        this.results_first_empty += parsed.length;
+                    }
+                    else {
+                        this.results.splice (this.results_ending_empty, parsed.length, ...parsed);
+                        this.results_ending_empty += parsed.length;
+                    }
+                }
+                if (i < parts.length - 1)
+                    stage = stages[stages.indexOf (stage) + 1]
+            }            
         }
         else if (this.module === 'collocations') {
             this.collocations = this.parse_collocations (batch);
@@ -337,6 +345,79 @@ export class ResultsComponent implements OnInit, OnDestroy {
             this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         }
         this.results_updated_event.emit (this.get_results_number ());
+        return stage;
+    }
+
+    private load_missing_data (pageNumber: number) {
+        const location = pageNumber * this.sliceSize;
+        const chunk_start = Math.floor (location / this.CHUNK_SIZE) * this.CHUNK_SIZE;
+        this.results_first_empty = chunk_start;
+        const post_data = this.get_post_data ('partial', chunk_start);
+        const url = `${base_url}/results`;
+        this.make_request (url, post_data, 'partial');
+    }
+
+    tmp () {
+        if (this.results.length >= 1288)
+            return this.results[1277].left_context.length;
+        return '-'
+    }
+
+    private make_request (url: string, post_data: postData, mode: 'full' | 'partial') {
+        let partialText_pos = 0;
+        let stage: 'size' | 'regular' | 'ending' = mode === 'full' ? 'size' : 'regular';
+        this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true}).subscribe ({
+            next: 
+                (event: HttpEvent<string>) => {
+                    console.log ('event:', event.type, this.results_first_empty);
+                    if (event.type === HttpEventType.DownloadProgress) {
+                        const ev = (
+                            event as HttpDownloadProgressEvent
+                        );
+                        console.log ('ev:', ev);
+                        console.log ('ending: "x', ev.partialText!.slice (ev.partialText!.length - 100), 'x"')
+                        const n = ev.partialText!.lastIndexOf ('\n');
+                        const batch = ev.partialText!.slice (partialText_pos, n);
+                        stage = this.handle_results_batch (batch, stage);
+                        partialText_pos = n + 1;
+                    }
+                    else if (event.type === HttpEventType.Response) {
+                        if (event.body === '0')
+                            this.results_number = 0;
+                        else {
+                            // const batch = event.body!.slice (partialText_pos);
+                            // const parts = batch.split (this.STREAM_SEPARATOR_TEXT);
+                            // stage = mode === 'full' ? 'size' : 'regular';
+                            // for (let i = 0; i < parts.length; ++i) {
+                            //     const part = parts[i];
+                            //     this.handle_results_batch (part, corpora.length, stage);
+                            //     if (i < parts.length - 1) {
+                            //         if (stage === 'size')
+                            //             stage = 'regular';
+                            //         else if (stage === 'regular')
+                            //             stage = 'ending';
+                            //     }
+                            // }
+                        }
+                        this.results_fetched = true;
+                        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                        if (mode === 'full') {
+                            this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
+                        }
+                    }
+            },
+            error: (response) => {
+                let error = '';
+                try {
+                    error = JSON.parse (response.error).detail;
+                    error = error.replace (/[\n\t]/g, ' ');
+                }
+                catch (e) {
+                    error = ':('
+                }
+                this.error.emit (error);
+            }
+        });
     }
 
     private to_words (text: string) {
@@ -426,10 +507,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return line_out;
     }
 
-    private parse_parallel_line (batch: string[], no_of_corpora: number) {
+    private parse_parallel_line (batch: string[]) {
         const pattern_aligned = /<P><B><EM>--&gt;(.*?)<\/EM><\/B>&nbsp;&nbsp;(.*)/
         let parsed: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
-        for (let i = 0; i < no_of_corpora; ++i) {
+        for (let i = 0; i < this.corpora.length; ++i) {
             const line = batch[i];
             if (i === 0) {
                 parsed = this.parse_primary_line (line);
@@ -445,12 +526,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return parsed;
     }
 
-    private parse_results (lines: any, no_of_corpora = 1) {
+    private parse_results (lines: any) {
         let output: ConcordanceEntry[] = [];
-        const corpusType = (no_of_corpora === 1) ? 'mono' : 'parallel';
+        const corpusType = (this.corpora.length === 1) ? 'mono' : 'parallel';
         let parallel_batch = [];
-        this.results_number = parseInt (lines[0]);
-        for (let i = 1; i < lines.length - 2; ++i) {
+        // this.results_number = parseInt (lines[0]);
+        for (let i = 0; i < lines.length; ++i) {
             let line = lines[i];
             if (!line)
                 continue;
@@ -461,8 +542,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
             }
             else {
                 parallel_batch.push (line);
-                if (parallel_batch.length === no_of_corpora) {
-                    const parsed = this.parse_parallel_line (parallel_batch, no_of_corpora);
+                if (parallel_batch.length === this.corpora.length) {
+                    const parsed = this.parse_parallel_line (parallel_batch);
                     if (parsed.id)
                         output.push (parsed);
                     parallel_batch = [];
@@ -472,6 +553,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
         return output;
     }
+
+    private get_position_from_line (line: string): {position: number, start: number}  {
+        const pattern = /^(\d+):\s*/;
+        const match = pattern.exec (line);
+        return {position: parseInt (match![1]), start: match![0].length}
+    } 
 
     private parse_collocations (data: any) {
         let output: collocation[] = [];

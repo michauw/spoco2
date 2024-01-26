@@ -29,6 +29,6 @@
         </tr>
     </table>
 </div>
-<div class="col-md-6 offset-md-5">
-    <spoco-paginator [resLen]="get_results_number()" [perPage]="sliceSize" *ngIf="results_fetched && get_results_number() > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
+<div class="col-md-12 mt-4 paginator">
+    <spoco-paginator [resLen]="get_results_number()" [perPage]="sliceSize" *ngIf="get_results_number() > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
 </div>

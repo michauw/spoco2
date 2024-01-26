@@ -12,6 +12,7 @@ export class PaginatorComponent implements OnInit {
 
     ngOnInit(): void {
         this.lastPage = Math.ceil (this.resLen / this.perPage);
+        this.getPageRange (this.currentPage);
     }
 
     @Input() resLen: number;
@@ -20,6 +21,7 @@ export class PaginatorComponent implements OnInit {
     currentPage: number = 1;
     lastPage: number;
     jumpTo: number = 0;
+    pageRange: number[];
     @ViewChild('jumpToPage') jumpToField: ElementRef;
 
     jumpFieldUpdateValue (value: string) {
@@ -46,16 +48,24 @@ export class PaginatorComponent implements OnInit {
             this.currentPage = pageNumber;
             this.pageChanged.emit (pageNumber);
             this.jumpToField.nativeElement.value = '';
+            this.getPageRange (pageNumber);
         }
     }
 
-    pageRange (page: number) {
+    getPageRange (page: number) {
         let array = [];
         let window = 4;
         this.lastPage = Math.ceil (this.resLen / this.perPage);  // TODO: probably it should be done within subscription to perPage value 
         for (let i = Math.max (1, page - window); i <= Math.min (this.lastPage, page + window); ++i) 
             array.push (i);
 
-        return array;
+        this.pageRange = array;
+    }
+
+    getWidth () {
+        let width = 2.5;
+        if (this.jumpTo)
+            width = Math.max (1.2 + this.jumpTo.toString().length * .55, width);
+        return {width: width + 'rem'};
     }
 }

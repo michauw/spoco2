@@ -1,3 +1,4 @@
+import itertools
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,12 @@ class Data (BaseModel):
     to_show: List
     print_structures: List
     corpora: List
+    start: int = None
+    size_limit: int
+    chunk_size: int
+    end_chunk_size: int
+    separator: str = None
+    mode: str
 
 class ContextData (BaseModel):
     paths: Dict
@@ -41,6 +48,7 @@ class FrequencyData (Data):
 
 FREQ_PATH = 'src/assets/freq.json'
 URL_PATH = 'src/environments/environment.ts'
+
 try:
     with open (FREQ_PATH, encoding = 'utf8') as fjson:
         freq = json.load (fjson)
@@ -68,14 +76,7 @@ backend.add_middleware(
 async def root ():
     return {'message': 'Hello SpoCo'}
 
-def get_command (data: Data, mode = 'concordance'):
-    def itercqp (command):
-        with sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8') as pr:
-            while True:
-                line = pr.stdout.readline ()
-                if not line:
-                    break
-                yield line
+def get_command (data: Data, category = 'concordance'):
 
     primary = data.query['primary']['query']
     if primary == 'mock':   # MOCK RESULTS
@@ -94,7 +95,7 @@ def get_command (data: Data, mode = 'concordance'):
             break
     else:
         CORPUS_NAME = ''
-    if mode != 'frequency':
+    if category != 'frequency':
         CONTEXT = f'set Context {data.context}' if data.context else ''
     else:
         CONTEXT = f'set Context 0'
@@ -113,7 +114,14 @@ def get_command (data: Data, mode = 'concordance'):
     SEPARATOR = 'set AttributeSeparator "\t"'
     MATCH_INDICATOR = 'set ld "<#"; set rd "#>"'
 
-    if mode != 'frequency':
+    if category == 'concordance':
+        query = 'q=' + query
+        if data.mode == 'full':
+            query += '; size q'
+        if data.start:
+            query += f'; cat q {data.start} {data.start + data.chunk_size}'
+        else:
+            query += f'; cat q'
         cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {SEPARATOR}; {MATCH_INDICATOR}; {PRINT_MODE}; {PRINT_STRUCTURES}; {query};'
     else:
         cwb_query = f'{CORPUS_NAME}; set Context 0; {PRINT_MODE}; q={query}; group q match {data.grouping_attribute.name};'
@@ -123,36 +131,82 @@ def get_command (data: Data, mode = 'concordance'):
 
     return command
 
+def check_error (process):
+    return ''
+    error_lines = process.stderr.readlines ()
+    return ''.join (error_lines)
+
 def prepare_response (data: Data):
 
     command = get_command (data)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
     return pr.communicate ()[0].splitlines ()
 
-def prepare_response_stream (data: Data, mode = 'concordance'):
-    command = get_command (data, mode)
+def prepare_response_stream (data: Data, category = 'concordance'):
+    command = get_command (data, category = category)
     pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
-    results, error = pr.communicate ()
+    error = check_error (pr)
     if error:
         raise HTTPException (status_code = 400, detail = error)
-    results = results.splitlines ()
-    if mode == 'concordance':
-        results.insert (0, str (len (results)))
+    if category == 'concordance':
+        if data.mode == 'full':
+            query_size = int (pr.stdout.readline ())
+        else:
+            query_size = data.chunk_size
+        stream_size = (str (s) + '\n' for s in [query_size])
+        separator = data.separator
+        if not separator.endswith ('\n'):
+            separator += '\n'
+        if query_size > data.size_limit:
+            stream_first = stream_gen (pr, limit = data.chunk_size, name = 'BIG, FIRST')
+            if data.mode == 'full':
+                data.start = query_size - data.end_chunk_size
+                data.mode = 'partial'
+                command = get_command (data, category = category)
+                pr_end = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
+                stream_last = stream_gen (pr_end, name = 'BIG, LAST')
+                stream = itertools.chain (stream_size, [separator], stream_first, [separator], stream_last)
+            else:
+                stream = stream_first
+        else:
+            if data.mode == 'full':
+                stream = itertools.chain (stream_size, [separator], stream_gen (pr, name = 'SMALL (FULL)'))
+            else:
+                stream = stream_gen (pr, name = 'SMALL (PARTIAL)')
+    else:
+        stream = stream_gen (pr, name = 'COLL/FREQ')
+    return stream
+      
+def stream_gen (process, batch_size = 100, limit = 0, name = ''):
+    discard_patterns = [r'^<HR>', r'</UL>']
+    ind = 0
+    end = False
+    while True:
+        if limit and ind >= limit:
+            print (f'stream get (name: {name}, limit: {limit}): LIMIT EXCEEDED')
+            break
+        lines = []
+        while len (lines) < batch_size:
+            line = process.stdout.readline ()
+            if re.search ('|'.join (discard_patterns), line):
+                continue
+            if not line:
+                print (f'stream gen (name: {name}, ind: {ind}, limit: {limit}): END')
+                end = True
+                break
+            lines.append (line)
+        if end and not lines:
+            break
+        ind += len (lines)
+        print (f'stream gen (name: {name}, ind: {ind}, limit: {limit}): ITER')
 
-    print ('mode:', mode, 'res:', len (results))
-    return results
-    
-def stream_gen (data, batch_size = 100):
-    for i in range (ceil (len (data) / batch_size)):
-        yield '\n'.join (data[i * batch_size : (i + 1) * batch_size])
-
+        yield ''.join (lines)
+        
 @backend.post ('/results')
 async def get_concordance (data: Data):
-
-    results = prepare_response_stream (data)
-    if len (results) > 2000:
-        results = results[:1000] + results[-1000:]
-    stream = stream_gen (results)
+    
+    stream = prepare_response_stream (data)
+    
     return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
 @backend.post ('/collocations')
