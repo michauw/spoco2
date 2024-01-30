@@ -5,7 +5,7 @@ import { ConfigService } from '../../config.service';
 import { CorporaKeeperService } from '../../corpora-keeper.service';
 import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word, metaObj, Corpus, Query } from '../../dataTypes';
 import { QueryKeeperService } from '../../query-keeper.service';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { utils, writeFile, writeFileXLSX } from 'xlsx';
 import { ActivatedRoute, Params } from '@angular/router';
 import { EventEmitter } from '@angular/core';
@@ -66,13 +66,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
     original_query: string;
     loading_response: boolean;
     results_number: number;
-    results_first_empty: number = 0;
-    results_ending_empty: number;
+    results_position: number = 0;
+    results_history: number[] = [];
 
     SIZE_LIMIT: number = 10000;
     CHUNK_SIZE: number = 10000;
     END_CHUNK_SIZE: number = 1000;
     STREAM_SEPARATOR_TEXT = '==STREAM SEPARATOR==';
+    MAX_RESULTS_SIZE: number = 40000;
 
     constructor(
         private queryKeeper: QueryKeeperService, 
@@ -195,21 +196,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
     pageChanged (pageNumber: number) {
         this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
-        if (this.module === 'concordance')
-            if (this.data_missing ()) {
+        if (this.module === 'concordance' && this.data_missing ())
                 this.load_missing_data (pageNumber);
-            }
-            else
-                this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        else if (this.module === 'collocations')
-            this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        else if (this.module === 'frequency')
-            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        window.scroll({ 
-            top: 0, 
-            left: 0, 
-            behavior: 'auto' 
-          });
+        else
+            this.update_page ();
     }
 
     private data_missing () {
@@ -309,77 +299,104 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return sattrs;
     }
 
-    private handle_results_batch (batch: string, stage: 'size' | 'regular' | 'ending') {
-        if (this.module === 'concordance') {
-            const stages: ('size' | 'regular' | 'ending')[] = ['size', 'regular', 'ending'];
-            const parts = batch.split (this.STREAM_SEPARATOR_TEXT);
-            for (let i = 0; i < parts.length; ++i) {
-                const part = parts[i];
-                const lines = part.trim ().split ('\n');
-                if (stage === 'size') {
-                    this.results_number = parseInt (lines[0]);
-                    this.results = Array (this.results_number).fill (undefined);
-                    this.results_ending_empty = this.results_number - this.END_CHUNK_SIZE;
-                }
-                else {
-                    const parsed = this.parse_results (lines);
-                    if (stage === 'regular') {
-                        this.results.splice (this.results_first_empty, parsed.length, ...parsed);
-                        this.results_first_empty += parsed.length;
+    private handle_big_results (last_chunk_start: number) {
+        this.results_history.push (last_chunk_start);
+        if (this.results_history.length > 1 && (this.results_history.length + 1) * this.CHUNK_SIZE + this.END_CHUNK_SIZE > this.MAX_RESULTS_SIZE) {
+            const oldest = this.results_history[0];
+            const undefs = Array (this.CHUNK_SIZE).fill (undefined);
+            this.results.splice (oldest, this.CHUNK_SIZE, ...undefs);
+            this.results_history.shift ();
+        }
+    }
+    
+    private handle_static_response (request: Observable<any>, post_data: postData) {
+        request.subscribe ({
+            next:
+                (responseData) => {
+                    for (let datum of responseData) {
+                        if (this.module === 'collocations')
+                            this.collocations.push ({token: datum[0], am: datum[1], freq: datum[2]});
+                        else if (this.module === 'frequency')
+                            this.frequency.push ({token: datum[0], freq: datum[1]});
                     }
-                    else {
-                        this.results.splice (this.results_ending_empty, parsed.length, ...parsed);
-                        this.results_ending_empty += parsed.length;
+                    if (this.module === 'collocations')
+                        this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                    else if (this.module === 'frequency')
+                        this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                    this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
+                },
+            error:
+                (response) => {
+                    let error = '';
+                    try {
+                        error = JSON.parse (response.error).detail;
+                        error = error.replace (/[\n\t]/g, ' ');
                     }
+                    catch (e) {
+                        error = ':('
+                    }
+                    this.error.emit (error);
                 }
-                if (i < parts.length - 1)
-                    stage = stages[stages.indexOf (stage) + 1]
-            }            
-        }
-        else if (this.module === 'collocations') {
-            this.collocations = this.parse_collocations (batch);
-            this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        }
-        else if (this.module === 'frequency') {
-            this.frequency = this.parse_frequency (batch);
-            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        }
-        this.results_updated_event.emit (this.get_results_number ());
-        return stage;
+        });
     }
+        
 
-    private load_missing_data (pageNumber: number) {
-        const location = pageNumber * this.sliceSize;
-        const chunk_start = Math.floor (location / this.CHUNK_SIZE) * this.CHUNK_SIZE;
-        this.results_first_empty = chunk_start;
-        const post_data = this.get_post_data ('partial', chunk_start);
-        const url = `${base_url}/results`;
-        this.make_request (url, post_data, 'partial');
-    }
+    private handle_streaming_response (request: Observable<any>, post_data: postData, mode: 'full' | 'partial') {
 
-    tmp () {
-        if (this.results.length >= 1288)
-            return this.results[1277].left_context.length;
-        return '-'
-    }
-
-    private make_request (url: string, post_data: postData, mode: 'full' | 'partial') {
         let partialText_pos = 0;
-        let stage: 'size' | 'regular' | 'ending' = mode === 'full' ? 'size' : 'regular';
-        this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true}).subscribe ({
+        const stages: ('size' | 'regular' | 'ending')[] = ['size', 'regular', 'ending'];
+        let stage_index = mode === 'full' ? 0 : 1;
+        this.results_position = post_data.start !== undefined ? post_data.start : 0;
+        request.subscribe ({
             next: 
                 (event: HttpEvent<string>) => {
-                    console.log ('event:', event.type, this.results_first_empty);
+                    console.log ('event:', event.type, this.results_position);
+                    let partial_batch: string[] = [];
                     if (event.type === HttpEventType.DownloadProgress) {
                         const ev = (
                             event as HttpDownloadProgressEvent
                         );
-                        console.log ('ev:', ev);
-                        console.log ('ending: "x', ev.partialText!.slice (ev.partialText!.length - 100), 'x"')
-                        const n = ev.partialText!.lastIndexOf ('\n');
-                        const batch = ev.partialText!.slice (partialText_pos, n);
-                        stage = this.handle_results_batch (batch, stage);
-                        partialText_pos = n + 1;
+                        let line_end = ev.partialText!.indexOf ('\n', partialText_pos);
+                        let batch: string[] = partial_batch;
+                        partial_batch = [];
+                        let count = 0;
+                        while (line_end !== -1) {
+                            const line = ev.partialText!.slice (partialText_pos, line_end);
+                            if (line === this.STREAM_SEPARATOR_TEXT) {
+                                if (stage_index && batch.length)
+                                    console.log (
+                                        `WARNING: (make_request) next stage (${stages[stage_index]} --> ${stages[stage_index + 1]}) while batch not empty (${batch.length} lines left unhandled)`
+                                    );
+                                stage_index += 1;
+                                if (stages[stage_index] === 'ending')
+                                    this.results_position = this.results_number - post_data.end_chunk_size!;
+                            }
+                            else if (stages[stage_index] === 'size') {
+                                this.results_number = parseInt (line);
+                                this.results = Array (this.results_number).fill (undefined);
+                                this.results_updated_event.emit (this.results_number);
+                            }
+                            else {
+                                count += 1;
+                                batch.push (line);
+                                if (this.module === 'concordance' && batch.length === this.corpora.length) {
+                                    this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
+                                    batch = [];
+                                }
+                                else if (this.module !== 'concordance') {
+                                    const parsed = this.parse_stats_line (batch[0]);
+                                    if (this.module === 'collocations')
+                                        this.collocations.push ({token: parsed[0], freq: parseInt (parsed[1]), am: parseFloat (parsed[2])});
+                                    else if (this.module === 'frequency')
+                                        this.frequency.push ({token: parsed[0], freq: parseInt (parsed[1])});
+                                    batch = [];
+                                }
+                            }
+                            partialText_pos = line_end += 1;
+                            line_end = ev.partialText!.indexOf ('\n', partialText_pos);
+                        }
+                        if (batch.length)
+                            partial_batch = batch;
                     }
                     else if (event.type === HttpEventType.Response) {
                         if (event.body === '0')
@@ -400,10 +417,18 @@ export class ResultsComponent implements OnInit, OnDestroy {
                             // }
                         }
                         this.results_fetched = true;
-                        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                        if (this.module === 'concordance')
+                            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                        else if (this.module === 'collocations')
+                            this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                        else if (this.module === 'frequency')
+                            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+                        // this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
                         if (mode === 'full') {
                             this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
                         }
+                        else if (mode === 'partial')
+                            this.update_page ();
                     }
             },
             error: (response) => {
@@ -418,6 +443,28 @@ export class ResultsComponent implements OnInit, OnDestroy {
                 this.error.emit (error);
             }
         });
+    }
+
+    private load_missing_data (pageNumber: number) {
+        const location = pageNumber * this.sliceSize;
+        const chunk_start = Math.floor (location / this.CHUNK_SIZE) * this.CHUNK_SIZE;
+        // this.results_first_empty = chunk_start;
+        const post_data = this.get_post_data ('partial', chunk_start);
+        const url = `${base_url}/results`;
+        this.make_request (url, post_data, 'partial');
+        this.handle_big_results (chunk_start);
+    }
+
+    private make_request (url: string, post_data: postData, mode: 'full' | 'partial') {
+        
+        if (this.module === 'concordance') {
+            const request: Observable<any> = this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true});
+            this.handle_streaming_response (request, post_data, mode);
+        }
+        else {
+            const request: Observable<any> = this.http.post (url, post_data);
+            this.handle_static_response (request, post_data);
+        }
     }
 
     private to_words (text: string) {
@@ -507,7 +554,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return line_out;
     }
 
-    private parse_parallel_line (batch: string[]) {
+    private parse_parallel_batch (batch: string[]) {
         const pattern_aligned = /<P><B><EM>--&gt;(.*?)<\/EM><\/B>&nbsp;&nbsp;(.*)/
         let parsed: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
         for (let i = 0; i < this.corpora.length; ++i) {
@@ -526,56 +573,65 @@ export class ResultsComponent implements OnInit, OnDestroy {
         return parsed;
     }
 
-    private parse_results (lines: any) {
-        let output: ConcordanceEntry[] = [];
-        const corpusType = (this.corpora.length === 1) ? 'mono' : 'parallel';
-        let parallel_batch = [];
-        // this.results_number = parseInt (lines[0]);
-        for (let i = 0; i < lines.length; ++i) {
-            let line = lines[i];
-            if (!line)
-                continue;
-            if (corpusType === 'mono'){
-                const parsed = this.parse_primary_line (line);
-                if (parsed.id)
-                    output.push (parsed);
-            }
-            else {
-                parallel_batch.push (line);
-                if (parallel_batch.length === this.corpora.length) {
-                    const parsed = this.parse_parallel_line (parallel_batch);
-                    if (parsed.id)
-                        output.push (parsed);
-                    parallel_batch = [];
-                }
-            }
-        }
+    // private parse_results (lines: any) {
+    //     let output: ConcordanceEntry[] = [];
+    //     const corpusType = (this.corpora.length === 1) ? 'mono' : 'parallel';
+    //     let parallel_batch = [];
+    //     // this.results_number = parseInt (lines[0]);
+    //     for (let i = 0; i < lines.length; ++i) {
+    //         let line = lines[i];
+    //         if (!line)
+    //             continue;
+    //         if (corpusType === 'mono'){
+    //             const parsed = this.parse_primary_line (line);
+    //             if (parsed.id)
+    //                 output.push (parsed);
+    //         }
+    //         else {
+    //             parallel_batch.push (line);
+    //             if (parallel_batch.length === this.corpora.length) {
+    //                 const parsed = this.parse_parallel_line (parallel_batch);
+    //                 if (parsed.id)
+    //                     output.push (parsed);
+    //                 parallel_batch = [];
+    //             }
+    //         }
+    //     }
 
-        return output;
+    //     return output;
+    // }
+
+    // private get_position_from_line (line: string): {position: number, start: number}  {
+    //     const pattern = /^(\d+):\s*/;
+    //     const match = pattern.exec (line);
+    //     return {position: parseInt (match![1]), start: match![0].length}
+    // } 
+
+    private parse_stats_line (line: string, separator: string = '\t') {
+        return line.trim ().split (separator);
     }
 
-    private get_position_from_line (line: string): {position: number, start: number}  {
-        const pattern = /^(\d+):\s*/;
-        const match = pattern.exec (line);
-        return {position: parseInt (match![1]), start: match![0].length}
-    } 
+    // private parse_frequency (data: any) {
+    //     let output: frequency[] = [];
+    //     for (let line of data) {
+    //         const entry = line.split ('\t');
+    //         output.push ({'token': entry[0], 'freq': entry[1]});
+    //     }
+    //     return output;
+    // }
 
-    private parse_collocations (data: any) {
-        let output: collocation[] = [];
-        for (let line of data) {
-            const entry = line.split ('\t');
-            output.push ({'token': entry[0], 'am': entry[1], 'freq': entry[2]});
-        }
-        return output;
-    }
-
-    private parse_frequency (data: any) {
-        let output: frequency[] = [];
-        for (let line of data) {
-            const entry = line.split ('\t');
-            output.push ({'token': entry[0], 'freq': entry[1]});
-        }
-        return output;
+    private update_page () {
+        if (this.module === 'concordance')
+            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        else if (this.module === 'collocations')
+            this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        else if (this.module === 'frequency')
+            this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+        window.scroll({ 
+            top: 0, 
+            left: 0, 
+            behavior: 'auto' 
+          });
     }
 
 }

@@ -123,6 +123,8 @@ def get_command (data: Data, category = 'concordance'):
         else:
             query += f'; cat q'
         cwb_query = f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {SEPARATOR}; {MATCH_INDICATOR}; {PRINT_MODE}; {PRINT_STRUCTURES}; {query};'
+    elif category == 'collocations':
+        cwb_query =  f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {SEPARATOR}; {MATCH_INDICATOR}; {PRINT_MODE}; {query};'
     else:
         cwb_query = f'{CORPUS_NAME}; set Context 0; {PRINT_MODE}; q={query}; group q match {data.grouping_attribute.name};'
     print ('query:', cwb_query)
@@ -136,14 +138,20 @@ def check_error (process):
     error_lines = process.stderr.readlines ()
     return ''.join (error_lines)
 
-def prepare_response (data: Data):
+def valid_line (line):
+    discard_patterns = [r'^<HR>', r'</UL>']
+    
+    return not re.search ('|'.join (discard_patterns), line)
 
-    command = get_command (data)
+def prepare_response (data: Data, category):
+
+    command = get_command (data, category = category)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
-    return pr.communicate ()[0].splitlines ()
+    return [line for line in pr.communicate ()[0].splitlines () if valid_line (line)]
 
 def prepare_response_stream (data: Data, category = 'concordance'):
     command = get_command (data, category = category)
+    langs_number = len (data.query['primary']) + len (data.query['secondary'])
     pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
     error = check_error (pr)
     if error:
@@ -157,48 +165,45 @@ def prepare_response_stream (data: Data, category = 'concordance'):
         separator = data.separator
         if not separator.endswith ('\n'):
             separator += '\n'
-        if query_size > data.size_limit:
-            stream_first = stream_gen (pr, limit = data.chunk_size, name = 'BIG, FIRST')
+        if query_size > max (data.size_limit / langs_number, 1000):     # minimal size of a first chunk set to 1000
+            stream_first = stream_gen (pr, limit = data.chunk_size * langs_number)
             if data.mode == 'full':
-                data.start = query_size - data.end_chunk_size
+                data.start = max (query_size - data.end_chunk_size, data.chunk_size)    # ensure that first and last chunk don't overlap
                 data.mode = 'partial'
                 command = get_command (data, category = category)
                 pr_end = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
-                stream_last = stream_gen (pr_end, name = 'BIG, LAST')
+                stream_last = stream_gen (pr_end)
                 stream = itertools.chain (stream_size, [separator], stream_first, [separator], stream_last)
             else:
                 stream = stream_first
         else:
             if data.mode == 'full':
-                stream = itertools.chain (stream_size, [separator], stream_gen (pr, name = 'SMALL (FULL)'))
+                stream = itertools.chain (stream_size, [separator], stream_gen (pr))
             else:
-                stream = stream_gen (pr, name = 'SMALL (PARTIAL)')
+                stream = stream_gen (pr)
     else:
-        stream = stream_gen (pr, name = 'COLL/FREQ')
+        stream = stream_gen (pr)
     return stream
       
+      
 def stream_gen (process, batch_size = 100, limit = 0, name = ''):
-    discard_patterns = [r'^<HR>', r'</UL>']
     ind = 0
     end = False
     while True:
         if limit and ind >= limit:
-            print (f'stream get (name: {name}, limit: {limit}): LIMIT EXCEEDED')
             break
         lines = []
         while len (lines) < batch_size:
             line = process.stdout.readline ()
-            if re.search ('|'.join (discard_patterns), line):
+            if not valid_line (line):
                 continue
             if not line:
-                print (f'stream gen (name: {name}, ind: {ind}, limit: {limit}): END')
                 end = True
                 break
             lines.append (line)
         if end and not lines:
             break
         ind += len (lines)
-        print (f'stream gen (name: {name}, ind: {ind}, limit: {limit}): ITER')
 
         yield ''.join (lines)
         
@@ -212,31 +217,25 @@ async def get_concordance (data: Data):
 @backend.post ('/collocations')
 async def get_collocations (data: CollocationData):
 
-    response = prepare_response (data)
-    lines = response[1:-2]  # in html mode first and two last lines should be discarded
+    response = prepare_response (data, category = 'collocations')
     pname = data.grouping_attribute.name
     position = data.grouping_attribute.position
     window_size = data.window_size
     frequency_filter = data.frequency_filter
     pos = data.pos
-    results = stats.get_collocations (lines, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
-    results = [f'{entry[0]}\t{entry[1]}\t{entry[2]}' for entry in results]
-    stream = stream_gen (results)
+    results = stats.get_collocations (response, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
 
-    return StreamingResponse (stream, media_type = 'application/x-ndjson')
+    return results;
 
 @backend.post ('/frequency')
 async def get_frequency_list (data: FrequencyData):
 
-    response = prepare_response_stream (data, mode = 'frequency')
-    lines = response[2:]
+    response = prepare_response (data, category = 'frequency')
     attribute = data.grouping_attribute.name
     frequency_filter = data.frequency_filter
-    results = stats.get_frequency (lines, attribute = attribute, frequency_filter = frequency_filter)
-    results = [f'{entry[0]}\t{entry[1]}' for entry in results]
-    stream = stream_gen (results)
-    
-    return StreamingResponse (stream, media_type = 'application/x-ndjson')
+    results = stats.get_frequency (response, attribute = attribute, frequency_filter = frequency_filter)
+        
+    return results
 
 @backend.post ('/context')
 async def get_context (data: ContextData):
