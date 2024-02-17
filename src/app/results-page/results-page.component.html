@@ -11,14 +11,28 @@
         </spoco-info-box>
     </div>
     <div class="col-md-10 offset-md-1">
-        <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs">
+        <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs" *ngIf="results_fetched">
             <mat-tab *ngFor="let tab of tabs; index as i" label="{{ get_tab_name (i) }}">
-                <spoco-results 
-                    [module]="tabs[i].module" 
+                <spoco-concordance *ngIf="tabs[i].module === 'concordance'"
                     (results_fetched_event)="results_fetched($event, i)" 
                     (results_added_event)="add_tab($event)" 
                     (results_updated_event)="tabs[current_tab].number_of_results=$event"
-                    (error)="tabs[current_tab].error = $event"></spoco-results>
+                    (error)="tabs[current_tab].error = $event">
+                </spoco-concordance>
+                <spoco-results-table *ngIf="tabs[i].module === 'collocations'"
+                    [columns]="[{'name': 'collocate', format: ''}, {'name': 'score', 'format': '1.2-2'}, {'name': 'frequency', 'format': '1.0-0'}]"
+                    [module]="'collocations'"
+                    (results_fetched_event)="results_fetched($event, i)"
+                    (results_added_event)="add_tab($event)"
+                    (error)="tabs[current_tab].error = $event">
+                </spoco-results-table>
+                <spoco-results-table *ngIf="tabs[i].module === 'frequency'"
+                    [columns]="[{'name': 'token', format: ''}, {'name': 'frequency', 'format': '1.0-0'}]"
+                    [module]="'frequency'"
+                    (results_fetched_event)="results_fetched($event, i)"
+                    (results_added_event)="add_tab($event)"
+                    (error)="tabs[current_tab].error = $event">
+                </spoco-results-table>
             </mat-tab>
         </mat-tab-group>
     </div>

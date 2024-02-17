@@ -4,7 +4,8 @@ type queryPageDisplayMode = 'mono' | 'ribbon' | 'select' | 'boxes'; // supported
 type resultsDisplayMode = 'plain' | 'kwic';
 type corpusType = 'mono' | 'spoken' | 'parallel';
 type metaObj = {[key: string]: {value: string, description: string, show: boolean}};
-export interface Option {label: string, value: string}         // label - used for displaying, value - for cwb query
+
+interface Option {label: string, value: string}         // label - used for displaying, value - for cwb query
 
 // structure of the positional attribute
 export interface PAttribute {
@@ -20,7 +21,7 @@ export interface PAttribute {
     inTooltip?: boolean;                 // whether to show the attribute value in a tooltip on the results page
 }
 
-export interface SAttribute {
+interface SAttribute {
     name: string;
     description: string;
     type: sattrType;
@@ -29,7 +30,7 @@ export interface SAttribute {
     audio?: boolean;
 }
 
-export interface ConfigObj {
+interface ConfigObj {
     positionalAttributes: PAttribute[];
     modifiers: PAttribute[];
     structuralAttributes: SAttribute[];
@@ -38,11 +39,11 @@ export interface ConfigObj {
     position: number;
 }
 
-export interface PreferencesObj {
+interface PreferencesObj {
     results_per_page: number;
 }
 
-export interface QueryRow {        // TODO: should be in its own file?
+interface QueryRow {        // TODO: should be in its own file?
     [key: string]: {
         value: string;
         modifiers: {
@@ -52,33 +53,42 @@ export interface QueryRow {        // TODO: should be in its own file?
     }
 }
 
-export interface Filters {
+interface Filters {
     [key: string] : string;
 }
 
-export interface Corpus {
+interface Corpus {
     name: string;
     id: string;
     'cwb-corpus': string;
     primary: boolean;
 }
 
-export interface Word {
+interface Word {
     word: string;           // basic positional attribute
     [key: string]: string;  // additional positional attributes
 }
 
-interface ConcordanceEntry {
+interface GenericEntry {
+    meta: metaObj;
+    selected: boolean;
+}
+
+interface ConcordanceEntry extends GenericEntry {
     left_context: Word[] ;
     match: Word[] ;
     right_context: Word[];
     id: string;
-    meta: metaObj;
     aligned: {corpus_name: string, content: Word[]}[];
-    selected: boolean;
 }
 
-export interface Query {
+export interface TableEntry extends GenericEntry {
+    values: any[];
+}
+
+interface Query {
     primary: {'corpus': string, 'query': string};
     secondary: {'corpus': string, 'query': string}[];
 }
+
+

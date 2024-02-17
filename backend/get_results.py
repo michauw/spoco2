@@ -17,30 +17,28 @@ class PAttribute (BaseModel):
 class Data (BaseModel):
     query: Dict
     paths: Dict
+    corpora: List
+    start: int = None
+
+class ConcordanceData (Data):
     context: str
     to_show: List
     print_structures: List
-    corpora: List
-    start: int = None
     size_limit: int
     chunk_size: int
     end_chunk_size: int
     separator: str = None
     mode: str
 
-class ContextData (BaseModel):
-    paths: Dict
-    to_show: List
-    window_size: int
-    context: str
-    print_structures: List
+class ContextData (ConcordanceData):
+    pass
 
 class CollocationData (Data):
+    context: str
+    to_show: List
     window_size: int
     frequency_filter: int
-    # association_measure: str
     grouping_attribute: PAttribute
-    pos: List
 
 class FrequencyData (Data):
     grouping_attribute: PAttribute
@@ -63,9 +61,10 @@ with open (URL_PATH) as fjson:
 
 backend = FastAPI()
 origins = [origin]
+print ('origins:', origins)
 backend.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins='*',
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -95,20 +94,21 @@ def get_command (data: Data, category = 'concordance'):
             break
     else:
         CORPUS_NAME = ''
-    if category != 'frequency':
+    if category in ['concordance', 'collocations']:
         CONTEXT = f'set Context {data.context}' if data.context else ''
+        to_show = data.to_show
+        for corpus in data.corpora:
+            if not corpus['primary']:
+                to_show.append (corpus['cwb-corpus'])
+        TO_SHOW = ' '.join (['+' + el for el in to_show])
+        if TO_SHOW:
+            TO_SHOW = 'show ' + TO_SHOW
     else:
-        CONTEXT = f'set Context 0'
-    to_show = data.to_show
-    for corpus in data.corpora:
-        if not corpus['primary']:
-            to_show.append (corpus['cwb-corpus'])
-    TO_SHOW = ' '.join (['+' + el for el in to_show])
-    if TO_SHOW:
-        TO_SHOW = 'show ' + TO_SHOW
-    PRINT_STRUCTURES = ', '.join (data.print_structures)
-    if PRINT_STRUCTURES:
-        PRINT_STRUCTURES = f'set PrintStructures "{PRINT_STRUCTURES}"'
+        CONTEXT = 'set Context 0'
+    if category == 'concordance':
+        PRINT_STRUCTURES = ', '.join (data.print_structures)
+        if PRINT_STRUCTURES:
+            PRINT_STRUCTURES = f'set PrintStructures "{PRINT_STRUCTURES}"'
     PRINT_MODE = 'set pm html'
 
     SEPARATOR = 'set AttributeSeparator "\t"'
@@ -207,8 +207,8 @@ def stream_gen (process, batch_size = 100, limit = 0, name = ''):
 
         yield ''.join (lines)
         
-@backend.post ('/results')
-async def get_concordance (data: Data):
+@backend.post ('/concordance')
+async def get_concordance (data: ConcordanceData):
     
     stream = prepare_response_stream (data)
     
@@ -222,7 +222,7 @@ async def get_collocations (data: CollocationData):
     position = data.grouping_attribute.position
     window_size = data.window_size
     frequency_filter = data.frequency_filter
-    pos = data.pos
+    pos = [] # data.pos
     results = stats.get_collocations (response, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
 
     return results;

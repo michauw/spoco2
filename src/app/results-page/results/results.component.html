@@ -1,8 +1,4 @@
-<div class="col-md-10 offset-md-1" *ngIf="module === 'concordance'">
-    <spoco-concordance-mono [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType == 'mono'"></spoco-concordance-mono>
-    <spoco-concordance-spoken [results]="currentSlice" *ngIf="corpusType == 'spoken'"></spoco-concordance-spoken>
-    <spoco-concordance-parallel [results]="currentSlice" *ngIf="corpusType=='parallel'"></spoco-concordance-parallel>
-</div>
+<!-- 
 <div class="col-md-6 offset-md-3" *ngIf="module === 'collocations'">
     <table class="table results mt-4 collocations">
         <tr class="header">
@@ -28,7 +24,5 @@
             <td>{{ fr.freq | number: '1.0-0' }}</td>
         </tr>
     </table>
-</div>
-<div class="col-md-12 mt-4 paginator">
-    <spoco-paginator [resLen]="get_results_number()" [perPage]="sliceSize" *ngIf="get_results_number() > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
-</div>
+</div> -->
+

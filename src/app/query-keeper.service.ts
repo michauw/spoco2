@@ -169,6 +169,10 @@ export class QueryKeeperService {
         this.valueChanged.next ('pop');
     }
 
+    queryEmpty () {
+        return Object.keys (this.corpusQuery).length === 0;
+    }
+
     setQueryRow (data: QueryRow, index: number, corpus: string) {
         if (!this.corpusQueryRows.hasOwnProperty (corpus))
             this.corpusQueryRows[corpus] = [];

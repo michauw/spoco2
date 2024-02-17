@@ -41,6 +41,7 @@ export class ResultsPageComponent implements OnInit {
         this.tabs[index].results_fetched = true;
         this.tabs[index].number_of_results = results_data.number_of_results;
         this.tabs[index].query = results_data.query;
+        this.header_visibility (this.header_visible);
     }
 
     tabChanged (event: any) {
@@ -49,6 +50,7 @@ export class ResultsPageComponent implements OnInit {
 
     private header_visibility (show: boolean) {
         let header = document.getElementsByTagName ('mat-tab-header')[0] as HTMLElement;
-        show ? header.style.display = 'flex' : header.style.display = 'none';
+        if (header !== undefined)
+            show ? header.style.display = 'flex' : header.style.display = 'none';
     }
 }
