@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
 import { PAttribute, TableEntry } from 'src/app/dataTypes';
-import { base_url } from 'src/environments/environment';
+import { BASE_URL } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -36,7 +36,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
         super.ngOnInit ();
         let post_data = this.get_post_data ('full');
         this.original_query = post_data.query.primary.query;
-        let url = `${base_url}/${this.module}`;
+        let url = `${BASE_URL}/${this.module}`;
         this.make_request (url, post_data, 'full');
     }
 

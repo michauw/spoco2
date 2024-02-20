@@ -10,7 +10,8 @@ export const environment = {
     }
 };
 
-export const base_url = `http://${environment.host.url}:${environment.host.port}`;
+export const BASE_URL = `http://${environment.host.url}:${environment.host.port}`;
+export const CONFIG_FILE = 'config_dariah.json'
 
 /*
  * For easier debugging in development mode, you can import the following file

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
 import { ConcordanceEntry, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
-import { base_url } from 'src/environments/environment';
+import { BASE_URL } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 
 interface postDataConcordance extends postData {
@@ -33,7 +33,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         super.ngOnInit ();
         let post_data = this.get_post_data ('full');
         this.original_query = post_data.query.primary.query;
-        let url = `${base_url}/concordance`;
+        let url = `${BASE_URL}/concordance`;
         this.make_request (url, post_data, 'full');
     }
     
@@ -61,7 +61,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         const chunk_start = Math.floor (location / this.CHUNK_SIZE) * this.CHUNK_SIZE;
         // this.results_first_empty = chunk_start;
         const post_data = this.get_post_data ('partial', chunk_start);
-        const url = `${base_url}/results`;
+        const url = `${BASE_URL}/concordance`;
         this.make_request (url, post_data, 'partial');
         this.handle_big_results (chunk_start);
     }

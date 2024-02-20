@@ -166,6 +166,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     pageChanged (pageNumber: number) {
         this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
         this.pageChangedChild (pageNumber);
+        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         window.scroll({ 
             top: 0, 
             left: 0, 

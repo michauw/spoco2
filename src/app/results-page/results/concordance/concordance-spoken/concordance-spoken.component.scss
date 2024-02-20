@@ -28,3 +28,15 @@
     padding-top: 0;
     padding-bottom: 0;
 }
+
+.darken {
+    color: #665;
+    transition: color .2s;
+    &:hover {
+        color: #333;
+    }
+}
+
+.text-bigger {
+    font-size: 1.25rem;
+}

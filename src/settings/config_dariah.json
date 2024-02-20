@@ -1,0 +1,87 @@
+{
+    "projectName": "Korpus Dekady",
+    "corpora": 
+        [
+            {"name": "Polish", "id": "dariah", "cwb-corpus":"dariah", "primary": true}
+        ],
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Forma wyrazu"},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemat", "inResults":true, "inTooltip":"true"},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Tag gramatyczny", "inResults":true, "inTooltip":"true"}
+        ],
+    "modifiers": 
+        [
+            {"name": "beginning", "type": "checkbox", "initValue": false, "description": "początek"},
+            {"name": "ending", "type": "checkbox", "initValue": false, "description": "końcówka"},
+            {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "wielkość znaków istotna"},
+            {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignoruj diakrytyki", "use": false}
+        ],
+    "structuralAttributes":
+        [
+            {"name": "meta_tytul", "description":"Tytuł", "type": "text", "inResults": true},
+            {"name": "meta_kanal", "description":"Kanał", "type": "text", "inResults": true},
+            {"name": "meta_zrodlo", "description":"Źródło", "type": "text", "inResults": true},
+            {"name": "meta_kategoria", "description":"Kategoria", "type": "text", "inResults": true},
+            {"name": "meta_data_publikacji", "description":"Data utworzenia", "type": "text", "inResults": true},
+            {"name": "meta_dlugosc", "description":"Długość (s)", "type": "text", "inResults": true},
+            {"name": "meta_url", "description":"Url", "type": "text", "inResults": true},
+            {"name": "meta_liczba_wyswietlen", "description":"Liczba wyświetleń", "type": "text", "inResults": true},
+            {"name": "phrase_spkr", "description":"Rozmówca", "type": "text", "inResults": true},
+            {"name": "phrase_start", "description":"", "type": "text", "inResults": false},
+            {"name": "phrase_end", "description":"", "type": "text", "inResults": false},
+            {"name": "phrase_file", "description":"", "type": "text", "audio":true,"inResults": false}
+        ],
+    "filters": [
+        {"name": "main", "fields": [
+            {
+                "description": "Kanał",
+                 "name": "meta_kanal",
+                 "options": [{"label": "7 metrów pod ziemią", "value": "7 metrów pod ziemią"},
+                             {"label": "Browar Kopyra", "value": "Browar Kopyra"},
+                             {"label": "Imponderabilia", "value": "Imponderabilia"},
+                             {"label": "Kancelaria Premiera", "value": "Kancelaria Premiera"},
+                             {"label": "Karolina Sobańska", "value": "Karolina Sobańska"},
+                             {"label": "Kasia Sawicka", "value": "Kasia Sawicka"},
+                             {"label": "Merta", "value": "Merta"},
+                             {"label": "Pani Swojego Czasu", "value": "Pani Swojego Czasu"},
+                             {"label": "Remigiusz Maciaszek", "value": "Remigiusz Maciaszek"},
+                             {"label": "SEKIELSKI", "value": "SEKIELSKI"},
+                             {"label": "Szymon mówi", "value": "Szymon mówi"},
+                             {"label": "Włodek Markowicz", "value": "Włodek Markowicz"},
+                             {"label": "„Rzeczpospolita”", "value": "„Rzeczpospolita”"}],
+                 "type": "multiselect"
+            },
+            {
+                "description": "Źródło",
+                 "name": "meta_zrodlo",
+                 "options": [{"label": "acast.com", "value": "acast.com"},
+                             {"label": "youtube.com", "value": "youtube.com"}],
+                 "type": "multiselect"
+            },
+            {
+                "description": "Kategoria",
+                 "name": "meta_kategoria",
+                 "options": [{"label": "", "value": ""},
+                             {"label": "Education", "value": "Education"},
+                             {"label": "Gaming", "value": "Gaming"},
+                             {"label": "Howto & Style", "value": "Howto & Style"},
+                             {"label": "News & Politics", "value": "News & Politics"},
+                             {"label": "People & Blogs", "value": "People & Blogs"}],
+                 "type": "multiselect"
+            },
+            {"name": "meta_tytul", "description": "Tytuł", "type": "text"}
+        ]}
+    ],
+    "cwb": {
+        "paths": {
+            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "registry-path":"D:\\Praca\\IJP\\Dariah\\sample\\Corpus\\Registry"
+        },
+        "context":"phrase"
+    },
+    "audio": {
+        "data-dir": "D:\\Praca\\IJP\\Dariah\\sample\\audioBits",
+        "attribute": "phrase_file"
+    }
+}

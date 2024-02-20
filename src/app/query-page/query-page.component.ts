@@ -55,12 +55,9 @@ export class QueryPageComponent implements OnInit {
                 this.configService.store ('cwb', data['config']['cwb']);
                 let corpora: Corpus[] = data['config']['corpora'];
                 corpora = this.corporaKeeper.setCorpora (corpora);    // setCorpora changes corpora order (primary corpous goes first)
-                const audio_attribute = this.is_spoken (data['config']['structuralAttributes']);
                 let corpusType: corpusType;
-                if (audio_attribute) {
-                    let audio_object = data['config']['audio'];
-                    audio_object['attribute'] = audio_attribute.name;
-                    this.configService.store ('audio', audio_object);
+                if (data['config']['audio'] !== undefined) {
+                    this.configService.store ('audio', data['config']['audio']);
                     corpusType = 'spoken';
                 }
                 else {

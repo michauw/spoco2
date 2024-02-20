@@ -42,11 +42,11 @@
     <div class="card-body">
         <spoco-query-row [queryRowIndex]="qr" *ngFor="let qr of qrRange()"></spoco-query-row>
         <div class="plus-minus float-end">
+            <button class="btn row-button theme-dark" (click)="lessRows()" *ngIf="queryRowNumber > 1">
+                -
+            </button>
             <button class="btn row-button theme-dark" (click)="moreRows()">
                 +
-            </button>
-            <button class="btn row-button theme-dark" (click)="lessRows()" [disabled]="queryRowNumber <= 1">
-                -
             </button>
         </div>
         <div class="row">

@@ -1,6 +1,6 @@
 import itertools
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
@@ -261,6 +261,10 @@ async def get_context (data: ContextData):
         command = [PATH, '-r', REGISTRY, query]
         pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
         output.append (pr.communicate ()[0])
+
+@backend.get ('/audio/{audio_file_path:path}')
+async def get_audio_file (audio_file_path: str):
+    return FileResponse (audio_file_path)
         
     
 
