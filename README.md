@@ -14,7 +14,7 @@ The interface currently supports three types of corpora:
 
 Corpora using different variants of SpoCo:
 
-* [Corpus of the Spisz dialect]()
+* [Corpus of the Spisz dialect](https://spisz.ijp.pan.pl)
 * [Diaspol Corpus (Polish-German)](http://www.diaspol.uw.edu.pl/polniem)
 * [Rusyn Corpus](https://www.russinisch.uni-freiburg.de/corpus)
 * [LangGener - spoken Polish-German](https://langgener.ijp.pan.pl)
