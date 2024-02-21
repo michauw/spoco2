@@ -12,6 +12,7 @@ export class ActionService {
     displayMode: resultsDisplayMode;
     showMeta: boolean = false;
     displayModeChanged = new Subject<resultsDisplayMode> ();
+    displayLayerChanged = new Subject<void> ();
     showMetaChanged = new Subject<boolean> ();
     downloadResults = new Subject< 'all' | 'checked' > ();
 
@@ -26,6 +27,10 @@ export class ActionService {
         else
             this.displayMode = 'plain';
         this.displayModeChanged.next (this.displayMode);
+    }
+
+    switchDisplayLayer () {
+        this.displayLayerChanged.next ();
     }
 
     switchShowMeta () {

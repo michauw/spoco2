@@ -23,9 +23,12 @@ export class ConcordanceSpokenComponent implements OnInit, OnChanges, OnDestroy 
     audio_attribute: string;
     audio_path: string;
     displayModeChangedSub: Subscription;
+    displayLayerChangedSub: Subscription;
     showMetaChangedSub: Subscription;
     maxContextSize: number;
     corpora: Corpus[];
+    displayLayers: string[];
+    currentLayer: string;
     row_icon_states: {playing: boolean, extended: boolean}[];
     playing: string = '';
     audio: HTMLAudioElement | null = null;
@@ -36,6 +39,8 @@ export class ConcordanceSpokenComponent implements OnInit, OnChanges, OnDestroy 
 
     ngOnInit(): void {
         const config_audio = this.config.fetch ('audio');
+        this.displayLayers = this.config.fetch ('layers');
+        this.currentLayer = this.displayLayers[0];
         this.mode = this.actions.displayMode;
         this.showMeta = false;
         this.maxContextSize = 8;
@@ -43,6 +48,18 @@ export class ConcordanceSpokenComponent implements OnInit, OnChanges, OnDestroy 
         this.audio_path = config_audio['data-dir'];
         this.corpora = this.corporaKeeper.getCorpora ();
         this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
+        this.displayLayerChangedSub = this.actions.displayLayerChanged.subscribe (() => {
+            for (let i = 0; i < this.displayLayers.length; ++i) {
+                if (this.displayLayers[i] === this.currentLayer) {
+                    if (i === this.displayLayers.length - 1)
+                        this.currentLayer = this.displayLayers[0];
+                    else
+                        this.currentLayer = this.displayLayers[i + 1];
+                    break;
+                }
+                
+            }
+        });
         this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
     }
 
@@ -54,6 +71,7 @@ export class ConcordanceSpokenComponent implements OnInit, OnChanges, OnDestroy 
 
     ngOnDestroy(): void {
         this.displayModeChangedSub.unsubscribe ();
+        this.displayLayerChangedSub.unsubscribe ();
         this.showMetaChangedSub.unsubscribe ();
     }
 

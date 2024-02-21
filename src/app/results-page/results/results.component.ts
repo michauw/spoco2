@@ -289,8 +289,8 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         // }
     }
 
-    protected words_to_string (words: Word[]) {
-        return words.map (w => w.word).join (' ');
+    protected words_to_string (words: Word[], pattr: string = 'word') {
+        return words.map (w => w[pattr]).join (' ');
     }
 
     protected get_aoa (entries: T[]) {

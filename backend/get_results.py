@@ -7,6 +7,7 @@ from typing import List, Dict
 import subprocess as sbp
 from . import stats
 import json
+import pickle
 from math import ceil
 import re
 
@@ -44,12 +45,16 @@ class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
 
-FREQ_PATH = 'src/assets/freq.json'
+FREQ_PATH = 'src/assets/freq.pkl'
 URL_PATH = 'src/environments/environment.ts'
 
 try:
-    with open (FREQ_PATH, encoding = 'utf8') as fjson:
-        freq = json.load (fjson)
+    if FREQ_PATH.endswith ('.json'):
+        with open (FREQ_PATH, encoding = 'utf8') as fjson:
+            freq = json.load (fjson)
+    elif FREQ_PATH.endswith ('.pkl'):
+        with open (FREQ_PATH, 'rb') as fpkl:
+            freq = pickle.load (fpkl)
 except FileNotFoundError:
     import os
     print (f'(get results) warning: frequency file not found ({FREQ_PATH})')
@@ -151,7 +156,7 @@ def prepare_response (data: Data, category):
 
 def prepare_response_stream (data: Data, category = 'concordance'):
     command = get_command (data, category = category)
-    langs_number = len (data.query['primary']) + len (data.query['secondary'])
+    langs_number = len (data.query['secondary']) + 1
     pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
     error = check_error (pr)
     if error:
@@ -166,6 +171,7 @@ def prepare_response_stream (data: Data, category = 'concordance'):
         if not separator.endswith ('\n'):
             separator += '\n'
         if query_size > max (data.size_limit / langs_number, 1000):     # minimal size of a first chunk set to 1000
+            print ('LIMIT:', data.chunk_size * langs_number, data.chunk_size, langs_number)
             stream_first = stream_gen (pr, limit = data.chunk_size * langs_number)
             if data.mode == 'full':
                 data.start = max (query_size - data.end_chunk_size, data.chunk_size)    # ensure that first and last chunk don't overlap

@@ -39,6 +39,7 @@ export class QueryPageComponent implements OnInit {
             (data: Data) => {  
                 this.pattrs = data['config']['positionalAttributes'];
                 let used_numbers: number[] = [];
+                let layers: {name: string, position: number}[] = [];
                 for (let ind = 0; ind < this.pattrs.length; ++ind) {
                     if (this.pattrs[ind].position === undefined) {
                         const pos = used_numbers.length ? Math.max.apply (Math, used_numbers) + 1 : 0;
@@ -47,7 +48,19 @@ export class QueryPageComponent implements OnInit {
                     }
                     else
                         used_numbers.push (this.pattrs[ind].position);
+                    if (this.pattrs[ind].layer !== undefined) {
+                        layers.push ({name: this.pattrs[ind].name, position: this.pattrs[ind].layer!});
+                    }
                 }
+                layers.sort ((x, y) => x.position - y.position);
+                if (!layers.map (el => el.name).includes ('word')) {
+                    let min_position = layers[0].position;
+                    if (min_position > 0)
+                        layers.unshift ({name: 'word', position: 0});
+                    else
+                        layers.push ({name: 'word', position: -1});
+                }
+                this.configService.store ('layers', layers.map (el => el.name));
                 this.configService.store ('positionalAttributes', this.pattrs);
                 this.configService.store ('modifiers', data['config']['modifiers']);
                 this.configService.store ('structuralAttributes', data['config']['structuralAttributes']);

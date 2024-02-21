@@ -273,6 +273,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             let parsed_entry = [];
             parsed_entry.push (this.words_to_string (entry.left_context));
             parsed_entry.push (this.words_to_string (entry.match));
+            parsed_entry.push (this.words_to_string (entry.match, 'lemma'));
             parsed_entry.push (this.words_to_string (entry.right_context));
             for (let aligned of entry.aligned) {
                 parsed_entry.push (this.words_to_string (aligned.content));

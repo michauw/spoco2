@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 
 export type modules = 'concordance' | 'collocations' | 'frequency';
@@ -8,7 +8,7 @@ export type modules = 'concordance' | 'collocations' | 'frequency';
     templateUrl: './results-page.component.html',
     styleUrls: ['./results-page.component.scss']
 })
-export class ResultsPageComponent implements OnInit {
+export class ResultsPageComponent implements OnInit, AfterViewInit {
 
     tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
     tab_module_names: {[key: string]: string} = {concordance: 'konkordancja', collocations: 'kolokacje', frequency: 'lista frekwencyjna'}
@@ -22,8 +22,13 @@ export class ResultsPageComponent implements OnInit {
             const module = params['module'];
             this.add_tab (module);
         });
+        // this.header_visibility (this.header_visible);
+    }
+
+    ngAfterViewInit(): void {
         this.header_visibility (this.header_visible);
     }
+
 
     get_tab_name (index: number) {
         let name = this.tabs[index].name;

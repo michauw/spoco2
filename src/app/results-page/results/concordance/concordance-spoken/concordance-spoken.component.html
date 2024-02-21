@@ -14,13 +14,13 @@
         </td>
         <td>
             <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                {{ word.word }}
+                {{ word[currentLayer] }}
             </span>
             <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                {{ word.word }}
+                {{ word[currentLayer] }}
             </span>
             <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                {{ word.word }}
+                {{ word[currentLayer] }}
             </span>
             <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
         </td>
@@ -63,34 +63,34 @@
             <div class="row thin">
                 <div class="col-sm-5 text-end">
                     <span *ngFor="let word of cutContext (row.left_context, 'left')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word.word }}
+                        {{ word[currentLayer] }}
                     </span>
                 </div>
                 <div class="col-sm-2 text-center">
                     <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word.word }}
+                        {{ word[currentLayer] }}
                     </span>
                 </div>
                 <div class="col-sm-5">
                     <span *ngFor="let word of cutContext (row.right_context, 'right')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word.word }}
+                        {{ word[currentLayer] }}
                     </span>
                 </div>
             </div>
             <div *ngIf="row_icon_states[i]['extended']" class="col-12 mt-3">
                 <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                    {{ word.word }}
+                    {{ word[currentLayer] }}
                 </span>
                 <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                    {{ word.word }}
+                    {{ word[currentLayer] }}
                 </span>
                 <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                    {{ word.word }}
+                    {{ word[currentLayer] }}
                 </span>
             </div>
             <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
         </td>
         <td>
-            <input type="checkbox">
+            <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
         </td>
     </tr>

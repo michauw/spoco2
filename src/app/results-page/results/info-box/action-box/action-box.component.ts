@@ -31,6 +31,10 @@ export class ActionBoxComponent implements OnInit {
         this.actions.switchDisplayMode ();
     }
 
+    switchDisplayLayer () {
+        this.actions.switchDisplayLayer ();
+    }
+
     switchMeta () {
         this.actions.switchShowMeta ();
         this.info.enabled = !this.info.enabled;

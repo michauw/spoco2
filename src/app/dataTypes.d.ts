@@ -1,4 +1,4 @@
-type attrType = 'text' | 'checkbox' | 'select' | 'multiselect';    // supported types for positional attributes input fields
+type attrType = 'text' | 'checkbox' | 'select' | 'multiselect' | 'none';    // supported types for positional attributes input fields
 type sattrType = 'text' | 'number';
 type queryPageDisplayMode = 'mono' | 'ribbon' | 'select' | 'boxes'; // supported display modes for the multicorpora version
 type resultsDisplayMode = 'plain' | 'kwic';
@@ -19,6 +19,7 @@ export interface PAttribute {
     valueFalse?: string;                // as above, but for the false val
     options?: Option[];                 // for select and multiselect
     inTooltip?: boolean;                 // whether to show the attribute value in a tooltip on the results page
+    layer?: number;
 }
 
 interface SAttribute {
