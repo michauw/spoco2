@@ -47,3 +47,7 @@ Thumbs.db
 config.json
 environments.ts
 assets/
+
+.nextcloudsync.log
+.sync_*
+Desktop.ini

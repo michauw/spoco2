@@ -18,14 +18,17 @@ def get_words (text, pattr_no, allowed_pos):
     text = text.strip ()
     if not text:
         return []
-    for text_word in text.strip ().split (' '):
+    for text_word in text.strip ().split (' '): # TODO: sometimes there's a problem with splitting when lemma (or some other positional attribute) has space inside
         layers = text_word.split ('\t')
         if allowed_pos:
             pos = layers[2].split (':')[0]
             if not pos_allowed_nkjp (pos, allowed_pos):
                 words.append (None)
                 continue
-        words.append (layers[pattr_no])
+        try:
+            words.append (layers[pattr_no])
+        except IndexError:
+            pass
         
     return words
 
