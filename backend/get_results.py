@@ -10,6 +10,7 @@ import json
 import pickle
 from math import ceil
 import re
+import os
 
 class PAttribute (BaseModel):
     name: str
@@ -45,19 +46,48 @@ class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
 
-FREQ_PATH = 'src/assets/freq.pkl'
+SETTINGS_PATH = 'settings/config_dariah.json'
 URL_PATH = 'src/environments/environment.ts'
 
-try:
-    if FREQ_PATH.endswith ('.json'):
-        with open (FREQ_PATH, encoding = 'utf8') as fjson:
+
+def load_frequency_list (path):
+    name = 'freq'
+    if os.path.isdir (path):
+        for ending in ['json', 'pkl', 'csv', 'tsv']:
+            freq_path = os.path.join (path, f'{name}.{ending}')
+            if os.path.exists (freq_path):
+                break
+        else:
+            freq_path = ''
+    else:
+        freq_path = path
+    if not os.path.exists (freq_path):
+        print ('(get results) warning: frequency file not found', f'({freq_path})' if freq_path else '')
+        freq = None
+    if freq_path.endswith ('.json'):
+        with open (freq_path, encoding = 'utf8') as fjson:
             freq = json.load (fjson)
-    elif FREQ_PATH.endswith ('.pkl'):
-        with open (FREQ_PATH, 'rb') as fpkl:
+    elif freq_path.endswith ('.pkl'):
+        with open (freq_path, 'rb') as fpkl:
             freq = pickle.load (fpkl)
-except FileNotFoundError:
-    import os
-    print (f'(get results) warning: frequency file not found ({FREQ_PATH})')
+    else:
+        freq = {}
+        with open (freq_path, encoding = 'utf8') as fin:
+            for line in fin:
+                word, fr = line.split ('\t')
+                freq[word.strip ()] = int (fin)
+    
+    return freq
+
+with open (SETTINGS_PATH, encoding = 'utf8') as fjson:
+    SETTINGS = json.load (fjson)
+if 'FREQUENCY_LIST_PATH' in SETTINGS:
+    FREQ_PATH = SETTINGS['FREQUENCY_LIST_PATH']
+else:
+    FREQ_PATH = 'resources'
+
+freq = load_frequency_list (FREQ_PATH)
+    
 
 with open (URL_PATH) as fjson:
     pattern = r'\burl\s*:\s*["\'](.*?)["\']'
