@@ -95,4 +95,18 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
                 }
         });
     }
+
+    get_concordance (token: string) {
+        if (this.module === 'frequency') {
+            const fs = this.config.fetch ('frequency_settings');
+            let fr_query = `[${fs.pattr}="${token}"]`;
+            const orig_query_parts = this.original_query.split ('::');
+            if (orig_query_parts.length > 1)
+                fr_query += '::' + orig_query_parts[1];
+            let query = this.queryKeeper.getCorpusQueries ();
+            query.primary.query = fr_query;
+            this.queryKeeper.setQuery (fr_query, query.primary.corpus);
+            this.results_added_event.emit ('concordance');
+        }
+    }
 }

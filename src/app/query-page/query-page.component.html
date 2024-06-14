@@ -2,10 +2,10 @@
 <div class="container-fluid">
     <spoco-corpus-box></spoco-corpus-box>
     <div class="col-md-10 offset-md-1 search-buttons">
-        <button class="btn btn-success" (click)="search()">Szukaj</button>
-        <button class="btn btn-success" (click)="collocations()">Kolokacje</button>
-        <button class="btn btn-success" (click)="frequency_list()">Lista frekwencyjna</button>
+        <button class="btn btn-success" (click)="search()">Search</button>
+        <button class="btn btn-success" (click)="collocations()">Collocations</button>
+        <button class="btn btn-success" (click)="frequency_list()">Frequency list</button>
         <fa-icon class="icon enlarge sliders" ngClass="exchange.enabled ? '' : 'gray'" [icon]="sliders" (click)="set_stat_settings()" animation="spin"></fa-icon>
-        <button class="btn btn-secondary ml-4" (click)="clear()">Wyczyść</button>
+        <button class="btn btn-secondary ml-4" (click)="clear()">Clear</button>
     </div>
 </div>

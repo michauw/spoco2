@@ -46,9 +46,8 @@ class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
 
-SETTINGS_PATH = 'settings/config_dariah.json'
+SETTINGS_PATH = 'settings/config.json'
 URL_PATH = 'src/environments/environment.ts'
-
 
 def load_frequency_list (path):
     name = 'freq'

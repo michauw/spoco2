@@ -5,7 +5,12 @@
         </tr>
         <tr *ngFor="let col of currentSlice">
             <td *ngFor="let element of getColumnValue(col); index as ind">
-                <span class="ind === 0 ? clickable-underline : ''">{{ element.format ? (element.value | number: element.format) : element.value }}</span>
+                <span *ngIf="ind === 0" class="clickable-underline" (click)="get_concordance(element.value)">
+                    {{ element.format ? (element.value | number: element.format) : element.value }}
+                </span>
+                <span *ngIf="ind !== 0">
+                    {{ element.format ? (element.value | number: element.format) : element.value }}
+                </span>
         </tr>
     </table>
 </div>

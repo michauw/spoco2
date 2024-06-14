@@ -1,13 +1,13 @@
 <div class="col-12 info-box">
     <div class="row">
         <div class="col-lg-9 col-md-8" *ngIf="error === ''">
-            <div class="info-row"><span class="key">Zapytanie:</span><span class="value">{{ query }}</span></div>
-            <div class="info-row"><span class="key">Liczba wyników:</span><span class="value">{{ results_fetched ? results_number : '...' }}</span></div>
-            <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Przedział:</span><span class="value">{{ window_size }}</span></div>
-            <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Filtr frekwencyjny:</span><span class="value">{{ frequency_filter }}</span></div>
+            <div class="info-row"><span class="key">Query:</span><span class="value">{{ query }}</span></div>
+            <div class="info-row"><span class="key">Number of results:</span><span class="value">{{ results_fetched ? results_number : '...' }}</span></div>
+            <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Window:</span><span class="value">{{ window_size }}</span></div>
+            <div class="info-row" *ngIf="module === 'collocations'"><span class="key">Frequency filter:</span><span class="value">{{ frequency_filter }}</span></div>
         </div>
         <div *ngIf="error !== ''" class="col-lg-9 col-md-8 error">
-            Wystąpił błąd!
+            &#x1F640;&nbsp;Error occured
             <div class="message">
                 {{ error }}
             </div>

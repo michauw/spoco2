@@ -55,7 +55,10 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
 
     private header_visibility (show: boolean) {
         let header = document.getElementsByTagName ('mat-tab-header')[0] as HTMLElement;
-        if (header !== undefined)
+        if (header !== undefined) {
             show ? header.style.display = 'flex' : header.style.display = 'none';
+            if (show)
+                this.header_visible = true;
+        }
     }
 }

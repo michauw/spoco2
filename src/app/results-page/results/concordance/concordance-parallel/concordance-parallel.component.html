@@ -1,3 +1,4 @@
+results: {{ results.length }}
 <table class="table results" *ngIf="mode == 'plain'">
     <thead>
         <tr class="header">
@@ -7,19 +8,19 @@
     </thead>
     <tr *ngFor="let row of results">
         <td>
-            <span *ngFor="let word of row.left_context" matTooltip="{{ word['lemma'] }} : {{ word['tag'] }}" matTooltipPosition="above">
+            <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
                 {{ word.word }}
             </span>
-            <span *ngFor="let word of row.match" class="match" matTooltip="{{ word['lemma'] }} : {{ word['tag'] }}" matTooltipPosition="above">
+            <span *ngFor="let word of row.match" class="match" matTooltip="'{{ get_tooltip (word) }}'" matTooltipPosition="above">
                 {{ word.word }}
             </span>
-            <span *ngFor="let word of row.right_context" matTooltip="{{ word['lemma'] }} : {{ word['tag'] }}" matTooltipPosition="above">
+            <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
                 {{ word.word }}
             </span>
             <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
         </td>
         <td *ngFor="let corpus of row.aligned">
-            <span *ngFor="let word of corpus.content" matTooltip="{{ word['lemma'] }} : {{ word['tag'] }}" matTooltipPosition="above">
+            <span *ngFor="let word of corpus.content" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
                 {{ word.word }}
             </span>
         </td>

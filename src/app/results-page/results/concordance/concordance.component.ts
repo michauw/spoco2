@@ -101,6 +101,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     private handle_streaming_response (request: Observable<any>, post_data: postDataConcordance, mode: 'full' | 'partial') {
 
         let partialText_pos = 0;
+        let partial_batch: string[] = [];
         const stages: ('size' | 'regular' | 'ending')[] = ['size', 'regular', 'ending'];
         let stage_index = mode === 'full' ? 0 : 1;
         this.results_position = post_data.start !== undefined ? post_data.start : 0;
@@ -108,7 +109,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             next: 
                 (event: HttpEvent<string>) => {
                     console.log ('event:', event.type, this.results_position);
-                    let partial_batch: string[] = [];
                     if (event.type === HttpEventType.DownloadProgress) {
                         const ev = (
                             event as HttpDownloadProgressEvent
@@ -135,9 +135,12 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             }
                             else {
                                 count += 1;
-                                batch.push (line);
-                                this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
-                                batch = [];
+                                if (line.length)
+                                    batch.push (line);
+                                if (batch.length === this.corpora.length) {
+                                    this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
+                                    batch = [];
+                                }
                                 // else if (this.module !== 'concordance') {
                                 //     const parsed = this.parse_stats_line (batch[0]);
                                 //     if (this.module === 'collocations')

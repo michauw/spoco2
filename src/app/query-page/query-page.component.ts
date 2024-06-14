@@ -53,6 +53,8 @@ export class QueryPageComponent implements OnInit {
                     }
                 }
                 layers.sort ((x, y) => x.position - y.position);
+                if (!layers.length)
+                    layers.push ({name: 'word', position: 0});
                 if (!layers.map (el => el.name).includes ('word')) {
                     let min_position = layers[0].position;
                     if (min_position > 0)

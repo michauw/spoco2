@@ -9,8 +9,8 @@
     "positionalAttributes":
         [
             {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
-            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults": true, "inTooltip": true},
-            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults": true, "inTooltip": true}
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults": true, "inTooltip": true, "position":1},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults": true, "inTooltip": true, "position":2}
         ],
     "modifiers": 
     [
