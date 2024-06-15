@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
+    libpcre3-dev \
     libglib2.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
