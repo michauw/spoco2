@@ -8,8 +8,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    make \
+    pkg-config \
+    libc6-dev \
+    libncurses-dev \
     libpcre3-dev \
     libglib2.0-dev \
+    libreadline-dev
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install CWB tools
