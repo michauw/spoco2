@@ -266,13 +266,13 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
 
     protected override get_aoa (entries: ConcordanceEntry[]) {
         let data = [];
-        let header = ['Left Context', 'Match', 'Right Context'];
+        let header = ['Left Context', 'Match', 'Match (lemma)', 'Right Context'];
         for (let aligned of entries[0].aligned)
             header.push (aligned.corpus_name);
         for (let meta_key in entries[0].meta)
             header.push (meta_key);
         data.push (header);
-        for (let entry of entries) {
+        for (let entry of entries.filter (el => el !== undefined)) {
             let parsed_entry = [];
             parsed_entry.push (this.words_to_string (entry.left_context));
             parsed_entry.push (this.words_to_string (entry.match));

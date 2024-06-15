@@ -47,7 +47,7 @@ class FrequencyData (Data):
     frequency_filter: int
 
 SETTINGS_PATH = 'settings/config.json'
-URL_PATH = 'src/environments/environment.ts'
+# URL_PATH = 'src/environments/environment.ts'
 
 def load_frequency_list (path):
     name = 'freq'
@@ -88,14 +88,14 @@ else:
 freq = load_frequency_list (FREQ_PATH)
     
 
-with open (URL_PATH) as fjson:
-    pattern = r'\burl\s*:\s*["\'](.*?)["\']'
-    host = re.search (pattern, fjson.read ()).group (1)
-    origin = f'http://{host}:4200'
+# with open (URL_PATH) as fjson:
+#     pattern = r'\burl\s*:\s*["\'](.*?)["\']'
+#     host = re.search (pattern, fjson.read ()).group (1)
+#     origin = f'http://{host}:4200'
 
 backend = FastAPI()
-origins = [origin]
-print ('origins:', origins)
+# origins = [origin]
+# print ('origins:', origins)
 backend.add_middleware(
     CORSMiddleware,
     allow_origins='*',

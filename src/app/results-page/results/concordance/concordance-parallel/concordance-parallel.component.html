@@ -1,13 +1,19 @@
-results: {{ results.length }}
 <table class="table results" *ngIf="mode == 'plain'">
     <thead>
         <tr class="header">
-            <th *ngFor="let corpus of corpora">{{ corpus.name }}</th>
+            <ng-container *ngFor="let corpus of corpora; let ind = index">
+                <th *ngIf="visible_columns.includes (ind)" class="lang-header" [ngStyle]="{width: get_column_width ()}">
+                    <fa-icon class="icon shift-langs-left" [icon]="arrow_left" *ngIf="ind === visible_columns[0] && shift_possible ('left')" (click)="shift ('left')"></fa-icon>   
+                    <input type="checkbox" *ngIf="corpora.length > max_visible" [checked]="locked.includes (ind)" (change)="control_locked (ind)" matTooltip="Lock" matTooltipPosition="left">
+                    {{ corpus.name }}
+                    <fa-icon class="icon shift-langs-right" [icon]="arrow_right" *ngIf="(ind === visible_columns[visible_columns.length - 1]) && shift_possible ('right')" (click)="shift ('right')"></fa-icon>
+                </th>
+            </ng-container>
             <th class="selection"></th>
         </tr>
     </thead>
     <tr *ngFor="let row of results">
-        <td>
+        <td *ngIf="visible_columns.includes (0)">
             <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
                 {{ word.word }}
             </span>
@@ -19,11 +25,13 @@ results: {{ results.length }}
             </span>
             <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
         </td>
-        <td *ngFor="let corpus of row.aligned">
-            <span *ngFor="let word of corpus.content" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                {{ word.word }}
-            </span>
-        </td>
+        <ng-container *ngFor="let corpus of row.aligned; let ong = index">
+            <td *ngIf="visible_columns.includes (ong + 1)">
+                <span *ngFor="let word of corpus.content" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                    {{ word.word }}
+                </span>
+            </td>
+        </ng-container>
         <td>
             <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
         </td>
