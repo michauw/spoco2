@@ -1,0 +1,7 @@
+dockerignore
+Copy code
+node_modules
+dist
+.git
+*.log
+*.tmp

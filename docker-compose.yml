@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+      target: development
+    volumes:
+      - ./src:/app
+      - /app/node_modules
+      - ./settings:/app/settings
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: development
+    volumes:
+      - ./backend:/app
+      - ./settings:/app/settings
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
