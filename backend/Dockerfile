@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     libncurses-dev \
     libpcre3-dev \
     libglib2.0-dev \
-    libreadline-dev
+    libreadline-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install CWB tools
