@@ -194,4 +194,3 @@ export class QueryRowComponent implements OnInit, OnDestroy {
             return this.positionalAttributes.filter (attr => { return attr.type === attrType});
     }
 }
-  

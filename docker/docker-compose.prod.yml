@@ -1,21 +1,37 @@
-version: '3.8'
 services:
   frontend:
-    build:
-      context: ./src
-      dockerfile: Dockerfile
+    build: 
+      context: ../frontend
+      dockerfile: docker/Dockerfile
       target: production
+    volumes:
+      - /app/node_modules
+      - ../settings:/usr/share/nginx/html/settings
     ports:
-      - "80:80"
+      - "5000:80"
     environment:
       - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - spoco_net
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: 
+      context: ..
+      dockerfile: backend/docker/Dockerfile
       target: production
+    volumes:
+      - ../settings:/app/settings
+      - ../Corpus:/Corpus
     ports:
       - "8000:8000"
     environment:
       - ENV=production
+    networks:
+      - spoco_net
+
+networks:
+  spoco_net:
+    driver:
+      bridge

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 import subprocess as sbp
-from . import stats
+import stats
 import json
 import pickle
 from math import ceil

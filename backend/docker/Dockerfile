@@ -22,7 +22,7 @@ RUN dpkg -i cwb-3.5.deb
 WORKDIR /app
 
 # Copy requirements.txt and install Python dependencies
-COPY ./requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
 # Stage 2: Development
@@ -34,10 +34,10 @@ RUN pip install \
     pylint
 
 # Copy the rest of the application code
-COPY . .
+COPY backend .
 
 # Copy the settings directory from the host
-COPY ../settings ./settings
+COPY settings ./settings
 
 # Expose the application port
 EXPOSE 8000
@@ -50,10 +50,10 @@ CMD ["uvicorn", "get_results:backend", "--host", "0.0.0.0", "--port", "8000", "-
 FROM base as production
 
 # Copy the rest of the application code
-COPY . .
+COPY backend .
 
 # Copy the settings directory from the host
-COPY ../settings ./settings
+COPY settings ./settings
 
 # Expose the application port
 EXPOSE 8000
