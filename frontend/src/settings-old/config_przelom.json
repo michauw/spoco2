@@ -1,0 +1,58 @@
+{
+    "projectName": "Korpus XIX/XX",
+    "corpora": 
+        [
+            {"name": "Polish", "id": "przelom", "cwb-corpus":"przelom", "primary": true}
+        ],
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Forma wyrazu"},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemat", "inResults":true},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Tag gramatyczny", "inResults":true}
+        ],
+    "modifiers": 
+        [
+            {"name": "beginning", "type": "checkbox", "initValue": false, "description": "początek"},
+            {"name": "ending", "type": "checkbox", "initValue": false, "description": "końcówka"},
+            {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "wielkość znaków istotna"},
+            {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignoruj diakrytyki", "use": false}
+        ],
+    "structuralAttributes":
+        [
+            {"name": "meta_autor", "description":"Autor", "type": "text", "inResults": true},
+            {"name": "meta_tytul", "description":"Tytuł", "type": "text", "inResults": true},
+            {"name": "meta_data_utworzenia", "description":"Data utworzenia", "type": "text", "inResults": true},
+            {"name": "meta_data_wydania", "description":"Data wydania", "type": "text", "inResults": true},
+            {"name": "s_id", "description":"", "type": "number", "inResults": false}
+        ],
+    "filters": [
+        {"name": "main", "fields": [
+            {"name": "meta_autor", "description": "Autor", "type": "multiselect", "options": [
+                {"label": "Berent Wacław", "value": "Berent Wacław"},
+                {"label": "Dołęga-Mostowicz Tadeusz", "value": "Dołęga-Mostowicz Tadeusz"},
+                {"label": "Gąsiorowski Wacław", "value": "Gąsiorowski Wacław"},
+                {"label": "Iwaszkiewicz Jarosław", "value": "Iwaszkiewicz Jarosław"},
+                {"label": "Konopnicka Maria", "value": "Konopnicka Maria"},
+                {"label": "Kossak Zofia", "value": "Kossak Zofia"},
+                {"label": "Kruczkowski Leon", "value": "Kruczkowski Leon"},
+                {"label": "Nałkowska Zofia", "value": "Nałkowska Zofia"},
+                {"label": "Prus Bolesław", "value": "Prus Bolesław"},
+                {"label": "Reymont Władysław Stanisław", "value": "Reymont Władysław Stanisław"},
+                {"label": "Sienkiewicz Henryk", "value": "Sienkiewicz Henryk"},
+                {"label": "Wyspiański Stanisław", "value": "Wyspiański Stanisław"},
+                {"label": "Żeromski Stefan", "value": "Żeromski Stefan"}
+                ]},
+            {"name": "meta_tytul", "description": "Tytuł", "type": "text"},
+            {"name": "meta_data_utworzenia", "description": "Data utworzenia", "type": "text"},
+            {"name": "meta_data_wydania", "description": "Data wydania", "type": "text"}
+            
+        ]}
+    ],
+    "cwb": {
+        "paths": {
+            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "registry-path":"D:\\Praca\\UJ\\warsztaty-01-24\\korpus\\Registry"
+        },
+        "context":"s"
+    }
+}

@@ -1,0 +1,117 @@
+{
+    "projectName": "Korpus Dekady",
+    "corpora": 
+        [
+            {"name": "Polish", "id": "dariah", "cwb-corpus":"dariah", "primary": true}
+        ],
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Forma wyrazu"},
+            {"name": "punct", "type": "none", "initValue": "", "description": "", "inResults":true, "inTooltip":"false", "layer": 1},
+            {"name": "orth", "type": "none", "initValue": "", "description": "", "inResults":true, "inTooltip":"false", "layer": 2},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemat", "inResults":true, "inTooltip":"true"},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Tag gramatyczny", "inResults":true, "inTooltip":"true"}
+        ],
+    "modifiers": 
+        [
+            {"name": "beginning", "type": "checkbox", "initValue": false, "description": "początek"},
+            {"name": "ending", "type": "checkbox", "initValue": false, "description": "końcówka"},
+            {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "wielkość znaków istotna"},
+            {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignoruj diakrytyki", "use": false}
+        ],
+    "structuralAttributes":
+        [
+            {"name": "meta_tytul", "description":"Tytuł", "type": "text", "inResults": true},
+            {"name": "meta_kanal", "description":"Kanał", "type": "text", "inResults": true},
+            {"name": "meta_zrodlo", "description":"Źródło", "type": "text", "inResults": true},
+            {"name": "meta_kategoria", "description":"Kategoria", "type": "text", "inResults": true},
+            {"name": "meta_data_publikacji", "description":"Data utworzenia", "type": "text", "inResults": true},
+            {"name": "meta_dlugosc", "description":"Długość (s)", "type": "text", "inResults": true},
+            {"name": "meta_liczba_wyswietlen", "description":"Liczba wyświetleń", "type": "text", "inResults": true},
+            {"name": "phrase_spkr", "description":"Rozmówca", "type": "text", "inResults": true},
+            {"name": "meta_url", "description":"Url", "type": "text", "inResults": true},
+            {"name": "phrase_start", "description":"", "type": "text", "inResults": false},
+            {"name": "phrase_end", "description":"", "type": "text", "inResults": false},
+            {"name": "phrase_file", "description":"", "type": "text", "audio":true,"inResults": false}
+        ],
+    "filters": [
+        {"name": "main", "fields": [
+            {
+                "description": "Kanał",
+                 "name": "meta_kanal",
+                 "options": [{"label": "7 metrów pod ziemią", "value": "7 metrów pod ziemią"},
+                             {"label": "Agasava", "value": "Agasava"},
+                             {"label": "Browar Kopyra", "value": "Browar Kopyra"},
+                             {"label": "Dwóch Typów Podcast", "value": "Dwóch Typów Podcast"},
+                             {"label": "Dział Zagraniczny", "value": "Dział Zagraniczny"},
+                             {"label": "Imponderabilia", "value": "Imponderabilia"},
+                             {"label": "Kancelaria Premiera", "value": "Kancelaria Premiera"},
+                             {"label": "Karolina Sobańska", "value": "Karolina Sobańska"},
+                             {"label": "Kasia Sawicka", "value": "Kasia Sawicka"},
+                             {"label": "Mała Wielka Firma", "value": "Mała Wielka Firma"},
+                             {"label": "Merta", "value": "Merta"},
+                             {"label": "Mówiąc Inaczej", "value": "Mówiąc Inaczej"},
+                             {"label": "Nowa Konfederacja", "value": "Nowa Konfederacja"},
+                             {"label": "PUDELEK", "value": "PUDELEK"},
+                             {"label": "Pani Swojego Czasu", "value": "Pani Swojego Czasu"},
+                             {"label": "Polimaty", "value": "Polimaty"},
+                             {"label": "Polityka Insight", "value": "Polityka Insight"},
+                             {"label": "Red Lipstick Monster", "value": "Red Lipstick Monster"},
+                             {"label": "Remigiusz Maciaszek", "value": "Remigiusz Maciaszek"},
+                             {"label": "Rozmowy: Wojewódzki & Kędzierski",
+                              "value": "Rozmowy: Wojewódzki & Kędzierski"},
+                             {"label": "SEKIELSKI", "value": "SEKIELSKI"},
+                             {"label": "Szymon mówi", "value": "Szymon mówi"},
+                             {"label": "Tamara Gonzalez Perea",
+                              "value": "Tamara Gonzalez Perea"},
+                             {"label": "Tu Okuniewska", "value": "Tu Okuniewska"},
+                             {"label": "W MOIM STYLU Magda Mołek",
+                              "value": "W MOIM STYLU Magda Mołek"},
+                             {"label": "Włodek Markowicz", "value": "Włodek Markowicz"},
+                             {"label": "loveandgreatshoes", "value": "loveandgreatshoes"},
+                             {"label": "raaadzka", "value": "raaadzka"},
+                             {"label": "„Rzeczpospolita”", "value": "„Rzeczpospolita”"}],
+                 "type": "multiselect"
+            },
+            {
+                "description": "Źródło",
+                 "name": "meta_zrodlo",
+                 "options": [{"label": "acast.com", "value": "acast.com"},
+                             {"label": "newonce.net", "value": "newonce.net"},
+                             {"label": "soundcloud.com", "value": "soundcloud.com"},
+                             {"label": "spreaker.com", "value": "spreaker.com"},
+                             {"label": "youtube.com", "value": "youtube.com"}],
+                 "type": "multiselect"
+            },
+            {
+                "description": "Kategoria",
+                 "name": "meta_kategoria",
+                 "options": [
+                             {"label": "Education", "value": "Education"},
+                             {"label": "Entertainment", "value": "Entertainment"},
+                             {"label": "Film & Animation", "value": "Film & Animation"},
+                             {"label": "Gaming", "value": "Gaming"},
+                             {"label": "Howto & Style", "value": "Howto & Style"},
+                             {"label": "Music", "value": "Music"},
+                             {"label": "News & Politics", "value": "News & Politics"},
+                             {"label": "Nonprofits & Activism", "value": "Nonprofits & Activism"},
+                             {"label": "People & Blogs", "value": "People & Blogs"},
+                             {"label": "Science & Technology", "value": "Science & Technology"},
+                             {"label": "Travel & Events", "value": "Travel & Events"},
+                             {"label": "Wiadomości i polityka", "value": "Wiadomości i polityka"}],
+                 "type": "multiselect"
+            }
+        ]}
+    ],
+    "cwb": {
+        "paths": {
+            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "registry-path":"D:\\Praca\\IJP\\Dariah\\sample\\Corpus\\Registry"
+        },
+        "context":"phrase"
+    },
+    "audio": {
+        "data-dir": "D:\\Praca\\IJP\\Dariah\\sample\\audioBits",
+        "attribute": "phrase_file"
+    }
+}

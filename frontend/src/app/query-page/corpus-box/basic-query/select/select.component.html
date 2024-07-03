@@ -1,0 +1,16 @@
+<div [formGroup]="form">
+        <div [formGroupName]="group">
+            <select class="form-select pattr-input" *ngIf="data.type === 'select'" [formControlName]="name">
+                <option value="" ng-value="null" disabled selected>{{ data.description }}</option>     <-- TODO: doesn't work after clearing -->
+                <option *ngFor="let option of data.options" [ngValue]="option.value">{{ option.label }}</option>
+            </select>
+            <ng-multiselect-dropdown *ngIf="data.type === 'multiselect'"
+                class="pattr-input"
+                [placeholder]="data.description"
+                [settings]="multiSettings"
+                [data]="data.options"
+                [formControlName]="name"
+            >
+            </ng-multiselect-dropdown>
+        </div>   
+</div>

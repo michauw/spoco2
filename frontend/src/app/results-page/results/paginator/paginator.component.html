@@ -1,0 +1,17 @@
+<div class="paginator">
+    <button class="minmax" [disabled]="currentPage === 1" (click)="changePage(1)"> &#171; </button>
+    <button class="pageNum" [ngClass]="{'active': currentPage === pageNumber}" *ngFor="let pageNumber of pageRange" (click)="changePage(pageNumber)">{{ pageNumber }}</button>
+    <button class="minmax" [disabled]="currentPage === lastPage" (click)="changePage(lastPage)"> &#187; </button>
+    <span *ngIf="lastPage >= 7">
+        <input 
+            #jumpToPage
+            type="text" 
+            class="jumpToPage" 
+            placeholder="{{ currentPage }}" 
+            (keyup)="jumpFieldUpdateValue (jumpToPage.value)"
+            (keyup.enter)="changePage(jumpTo)"
+            [ngStyle]="getWidth()"
+        > / {{ lastPage }}
+    </span>
+    <button [ngStyle]="{visibility: pageInRange(jumpTo) ? 'visible' : 'hidden'}" class="jumpBtn" (click)="changePage(jumpTo)"> &#8594; </button>
+</div>

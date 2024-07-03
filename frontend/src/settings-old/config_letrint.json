@@ -1,0 +1,52 @@
+{
+    "projectName": "Parallel Corpus",
+    "corpora": 
+        [
+            {"name": "English", "cwb-corpus": "letrint_en", "id": "ENG", "primary": true},
+            {"name": "Spanish", "cwb-corpus": "letrint_es", "id": "ESP", "primary": false},
+            {"name": "French", "cwb-corpus": "letrint_fr", "id": "FRA", "primary": false}
+        ],
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults": true},
+            {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults": true}
+        ],
+    "modifiers": 
+    [
+        {"name": "beginning", "type": "checkbox", "initValue": false, "description": "begins with"},
+        {"name": "ending", "type": "checkbox", "initValue": false, "description": "ends with"},
+        {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
+        {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
+    ],
+    "structuralAttributes":
+    [
+        {"name": "Align_id", "description":"Segment", "type": "number", "inResults": false, "context": true},
+        {"name": "meta_organisation", "description":"Organisation", "type": "text", "inResults":true},
+        {"name": "meta_publication_date", "description":"Publication date", "type": "text", "inResults":true},
+        {"name": "meta_legal_function", "description":"Legal function", "type": "text", "inResults":true},
+        {"name": "meta_textual_genre", "description":"Textual genre", "type": "text", "inResults":true},
+        {"name": "meta_subgenre", "description":"Subgenre", "type": "text", "inResults":true},
+        {"name": "meta_title_en", "description":"Title (EN)", "type": "text", "inResults":true},
+        {"name": "meta_title_es", "description":"Title (ES)", "type": "text", "inResults":true},
+        {"name": "meta_title_fr", "description":"Title (FR)", "type": "text", "inResults":true}
+    ],
+    "filters": [
+        {"name": "main", "fields": [
+            {"name": "meta_organisation", "description": "Organisation", "type": "multiselect", "options": [{"label": "UN", "value":"UN"}, {"label": "EU", "value":"EU"}, {"label": "WTO", "value": "WTO"}]},
+            {"name": "meta_textual_genre", "description": "Genre", "type": "text"}
+        ]},
+        {"name": "title", "fields": [
+            {"name": "meta_title_en", "description": "Title (EN)", "type": "text"},
+            {"name": "meta_title_es", "description": "Title (ES)", "type": "text"},
+            {"name": "meta_title_fr", "description": "Title (FR)", "type": "text"}
+        ]}
+    ],
+    "cwb": {
+        "paths": {
+            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "registry-path":"D:\\Praca\\Genewa\\Corpus\\Registry"
+        },
+        "context":"Align"
+    }
+}

@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import "../node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+.clickable {
+    cursor: pointer;
+}
+
+.row > .card {
+    padding: 0px;
+}
+
+button.btn {
+    box-shadow: none !important;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Lato, "Helvetica Neue", sans-serif; }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version. */
+mat-tab-header1 {
+    background-color: lightskyblue;
+    display: none !important;
+}

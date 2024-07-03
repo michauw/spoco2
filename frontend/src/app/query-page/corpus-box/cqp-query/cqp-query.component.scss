@@ -1,0 +1,10 @@
+$theme-dark-back-1: #5A6268;
+$theme-dark-back-2: #70777c;
+
+.card-header {
+    &.theme-dark {
+    background-color: $theme-dark-back-1;
+    color: white;
+    opacity: .8;
+    }
+}

@@ -1,5 +1,0 @@
-[
-    {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
-    {"name": "lemma", "type": "checkbox", "initValue": "", "description": "Lemma", "valueTrue": "lemma_on", "valueFalse": ""},
-    {"name": "tag", "type": "text", "initValue": "", "description": "Grammatic tag"}
-]

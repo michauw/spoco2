@@ -1,7 +1,0 @@
-<spoco-concordance-mono [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType == 'mono'"></spoco-concordance-mono>
-<spoco-concordance-spoken [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType == 'spoken'"></spoco-concordance-spoken>
-<spoco-concordance-parallel [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType=='parallel'"></spoco-concordance-parallel>
-
-<div class="col-md-12 mt-4 paginator">
-    <spoco-paginator [resLen]="results.length" [perPage]="sliceSize" *ngIf="results.length > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
-</div>
