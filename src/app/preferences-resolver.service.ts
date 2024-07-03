@@ -12,6 +12,6 @@ export class PreferencesResolver  {
     constructor (private http: HttpClient) {}
 
     resolve (route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<PreferencesObj> | PreferencesObj {
-        return this.http.get<PreferencesObj> ('/settings/preferences.json');
+        return this.http.get<PreferencesObj> ('settings/preferences.json');
     }
 }

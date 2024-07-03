@@ -13,6 +13,6 @@ export class ConfigResolver  {
     constructor (private http: HttpClient) {}
 
     resolve (route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ConfigObj> | ConfigObj {
-        return this.http.get<ConfigObj> (`/settings/${CONFIG_FILE}`);
+        return this.http.get<ConfigObj> (`settings/${CONFIG_FILE}`);
     }
 }

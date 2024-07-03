@@ -85,7 +85,10 @@ if 'FREQUENCY_LIST_PATH' in SETTINGS:
 else:
     FREQ_PATH = 'resources'
 
-freq = load_frequency_list (FREQ_PATH)
+try:
+    freq = load_frequency_list (FREQ_PATH)
+except:
+    freq = {}
     
 
 # with open (URL_PATH) as fjson:

@@ -18,6 +18,11 @@
 
 .error {
     font-size: 1.3em;
+    font-family: 'Arial', 'Helvetica', 'Noto Emoji', sans-serif;
+    & .cat {
+        font-size: 2rem;
+        margin-right: 5px;
+    }
     & .message {
         color: red;
         font-size: 1rem;
