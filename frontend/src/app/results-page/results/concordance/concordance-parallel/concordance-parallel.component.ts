@@ -3,6 +3,7 @@ import { ActionService } from 'src/app/action.service';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 import { ConcordanceMonoComponent } from '../concordance-mono/concordance-mono.component';
 import { faArrowAltCircleLeft, faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons';
+import { ConfigService } from 'src/app/config.service';
 
 type Direction = 'left' | 'right';
 @Component({
@@ -18,8 +19,8 @@ export class ConcordanceParallelComponent extends ConcordanceMonoComponent {
     arrow_left = faArrowAltCircleLeft;
     arrow_right = faArrowAltCircleRight;
 
-    constructor(actions: ActionService, corporaKeeper: CorporaKeeperService) { 
-        super (actions, corporaKeeper);
+    constructor(actions: ActionService, corporaKeeper: CorporaKeeperService, config: ConfigService) { 
+        super (actions, corporaKeeper, config);
     }
 
     control_locked (index: number) {
