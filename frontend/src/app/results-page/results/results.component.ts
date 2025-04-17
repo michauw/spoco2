@@ -47,8 +47,8 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
 
     corpora: Corpus[];
     results_fetched: Boolean;
-    results: T[];
-    currentSlice: T[];
+    results: T[] = [];  // has to be initialized here - in other case the loop over results in child components tries to render undefined
+    currentSlice: T[] = [];
     currentSliceBegin: number = 0;
     sliceSize: number = 20;
     pattrs: PAttribute[];
@@ -85,7 +85,6 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     }
 
     ngOnInit(): void {
-
         this.corpusType = this.config.fetch ('corpusType');
         if (this.corpusType == 'mono')
             this.actions.setDisplayMode ('kwic');

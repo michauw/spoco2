@@ -1,6 +1,143 @@
-<spoco-concordance-mono [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType == 'mono'"></spoco-concordance-mono>
-<spoco-concordance-spoken [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType == 'spoken'"></spoco-concordance-spoken>
-<spoco-concordance-parallel [results]="currentSlice" [pattrs_to_show]="pattrs_to_show" *ngIf="corpusType=='parallel'"></spoco-concordance-parallel>
+<!-- PLAIN MODE -->
+<table class="table results" *ngIf="mode == 'plain'">
+    <thead>
+        <tr class="header" *ngIf="corpusType !== 'mono'">
+            <!-- <ng-container  *ngIf="corpusType == 'mono'">
+                <th>Concordance</th>
+            </ng-container> -->
+            <ng-container *ngIf="corpusType == 'spoken'">
+                <th class="audio">Recording</th>
+                <th>Transcription</th>
+            </ng-container>
+            <ng-container *ngFor="let corpus of parallelCorpora; let ind = index">
+                <th *ngIf="visible_columns.includes (ind)" class="lang-header" [ngStyle]="{width: get_column_width ()}">
+                    <fa-icon class="icon shift-langs-left" [icon]="arrow_left" *ngIf="ind === visible_columns[0] && shift_possible ('left')" (click)="shift ('left')"></fa-icon>   
+                    <input type="checkbox" *ngIf="corpora.length > max_visible" [checked]="locked.includes (ind)" (change)="control_locked (ind)" matTooltip="Lock" matTooltipPosition="left">
+                    {{ corpus.name }}
+                    <fa-icon class="icon shift-langs-right" [icon]="arrow_right" *ngIf="(ind === visible_columns[visible_columns.length - 1]) && shift_possible ('right')" (click)="shift ('right')"></fa-icon>
+                </th>
+            </ng-container>
+            <th class="selection"></th>
+        </tr>
+    </thead>
+    <ng-container *ngIf="results_fetched">
+        <tr *ngFor="let row of results">
+            <ng-container *ngIf="corpusType != 'parallel'">
+                <td *ngIf="corpusType == 'spoken'">
+                    <audio controls preload="none">
+                        <source [src]="get_audio(row)">
+                    </audio>
+                </td>
+                <td>
+                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                    <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                    <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
+                </td>
+            </ng-container>
+            <ng-container *ngIf="corpusType == 'parallel'">
+                <td *ngIf="visible_columns.includes (0)">
+                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word.word }}
+                    </span>
+                    <span *ngFor="let word of row.match" class="match" matTooltip="'{{ get_tooltip (word) }}'" matTooltipPosition="above">
+                        {{ word.word }}
+                    </span>
+                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word.word }}
+                    </span>
+                    <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
+                </td>
+                <ng-container *ngFor="let corpus of row.aligned; let ong = index">
+                    <td *ngIf="visible_columns.includes (ong + 1)">
+                        <span *ngFor="let word of corpus.content" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                            {{ word.word }}
+                        </span>
+                    </td>
+                </ng-container>
+            </ng-container>
+            <td>
+                <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
+            </td>
+        </tr>
+    </ng-container>
+</table>
+
+<!-- KWIC MODE -->
+<table class="table results" *ngIf="mode == 'kwic'">
+    <thead>
+        <tr class="text-center header">
+            <ng-container *ngIf="corpusType === 'spoken'">
+                <th class="expand hidden"></th>
+            </ng-container>
+            <th class="expand hidden"></th>
+            <th class="content clickable">
+                <div class="row thin">
+                    <div class="col-sm-5">Left Context</div>
+                    <div class="col-sm-2 mx-auto">Match</div>
+                    <div class="col-sm-5">Right Context</div>
+                </div>
+            </th>
+            <th class="selection"></th>
+        </tr>
+    </thead>
+    <ng-container *ngIf="results_fetched">
+        <tr *ngFor="let row of results; let i = index">
+            <td *ngIf="corpusType === 'spoken'">
+                <fa-icon [icon]="icons[row_icon_states[i]['playing'] ? 'stop' : 'play']" (click)="play(i, row)" class="darken clickable"></fa-icon>
+            </td>
+            <td class="expand">   
+                <fa-icon 
+                    [icon]="icons[row_icon_states[i]['extended'] ? 'minus' : 'plus']" 
+                    class="darken text-bigger clickable" 
+                    (click)="row_icon_states[i]['extended'] = !row_icon_states[i]['extended']">
+                </fa-icon>
+            </td>
+            <td>
+                <div class="row thin">
+                    <div class="col-sm-5 text-end">
+                        <span *ngFor="let word of cutContext (row.left_context, 'left')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                            {{ word[currentLayer] }}
+                        </span>
+                    </div>
+                    <div class="col-sm-2 text-center">
+                        <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                            {{ word[currentLayer] }}
+                        </span>
+                    </div>
+                    <div class="col-sm-5">
+                        <span *ngFor="let word of cutContext (row.right_context, 'right')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                            {{ word[currentLayer] }}
+                        </span>
+                    </div>
+                </div>
+                <div *ngIf="row_icon_states[i]['extended']" class="col-12 mt-3">
+                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                    <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
+                        {{ word[currentLayer] }}
+                    </span>
+                </div>
+                <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
+            </td>
+            <td>
+                <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
+            </td>
+        </tr>
+    </ng-container>
+</table>
+
+<!-- PAGINATOR -->
 
 <div class="col-md-12 mt-4 paginator">
     <spoco-paginator [resLen]="results.length" [perPage]="sliceSize" *ngIf="results.length > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>

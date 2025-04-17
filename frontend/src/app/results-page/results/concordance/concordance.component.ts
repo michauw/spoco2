@@ -1,9 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { ConcordanceEntry, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
+import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { ActionService } from 'src/app/action.service';
+import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
+import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop } from '@fortawesome/free-solid-svg-icons';
+
+
 
 interface postDataConcordance extends postData {
     context: string;
@@ -17,14 +22,37 @@ interface postDataConcordance extends postData {
 }
 
 type results_data = {'query': string, 'number_of_results': number};
+type Direction = 'left' | 'right';
 
 @Component({
     selector: 'spoco-concordance',
     templateUrl: './concordance.component.html',
     styleUrl: './concordance.component.scss'
 })
-export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> implements OnInit {
+export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> implements OnInit, OnDestroy {
 
+    mode: string;
+    showMeta: boolean;
+    parallelCorpora: Corpus[];
+    max_visible: number;
+    maxContextSize: number;
+    locked: number[];
+    visible_columns: number[];
+    displayLayers: string[];
+    currentLayer: string;
+    row_icon_states: {playing: boolean, extended: boolean}[] = [];
+    playing: string = '';
+    audio: HTMLAudioElement | null = null;
+    audio_attribute: string;
+    audio_path: string;
+    currently_playing: string = '';
+    icons = {'plus': faPlus, 'minus': faMinus, 'play': faPlay, 'stop': faStop}
+    arrow_left = faArrowAltCircleLeft;
+    arrow_right = faArrowAltCircleRight;
+    displayModeChangedSub: Subscription;
+    displayLayerChangedSub: Subscription;
+    showMetaChangedSub: Subscription;
+    
     constructor (private http: HttpClient) {
         super (...ResultsComponent.inject_dependencies ());
     }
@@ -32,9 +60,50 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     override ngOnInit(): void {
         super.ngOnInit ();
         let post_data = this.get_post_data ('full');
-        this.original_query = post_data.query.primary.query;
         let url = `${BASE_URL}/concordance`;
+        this.original_query = post_data.query.primary.query;
+        this.displayLayers = this.config.fetch ('layers');
+        this.currentLayer = this.displayLayers[0];
+        if (this.corpusType === 'spoken') {
+            const config_audio = this.config.fetch ('audio');
+            this.audio_attribute = config_audio.attribute;
+            this.audio_path = config_audio['data-dir'];
+        }
         this.make_request (url, post_data, 'full');
+        this.mode = this.actions.displayMode;
+        this.showMeta = false;
+        this.max_visible = 3;
+        this.maxContextSize = 8;
+        this.parallelCorpora = this.corpusType === 'parallel' ? this.corporaKeeper.getCorpora () : [];
+        this.locked = [0];
+        this.visible_columns = this.get_visible_columns ();
+        
+        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
+        this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
+        this.displayLayerChangedSub = this.actions.displayLayerChanged.subscribe (() => {
+            for (let i = 0; i < this.displayLayers.length; ++i) {
+                if (this.displayLayers[i] === this.currentLayer) {
+                    if (i === this.displayLayers.length - 1)
+                        this.currentLayer = this.displayLayers[0];
+                    else
+                        this.currentLayer = this.displayLayers[i + 1];
+                    break;
+                }
+            }
+        });
+    }
+
+    ngOnChanges(): void {
+        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false }));
+        if (this.corpusType === 'spoken' && this.audio)
+            this.audio.pause ();
+    }
+
+    override ngOnDestroy(): void {
+        super.ngOnDestroy ();
+        this.displayModeChangedSub.unsubscribe ();
+        this.displayLayerChangedSub.unsubscribe ();
+        this.showMetaChangedSub.unsubscribe ();
     }
     
     override pageChangedChild (pageNumber: number): void {
@@ -108,7 +177,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         request.subscribe ({
             next: 
                 (event: HttpEvent<string>) => {
-                    console.log ('event:', event.type, this.results_position);
                     if (event.type === HttpEventType.DownloadProgress) {
                         const ev = (
                             event as HttpDownloadProgressEvent
@@ -131,6 +199,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             else if (stages[stage_index] === 'size') {
                                 this.results_number = parseInt (line);
                                 this.results = Array (this.results_number).fill (undefined);
+                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false }));
                                 this.results_updated_event.emit (this.results_number);
                             }
                             else {
@@ -287,6 +356,124 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             data.push (parsed_entry);
         }
         return data;
+    }
+
+    /* Methods for all the modes */
+
+    cutContext (context: Word[], side: string) {
+        if (side === 'left')
+            return context.slice (-this.maxContextSize - 1);
+        else (side == 'right')
+            return context.slice (0, this.maxContextSize + 1);
+    }
+
+    toList (meta: metaObj) {
+        let lst = [];
+        for (let name in meta)
+            if (meta[name].show)
+                lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
+
+        return lst;
+    }
+
+    get_tooltip (word: Word) {
+        let tooltip = [];
+        for (let pattr of this.pattrs_to_show)
+            if (pattr !== 'word')
+                tooltip.push (word[pattr]);
+
+        return tooltip.join (' : ');
+    }
+
+    /* Methods for the spoken mode */
+
+    get_audio (row: ConcordanceEntry) {
+        return `${BASE_URL}/audio/${row.meta[this.audio_attribute].value}`;
+    }
+
+    play (index: number, row: ConcordanceEntry) {
+        const audioPath = this.get_audio (row);
+        if (this.audio) {
+            this.audio.pause ();
+        }
+        if (this.currently_playing === row.id) {
+            this.currently_playing = '';
+            this.row_icon_states[index].playing = false;
+        }
+        else {
+            if (this.currently_playing) {
+                for (let state of this.row_icon_states)
+                    if (state.playing)
+                        state.playing = false;
+            }
+            this.currently_playing = row.id;
+            this.row_icon_states[index].playing = true;
+            this.audio = new Audio (audioPath);
+            this.audio.play().catch (() => {
+                this.row_icon_states[index].playing = false; // Reset state on error
+            });
+            this.audio.onended = () => {
+                console.log ('end, ', index);
+                this.row_icon_states[index].playing = false;
+                this.currently_playing = '';
+            };
+        }
+      }
+
+    /* Methods for the parallel mode */
+
+    control_locked (index: number) {
+        const found = this.locked.indexOf (index);
+        if (found === -1) {
+            this.locked.push (index);
+            this.locked.sort ();
+        }
+        else {
+            this.locked.splice (found, 1);
+        }
+    }
+
+    get_column_width () {
+        const val = (100 - 8) / this.max_visible;
+        return `${val}%`;
+    }
+
+    get_visible_columns () {
+        let visible = this.locked.slice ();
+        const usedIndexes = new Set (visible);
+        for (let i = 0; visible.length < this.max_visible; ++i)
+            if (!usedIndexes.has (i))
+                visible.push (i);
+        return visible;
+    }
+
+    shift_possible (direction: Direction) {
+        console.log ('dir:', direction);
+        if (this.locked.length === this.max_visible)
+            return false;
+        const not_locked = this.visible_columns.filter (el => !this.locked.includes (el));  
+        const start = direction === 'left' ? 0 : not_locked[not_locked.length - 1] + 1;
+        const end = direction === 'left' ? not_locked[0] : this.corpora.length;
+        for (let i = start; i < end; ++i)
+            if (!this.locked.includes (i))
+                return true;
+        return false;
+    }
+
+    shift (direction: Direction) {
+        let available = [];
+        const start = direction === 'left' ? Math.max (0, this.visible_columns[0] - this.max_visible) : this.visible_columns[0];
+        const end = direction === 'left' ? this.visible_columns[this.visible_columns.length - 1] : Math.min (this.visible_columns[this.visible_columns.length - 1] + this.max_visible, this.corpora.length - 1);
+        for (let i = start; i <= end; ++i)
+            if (!this.locked.includes (i))
+                available.push (i);
+        for (let i = 0; i < this.visible_columns.length; ++i) {
+            if (!this.locked.includes (this.visible_columns[i])) {
+                const place = available.indexOf (this.visible_columns[i]);
+                this.visible_columns[i] = available[place + (direction === 'left' ? -1 : 1)];
+            }
+        }
+        this.visible_columns.sort ();
     }
 
     

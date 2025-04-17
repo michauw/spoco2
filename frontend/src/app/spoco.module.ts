@@ -22,9 +22,6 @@ import { InfoBoxComponent } from './results-page/results/info-box/info-box.compo
 import { ActionBoxComponent } from './results-page/results/info-box/action-box/action-box.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ConcordanceComponent } from './results-page/results/concordance/concordance.component';
-import { ConcordanceMonoComponent } from './results-page/results/concordance/concordance-mono/concordance-mono.component';
-import { ConcordanceParallelComponent } from './results-page/results/concordance/concordance-parallel/concordance-parallel.component';
-import { ConcordanceSpokenComponent } from './results-page/results/concordance/concordance-spoken/concordance-spoken.component';
 import { ResultsTableComponent } from './results-page/results/results-table/results-table.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MetaShowComponent } from './results-page/results/meta-show/meta-show.component';
@@ -52,13 +49,10 @@ import { MatTabsModule } from '@angular/material/tabs';
         ConcordanceComponent,
         InfoBoxComponent,
         ActionBoxComponent,
-        ConcordanceMonoComponent,
         MetaShowComponent,
-        ConcordanceParallelComponent,
         HeaderComponent,
         ConfigCreatorComponent,
         PaginatorComponent,
-        ConcordanceSpokenComponent,
         SettingsBoxComponent,
         ResultsTableComponent
   ],

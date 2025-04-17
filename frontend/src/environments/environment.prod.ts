@@ -6,7 +6,7 @@ export const environment = {
     }
 };
 
-export const BASE_URL = `https://${environment.host.url}:${environment.host.port}`;
-export const CONFIG_FILE = 'config.json'
+export const BASE_URL = `https://${environment.host.url}:${environment.host.port}/api`;
+// export const CONFIG_FILE = 'config.json'
 
 
