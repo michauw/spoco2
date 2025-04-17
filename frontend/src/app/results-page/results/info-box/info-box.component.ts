@@ -1,15 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ConfigService } from 'src/app/config.service';
-import { QueryKeeperService } from 'src/app/query-keeper.service';
 
 @Component({
     selector: 'spoco-info-box',
     templateUrl: './info-box.component.html',
     styleUrls: ['./info-box.component.scss']
 })
-export class InfoBoxComponent implements OnInit {
+export class InfoBoxComponent implements OnInit, OnChanges {
 
-    constructor(private config: ConfigService) { }
+    constructor(private config: ConfigService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         if (this.module === 'collocations') {
@@ -18,6 +17,10 @@ export class InfoBoxComponent implements OnInit {
             this.frequency_filter = cs.frequency_filter;
         }
         
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.cdr.detectChanges ();
     }
 
     @Input() results_fetched: Boolean;
