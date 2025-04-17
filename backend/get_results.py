@@ -1,9 +1,11 @@
 import itertools
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
+from pathlib import Path
 import subprocess as sbp
 import stats
 import json
@@ -11,6 +13,7 @@ import pickle
 from math import ceil
 import re
 import os
+import logging
 
 class PAttribute (BaseModel):
     name: str
@@ -46,8 +49,9 @@ class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
 
-SETTINGS_PATH = 'settings/config.json'
+# SETTINGS_PATH = 'settings/config.json'
 # URL_PATH = 'src/environments/environment.ts'
+
 
 def load_frequency_list (path):
     name = 'freq'
@@ -78,23 +82,26 @@ def load_frequency_list (path):
     
     return freq
 
-with open (SETTINGS_PATH, encoding = 'utf8') as fjson:
-    SETTINGS = json.load (fjson)
-if 'FREQUENCY_LIST_PATH' in SETTINGS:
-    FREQ_PATH = SETTINGS['FREQUENCY_LIST_PATH']
+CONFIG_PATH = Path (__file__).parent.parent / 'settings' / 'config.json'
+print ('Config:', CONFIG_PATH)
+with open (CONFIG_PATH, encoding = 'utf8') as fjson:
+    config = json.load (fjson)
+
+if 'FREQUENCY_LIST_PATH' in config:
+    FREQ_PATH = config['FREQUENCY_LIST_PATH']
 else:
     FREQ_PATH = 'resources'
-
 try:
     freq = load_frequency_list (FREQ_PATH)
 except:
     freq = {}
-    
 
-# with open (URL_PATH) as fjson:
-#     pattern = r'\burl\s*:\s*["\'](.*?)["\']'
-#     host = re.search (pattern, fjson.read ()).group (1)
-#     origin = f'http://{host}:4200'
+AUDIO_DIR = ''
+if 'audio' in config:
+    try:
+        AUDIO_DIR = config['audio']['data-dir']
+    except KeyError:
+        logging.error ('config file: "audio" key defined, but no "data-dir" found')
 
 backend = FastAPI()
 # origins = [origin]
@@ -107,8 +114,12 @@ backend.add_middleware(
     allow_headers=["*"],
 )
 
+if AUDIO_DIR:
+    backend.mount ('/api/audio', StaticFiles (directory = AUDIO_DIR), name = 'audio')
+    logging.info (f'mount audio directory: {AUDIO_DIR}')
+
  
-@backend.get ('/')
+@backend.get ('/api/')
 async def root ():
     return {'message': 'Hello SpoCo'}
 
@@ -245,14 +256,14 @@ def stream_gen (process, batch_size = 100, limit = 0, name = ''):
 
         yield ''.join (lines)
         
-@backend.post ('/concordance')
+@backend.post ('/api/concordance')
 async def get_concordance (data: ConcordanceData):
     
     stream = prepare_response_stream (data)
     
     return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
-@backend.post ('/collocations')
+@backend.post ('/api/collocations')
 async def get_collocations (data: CollocationData):
 
     response = prepare_response (data, category = 'collocations')
@@ -265,7 +276,7 @@ async def get_collocations (data: CollocationData):
 
     return results;
 
-@backend.post ('/frequency')
+@backend.post ('/api/frequency')
 async def get_frequency_list (data: FrequencyData):
 
     response = prepare_response (data, category = 'frequency')
@@ -275,7 +286,7 @@ async def get_frequency_list (data: FrequencyData):
         
     return results
 
-@backend.post ('/context')
+@backend.post ('/api/context')
 async def get_context (data: ContextData):
     
     output = []
@@ -300,7 +311,13 @@ async def get_context (data: ContextData):
         pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
         output.append (pr.communicate ()[0])
 
-@backend.get ('/audio/{audio_file_path:path}')
+
+@backend.get ('/api/config')
+def get_config ():
+    print ('reg:', config['cwb']['paths']['registry-path'])
+    return config
+
+@backend.get ('/api/audio/{audio_file_path:path}')
 async def get_audio_file (audio_file_path: str):
     return FileResponse (audio_file_path)
         
