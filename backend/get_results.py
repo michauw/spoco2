@@ -83,9 +83,11 @@ def load_frequency_list (path):
     return freq
 
 CONFIG_PATH = Path (__file__).parent.parent / 'settings' / 'config.json'
-print ('Config:', CONFIG_PATH)
+PREF_PATH = Path (__file__).parent.parent / 'settings' / 'preferences.json'
 with open (CONFIG_PATH, encoding = 'utf8') as fjson:
     config = json.load (fjson)
+with open (PREF_PATH, encoding = 'utf8') as fjson:
+    preferences = json.load (fjson)
 
 if 'FREQUENCY_LIST_PATH' in config:
     FREQ_PATH = config['FREQUENCY_LIST_PATH']
@@ -314,8 +316,11 @@ async def get_context (data: ContextData):
 
 @backend.get ('/api/config')
 def get_config ():
-    print ('reg:', config['cwb']['paths']['registry-path'])
     return config
+
+@backend.get ('/api/preferences')
+def get_preferences ():
+    return preferences
 
 @backend.get ('/api/audio/{audio_file_path:path}')
 async def get_audio_file (audio_file_path: str):
