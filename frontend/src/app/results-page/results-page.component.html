@@ -6,17 +6,17 @@
             [results_number]="tabs[current_tab].number_of_results" 
             [module]="tabs[current_tab].module"
             [query]="tabs[current_tab].query"
-            [error] = "tabs[current_tab].error"
+            [error]="tabs[current_tab].error"
             >
         </spoco-info-box>
     </div>
     <div class="col-md-10 offset-md-1">
-        <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs" *ngIf="results_fetched">
+        <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs">
             <mat-tab *ngFor="let tab of tabs; index as i" label="{{ get_tab_name (i) }}">
                 <spoco-concordance *ngIf="tabs[i].module === 'concordance'"
                     (results_fetched_event)="results_fetched($event, i)" 
                     (results_added_event)="add_tab($event)" 
-                    (results_updated_event)="tabs[current_tab].number_of_results=$event"
+                    (results_updated_event)="update_tab_results($event)"
                     (error)="tabs[current_tab].error = $event">
                 </spoco-concordance>
                 <spoco-results-table *ngIf="tabs[i].module === 'collocations'"

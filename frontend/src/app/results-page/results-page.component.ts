@@ -11,9 +11,8 @@ export type modules = 'concordance' | 'collocations' | 'frequency';
 export class ResultsPageComponent implements OnInit, AfterViewInit {
 
     tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
-    tab_module_names: {[key: string]: string} = {concordance: 'konkordancja', collocations: 'kolokacje', frequency: 'lista frekwencyjna'}
+    tab_module_names: {[key: string]: string} = {concordance: 'concordance', collocations: 'collocations', frequency: 'frequency list'}
     current_tab: number = 0;
-    header_visible = false;
 
     constructor(private route: ActivatedRoute) { }
 
@@ -26,7 +25,7 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.header_visibility (this.header_visible);
+        this.header_visibility ();
     }
 
 
@@ -39,26 +38,28 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     add_tab (module: modules) {
         this.tabs.push ({name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...', error: '', results_fetched: false});
         this.current_tab = this.tabs.length - 1;
-        this.header_visibility (true);
+        this.header_visibility ();
     }
 
     results_fetched (results_data: {query: string, number_of_results: number}, index: number) {
         this.tabs[index].results_fetched = true;
         this.tabs[index].number_of_results = results_data.number_of_results;
         this.tabs[index].query = results_data.query;
-        this.header_visibility (this.header_visible);
+        this.header_visibility ();
     }
 
     tabChanged (event: any) {
         this.current_tab = event.index;
     }
 
-    private header_visibility (show: boolean) {
+    update_tab_results (res_number: number) {
+        this.tabs[this.current_tab].number_of_results = res_number;
+    }
+
+    private header_visibility () {
         let header = document.getElementsByTagName ('mat-tab-header')[0] as HTMLElement;
         if (header !== undefined) {
-            show ? header.style.display = 'flex' : header.style.display = 'none';
-            if (show)
-                this.header_visible = true;
+            this.tabs.length > 1 ? header.style.display = 'flex' : header.style.display = 'none';
         }
     }
 }
