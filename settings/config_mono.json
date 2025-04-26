@@ -2,7 +2,7 @@
     "projectName": "Monolingual Corpus",
     "corpora": 
         [
-            {"name": "Novels", "id": "mono", "cwb-corpus":"mono", "primary": true}
+            {"name": "Boy", "id": "mono", "cwb-corpus":"boy", "primary": true}
         ],
     "positionalAttributes":
         [
@@ -29,10 +29,11 @@
     "structuralAttributes":
         [
             {"name": "s_id", "description":"Nr zdania", "type": "number", "inResults": false, "context": true},
-            {"name": "meta_author", "description":"Author", "type": "text", "inResults":true},
-            {"name": "meta_title", "description":"Title", "type": "text", "inResults":true},
-            {"name": "meta_published", "description":"Publish year", "type": "text", "inResults":true},
-            {"name": "ner_type", "description":"Named entity type", "type": "text", "inResults":true}
+            {"name": "meta_autor", "description":"Author", "type": "text", "inResults": true},
+            {"name": "meta_tytul", "description":"Title", "type": "text", "inResults": true},
+            {"name": "meta_tom", "description":"Volume", "type": "text", "inResults": true},
+            {"name": "meta_rok_wydania", "description":"Publish year", "type": "text", "inResults": true},
+            {"name": "meta_rok_tlumaczenia", "description":"Translation year", "type": "text", "inResults": true}
         ],
     "filters": [
         {"name": "main", "fields": [
@@ -61,8 +62,8 @@
     ],
     "cwb": {
         "paths": {
-            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
-            "registry-path":"D:\\Praca\\zasoby\\korpusy\\boy\\Registry"
+            "cqp-path":"C:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "registry-path":"C:\\Praca\\spoco\\spoco\\tests\\Corpora\\mono\\boy\\Registry"
         },
         "context":"s"
     }

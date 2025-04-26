@@ -1,8 +1,4 @@
-# Stage 1: Base
-FROM python:3.8-slim as base
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+FROM python:3.8-slim
 
 # Install necessary dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,6 +14,8 @@ RUN apt-get update && apt-get install -y \
 RUN wget https://sourceforge.net/projects/cwb/files/cwb/cwb-3.5/deb/cwb_3.5.0-1_amd64.deb/download -O cwb-3.5.deb
 RUN dpkg -i cwb-3.5.deb
 
+# COPY Corpus /Corpus
+COPY settings /settings
 # Set working directory
 WORKDIR /app
 
@@ -25,38 +23,12 @@ WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
-# Stage 2: Development
-FROM base as development
-
-# Install development dependencies
-RUN pip install \
-    pytest \
-    pylint
-
 # Copy the rest of the application code
 COPY backend .
-
-# Copy the settings directory from the host
-COPY settings ./settings
-
-# Expose the application port
-EXPOSE 8000
-
-# Command to run the application in development mode
-CMD ["uvicorn", "get_results:backend", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
-
-# Stage 3: Production
-FROM base as production
-
-# Copy the rest of the application code
-COPY backend .
-
-# Copy the settings directory from the host
-COPY settings ./settings
 
 # Expose the application port
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "get_results:backend", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "get_results:backend", "--host", "0.0.0.0", "--port", "8000"]
+CMD [ "bash", "-c", "python docker/update_registry.py && gunicorn get_results:backend --bind 0.0.0.0:8000 -w 4 -k uvicorn.workers.UvicornWorker" ]

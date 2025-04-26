@@ -21,14 +21,10 @@ class PAttribute (BaseModel):
 
 class Data (BaseModel):
     query: Dict
-    paths: Dict
     corpora: List
     start: int = None
 
 class ConcordanceData (Data):
-    context: str
-    to_show: List
-    print_structures: List
     size_limit: int
     chunk_size: int
     end_chunk_size: int
@@ -40,7 +36,6 @@ class ContextData (ConcordanceData):
 
 class CollocationData (Data):
     context: str
-    to_show: List
     window_size: int
     frequency_filter: int
     grouping_attribute: PAttribute
@@ -48,10 +43,6 @@ class CollocationData (Data):
 class FrequencyData (Data):
     grouping_attribute: PAttribute
     frequency_filter: int
-
-# SETTINGS_PATH = 'settings/config.json'
-# URL_PATH = 'src/environments/environment.ts'
-
 
 def load_frequency_list (path):
     name = 'freq'
@@ -92,7 +83,7 @@ with open (PREF_PATH, encoding = 'utf8') as fjson:
 if 'FREQUENCY_LIST_PATH' in config:
     FREQ_PATH = config['FREQUENCY_LIST_PATH']
 else:
-    FREQ_PATH = 'resources'
+    FREQ_PATH = '/resources'
 try:
     freq = load_frequency_list (FREQ_PATH)
 except:
@@ -104,6 +95,11 @@ if 'audio' in config:
         AUDIO_DIR = config['audio']['data-dir']
     except KeyError:
         logging.error ('config file: "audio" key defined, but no "data-dir" found')
+DOCKER = True if os.environ.get ('DOCKER', '') == 'True' else False
+if DOCKER:
+    config['cwb']['paths'] = {'cqp-path': 'cqpcl', 'registry-path': '/internal'}
+    if AUDIO_DIR:
+        AUDIO_DIR = '/Corpus/Audio'
 
 backend = FastAPI()
 # origins = [origin]
@@ -123,7 +119,7 @@ if AUDIO_DIR:
  
 @backend.get ('/api/')
 async def root ():
-    return {'message': 'Hello SpoCo'}
+    return {'message': 'Hello Spoco'}
 
 def get_command (data: Data, category = 'concordance'):
 
@@ -136,8 +132,9 @@ def get_command (data: Data, category = 'concordance'):
     for aligned_query in data.query['secondary']:
         query += f': {aligned_query["corpus"].upper ()} {aligned_query["query"]}'
 
-    PATH = data.paths['cqp-path']
-    REGISTRY = data.paths['registry-path']
+    PATH = config['cwb']['paths']['cqp-path']
+    REGISTRY = config['cwb']['paths']['registry-path']
+    CONTEXT_ATTR = config['cwb'].get ('context', '')
     for corpus in data.corpora:
         if corpus['primary']:
             CORPUS_NAME = corpus['cwb-corpus'].upper ()
@@ -145,8 +142,8 @@ def get_command (data: Data, category = 'concordance'):
     else:
         CORPUS_NAME = ''
     if category in ['concordance', 'collocations']:
-        CONTEXT = f'set Context {data.context}' if data.context else ''
-        to_show = data.to_show
+        CONTEXT = f'set Context {CONTEXT_ATTR}'
+        to_show = [attr['name'] for attr in config['positionalAttributes'] if attr.get ('inResults', False)]
         for corpus in data.corpora:
             if not corpus['primary']:
                 to_show.append (corpus['cwb-corpus'])
@@ -156,7 +153,13 @@ def get_command (data: Data, category = 'concordance'):
     else:
         CONTEXT = 'set Context 0'
     if category == 'concordance':
-        PRINT_STRUCTURES = ', '.join (data.print_structures)
+        s_attrs = [attr['name'] for attr in config['structuralAttributes'] if (attr.get ('inResults', False))]
+        if CONTEXT_ATTR:
+            s_attrs.append (CONTEXT_ATTR)
+        if 'audio' in config:
+            s_attrs.append (config['audio']['attribute'])
+        s_attrs = list (set (s_attrs))
+        PRINT_STRUCTURES = ', '.join (s_attrs)
         if PRINT_STRUCTURES:
             PRINT_STRUCTURES = f'set PrintStructures "{PRINT_STRUCTURES}"'
     PRINT_MODE = 'set pm html'
