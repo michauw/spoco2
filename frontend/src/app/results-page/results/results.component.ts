@@ -11,21 +11,8 @@ import { modules } from '../results-page.component';
 
 export interface postData {
     query: Query;
-    paths: Object;
     corpora: Corpus[];
     start?: number;
-    // context: string;
-    // to_show: string[];
-    // print_structures: string[];
-    // size_limit?: number;
-    // chunk_size?: number;
-    // end_chunk_size?: number;
-    // mode?: 'full' | 'partial';
-    // separator?: string;
-    // window_size?: number;
-    // frequency_filter?: number;
-    // pos?: string[];
-    // grouping_attribute?: {name: string, position: number};
 }
 
 type genericResultsType = (ConcordanceEntry | TableEntry)[];
@@ -185,43 +172,12 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         query = this.queryKeeper.getCorpusQueries ();
         if (!query.primary.query)
             query.primary.query = '[]';
-        const cwb_settings = this.config.fetch ('cwb');
-
-            // this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
-            // if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
-            //     this.pattrs_to_show = ['word'].concat (this.pattrs_to_show);
-            // const sattrs = this.config.fetch ('structuralAttributes');
-            // let sattrs_cwb = sattrs.filter ((el: SAttribute) => el.inResults || el.context || el.audio).map ((el: SAttribute) => el.name);
-            // this.sattrs_to_show = sattrs.filter ((el: SAttribute) => el.inResults);
         let post_data: postData = {
             query: query, 
-            paths: cwb_settings.paths, 
             corpora: this.corpora,
-            // context: cwb_settings.context, 
-            // to_show: this.pattrs_to_show, 
-            // print_structures: sattrs_cwb, 
-            // size_limit: this.SIZE_LIMIT,
-            // chunk_size: this.CHUNK_SIZE,
-            // end_chunk_size: this.END_CHUNK_SIZE,
-            // mode: mode,
-            // separator: this.STREAM_SEPARATOR_TEXT
         };
         if (start !== undefined)
             post_data['start'] = start;
-
-        // if (this.module === 'collocations') {
-        //     const collocations_settings = this.config.fetch ('collocations_settings');
-        //     post_data['window_size'] = collocations_settings['window_size'];
-        //     post_data['frequency_filter'] = collocations_settings['frequency_filter'];
-        //     post_data['grouping_attribute'] = {name: collocations_settings['pattr'], position: this.get_pattr_position (collocations_settings['pattr'])};
-        //     post_data['pos'] = collocations_settings['pos'];
-        // }
-        // else if (this.module === 'frequency') {
-        //     const frequency_settings = this.config.fetch ('frequency_settings');
-        //     post_data['grouping_attribute'] = {name: frequency_settings['pattr'], position: this.get_pattr_position (frequency_settings['pattr'])};
-        //     post_data['frequency_filter'] = frequency_settings['frequency_filter'];
-        // }
-        
         return post_data;
     }
 

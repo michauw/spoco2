@@ -11,9 +11,6 @@ import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, f
 
 
 interface postDataConcordance extends postData {
-    context: string;
-    to_show: string[];
-    print_structures: string[];
     size_limit?: number;
     chunk_size?: number;
     end_chunk_size?: number
@@ -146,7 +143,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
         if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
             this.pattrs_to_show = ['word'].concat (this.pattrs_to_show);
-        const context = this.config.fetch ('cwb')['context'];
+        // const context = this.config.fetch ('cwb')['context'];
         const sattrs = this.config.fetch ('structuralAttributes');
         const sattrs_cwb = sattrs.filter ((el: SAttribute) => el.inResults || el.context || el.audio).map ((el: SAttribute) => el.name);
         this.sattrs_to_show = sattrs.filter ((el: SAttribute) => el.inResults);
@@ -154,9 +151,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         let base_post_data = super.get_post_data (mode, size);
         let post_data: postDataConcordance = {
             ...base_post_data,
-            context: context, 
-            to_show: this.pattrs_to_show, 
-            print_structures: sattrs_cwb, 
             size_limit: this.SIZE_LIMIT,
             chunk_size: this.CHUNK_SIZE,
             end_chunk_size: this.END_CHUNK_SIZE,
