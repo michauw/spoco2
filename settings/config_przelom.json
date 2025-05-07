@@ -50,7 +50,7 @@
     ],
     "cwb": {
         "paths": {
-            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "bin":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin",
             "registry-path":"D:\\Praca\\UJ\\warsztaty-01-24\\korpus\\Registry"
         },
         "context":"s"

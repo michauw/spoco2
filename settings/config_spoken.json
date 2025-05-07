@@ -447,7 +447,7 @@
     ],
     "cwb": {
         "paths": {
-            "cqp-path":"C:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "bin":"C:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin",
             "registry-path":"C:\\Praca\\spoco\\spoco\\tests\\Corpora\\spoken\\silesian\\Corpus\\Registry"
         },
         "context": "utterance"

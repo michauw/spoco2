@@ -105,7 +105,7 @@
     ],
     "cwb": {
         "paths": {
-            "cqp-path":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin\\cqpcl",
+            "bin":"D:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin",
             "registry-path":"D:\\Praca\\IJP\\Dariah\\sample\\Corpus\\Registry"
         },
         "context":"phrase"
