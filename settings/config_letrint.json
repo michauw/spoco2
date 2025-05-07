@@ -2,9 +2,9 @@
     "projectName": "Parallel Corpus",
     "corpora": 
         [
-            {"name": "English", "cwb-corpus": "letrint_en", "id": "ENG", "primary": true},
-            {"name": "Spanish", "cwb-corpus": "letrint_es", "id": "ESP", "primary": false},
-            {"name": "French", "cwb-corpus": "letrint_fr", "id": "FRA", "primary": false}
+            {"name": "English", "id": "letrint_en", "primary": true},
+            {"name": "Spanish", "id": "letrint_es", "primary": false},
+            {"name": "French", "id": "letrint_fr", "primary": false}
         ],
     "positionalAttributes":
         [

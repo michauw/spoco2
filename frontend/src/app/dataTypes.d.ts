@@ -61,7 +61,6 @@ interface Filters {
 interface Corpus {
     name: string;
     id: string;
-    'cwb-corpus': string;
     primary: boolean;
 }
 

@@ -2,7 +2,7 @@
     "projectName": "Korpus XIX/XX",
     "corpora": 
         [
-            {"name": "Polish", "id": "przelom", "cwb-corpus":"przelom", "primary": true}
+            {"name": "Polish", "id": "przelom", "primary": true}
         ],
     "positionalAttributes":
         [

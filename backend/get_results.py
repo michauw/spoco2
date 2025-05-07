@@ -91,31 +91,6 @@ def get_frequency (corpora, save_format = 'pickle'):
     
     return freq
 
-def get_case_sensitivity (query):
-    if '%c' in query:
-        return 'ci'
-    else:
-        return 'cs'
-    
-def get_grouping_attribute (query):
-    pat = r'([\w-]+)="'
-    attributes = re.findall (pat, query)
-    grouping = 'lemma'
-    if len (attributes) == 1:
-        grouping = attributes[0]
-    elif len (attributes) > 1:
-        precedence = ['lemma', 'word']
-        for attr in precedence:
-            if attr in attributes:
-                grouping = attr
-                break
-        else:
-            grouping = attributes[0]
-    
-    return grouping
-    
-    
-
 CONFIG_PATH = Path (__file__).parent.parent / 'settings' / 'config.json'
 PREF_PATH = Path (__file__).parent.parent / 'settings' / 'preferences.json'
 
@@ -172,7 +147,7 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
     CONTEXT_ATTR = config['cwb'].get ('context', '')
     for corpus in data.corpora:
         if corpus['primary']:
-            CORPUS_NAME = corpus['cwb-corpus'].upper ()
+            CORPUS_NAME = corpus['id'].upper ()
             break
     else:
         CORPUS_NAME = ''
@@ -181,7 +156,7 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
 
         for corpus in data.corpora:
             if not corpus['primary']:
-                to_show.append (corpus['cwb-corpus'])
+                to_show.append (corpus['id'])
     else:
         CONTEXT = 'set Context 0'
     hide_word = False
@@ -324,32 +299,20 @@ async def get_concordance (data: ConcordanceData):
 @backend.post ('/api/collocations')
 async def get_collocations (data: CollocationData):
 
-    if data.grouping_attribute == 'match':
-        grouping_attr = get_grouping_attribute (data.query['primary']['query'])
-    else:
-        grouping_attr = data.grouping_attribute
-    response = prepare_response (data, category = 'collocations', grouping_attr = grouping_attr)
+    response = prepare_response (data, category = 'collocations', grouping_attr = data.grouping_attribute)
     window_size = data.window_size
     frequency_filter = data.frequency_filter
     corpus_name = data.query['primary']['corpus']
-    if data.case == 'match':
-        sens = get_case_sensitivity (data.query['primary']['query'])
-    else:
-        sens = data.case
-    fr = freq[corpus_name][grouping_attr][sens]
+    fr = freq[corpus_name][data.grouping_attribute][data.case]
     corpus_size = corpora[corpus_name].size
-    results = stats.get_collocations (response, freq = fr, N = corpus_size, case_sensitive = sens == 'cs', window_size = window_size, frequency_threshold = frequency_filter)
+    results = stats.get_collocations (response, freq = fr, N = corpus_size, case_sensitive = data.case == 'cs', window_size = window_size, frequency_threshold = frequency_filter)
 
     return results
 
 @backend.post ('/api/frequency')
 async def get_frequency_list (data: FrequencyData):
 
-    if data.grouping_attribute == 'match':
-        grouping_attr = get_grouping_attribute (data.query['primary']['query'])
-    else:
-        grouping_attr = data.grouping_attribute
-    response = prepare_response (data, category = 'frequency', grouping_attr = grouping_attr)
+    response = prepare_response (data, category = 'frequency', grouping_attr = data.grouping_attribute)
     frequency_filter = data.frequency_filter
     results = stats.get_frequency (response, frequency_filter = frequency_filter)
         

@@ -2,7 +2,7 @@
     "projectName": "Korpus Dekady",
     "corpora": 
         [
-            {"name": "Polish", "id": "dariah", "cwb-corpus":"dariah", "primary": true}
+            {"name": "Polish", "id": "dariah", "primary": true}
         ],
     "positionalAttributes":
         [

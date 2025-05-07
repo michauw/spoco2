@@ -135,7 +135,7 @@ export class QueryKeeperService {
         for (let corp of secondary) {
             let lang_query = this.getBasicQuery (corp.id);
             if (lang_query)
-                query += `:${corp['cwb-corpus'].toUpperCase ()} ${lang_query}`;
+                query += `:${corp.id.toUpperCase ()} ${lang_query}`;
         }
 
         return query;   
@@ -152,10 +152,10 @@ export class QueryKeeperService {
                 continue;
             const aligned_query = this.corpusQuery[corpus.id];
             if (aligned_query !== '' && aligned_query !== undefined)
-                secondary.push ({'corpus': corpus['cwb-corpus'], 'query': this.corpusQuery[corpus.id]});
+                secondary.push ({'corpus': corpus.id, 'query': this.corpusQuery[corpus.id]});
         }
         return {
-            'primary': {'corpus': primary['cwb-corpus'], 'query': this.corpusQuery[primary.id]},
+            'primary': {'corpus': primary.id, 'query': this.corpusQuery[primary.id]},
             'secondary': secondary
         };
     }

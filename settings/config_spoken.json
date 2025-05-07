@@ -2,7 +2,7 @@
     "projectName": "Silesian Corpus",
     "corpora": 
         [
-            {"name": "Silesian", "cwb-corpus": "silesian", "id": "sil", "primary": true}
+            {"name": "Silesian", "id": "silesian", "primary": true}
         ],
     "positionalAttributes":
         [

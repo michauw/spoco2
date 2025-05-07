@@ -2,7 +2,7 @@
     "projectName": "Monolingual Corpus",
     "corpora": 
         [
-            {"name": "Boy", "id": "mono", "cwb-corpus":"boy", "primary": true}
+            {"name": "Boy", "id": "boy", "primary": true}
         ],
     "positionalAttributes":
         [
