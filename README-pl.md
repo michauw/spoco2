@@ -90,7 +90,7 @@ Do poprawnego działania niezbędne jest odpowiednie przygotowanie pliku *config
         - options: analogicznie jak dla atrybutów pozycyjnych
 - cwb: definiuje ścieżki i ustawienia CWB
     - paths: ścieżki niezbędne do konfiguracji
-        - cqp-path: ścieżka do narzędzia cqp
+        - bin: ścieżka do katalogu z narzędziami CWB
         - registry-path: ścieżka do katalogu, w którym znajduje się plik (pliki) rejestru korpusu (korpusów)
     - context: atrybut strukturalny który stanowi kontekst dla dopasowania
 - audio: jeśli występuje, korpus jest traktowany jako mówiony

@@ -10,8 +10,10 @@ import { CorporaKeeperService } from '../corpora-keeper.service';
 import { faSliders } from '@fortawesome/free-solid-svg-icons';
 
 
-type collocationsSettings = {pattr: string, window_size: number, frequency_filter: number, pos: string[]};
-type frequencySettings = {pattr: string, frequency_filter: number};
+type collocationsSettings = {
+    case: string, pattr: string, window_size: number, frequency_filter: number, pos?: string[]
+};
+type frequencySettings = {case: string, pattr: string, frequency_filter: number};
 
 @Component({
     selector: 'spoco-query-page',
@@ -85,8 +87,8 @@ export class QueryPageComponent implements OnInit {
             }
         );
         const default_pattr = this.pattrs.map ((el: PAttribute) => el.name).includes ('lemma') ? 'lemma' : this.pattrs[0].name;
-        this.collocations_settings = {pattr: default_pattr, window_size: 3, frequency_filter: 5, pos: ['noun', 'verb', 'adj']};
-        this.frequency_settings = {pattr: default_pattr, frequency_filter: 5};
+        this.collocations_settings = {case: 'match', pattr: 'match', window_size: 3, frequency_filter: 5};
+        this.frequency_settings = {case: 'match', pattr: 'match', frequency_filter: 5};
         this.configService.store ('collocations_settings', this.collocations_settings)
         this.configService.store ('frequency_settings', this.frequency_settings)
     }
@@ -121,29 +123,55 @@ export class QueryPageComponent implements OnInit {
         const dialogRef = this.dialog.open (SettingsBoxComponent, {
             data: {
                     collocations: {
-                        header: 'Kolokacje',
+                        header: 'Collocations',
                         fields: {
-                            pattr: {description: 'Atrybut', type: 'select', value: this.collocations_settings.pattr, options: this.pattrs.map (el => { return {name: el.name, label: el.description}})},
-                            window_size: {description: 'Przedział', type: 'number', value: this.collocations_settings.window_size},
-                            frequency_filter: {description: 'Pomiń kolokacje rzadsze niż', type: 'number', value: this.collocations_settings.frequency_filter},
-                            pos: {
-                                description: 'Części mowy', 
-                                type: 'multiselect', 
-                                value_obj: {},
+                            window_size: {description: 'Window size', type: 'number', value: this.collocations_settings.window_size},
+                            frequency_filter: {description: 'Frequency threshold', type: 'number', value: this.collocations_settings.frequency_filter},
+                            pattr: {
+                                description: 'Attribute', 
+                                type: 'select', 
+                                value: this.collocations_settings.pattr, 
+                                options: [{name: 'match', label: 'Match query'}].concat (this.pattrs.map (el => { return {name: el.name, label: el.description}}))},
+                            case: {
+                                description: 'Case sensitive', 
+                                type: 'select', 
+                                value: this.collocations_settings.case, 
                                 options: [
-                                    {name: 'noun', label: 'rzeczownik', initial_check: true}, 
-                                    {name: 'verb', label: 'czasownik', initial_check: true}, 
-                                    {name: 'adjective', label: 'przymiotnik', initial_check: true}, 
-                                    {name: 'rest', label: 'pozostałe', initial_check: false}
-                                ]
-                            }
+                                    {name: 'match', label: 'Match query'},
+                                    {name: 'cs', label: 'Case sensitive'},
+                                    {name: 'ci', label: 'Case insensitive'}
+                                ]}
+                            // pos: {
+                            //     description: 'Części mowy', 
+                            //     type: 'multiselect', 
+                            //     value_obj: {},
+                            //     options: [
+                            //         {name: 'noun', label: 'rzeczownik', initial_check: true}, 
+                            //         {name: 'verb', label: 'czasownik', initial_check: true}, 
+                            //         {name: 'adjective', label: 'przymiotnik', initial_check: true}, 
+                            //         {name: 'rest', label: 'pozostałe', initial_check: false}
+                            //     ]
+                            // }
                         }
                     },
                     frequency: {
-                        header: 'Lista frekwencyjna',
+                        header: 'Frequency list',
                         fields: {
-                            pattr: {description: 'Atrybut', type: 'select', value: this.frequency_settings.pattr, options: this.pattrs.map (el => { return {name: el.name, label: el.description}})},
-                            frequency_filter: {description: 'Pomiń pozycje rzadsze niż', type: 'number', value: this.frequency_settings.frequency_filter},
+                            frequency_filter: {description: 'Frequency threshold', type: 'number', value: this.frequency_settings.frequency_filter},
+                            pattr: {
+                                description: 'Attribute', 
+                                type: 'select', 
+                                value: this.frequency_settings.pattr, 
+                                options: [{name: 'match', label: 'Match query'}].concat (this.pattrs.map (el => { return {name: el.name, label: el.description}}))},
+                            case: {
+                                description: 'Case sensitive', 
+                                type: 'select', 
+                                value: this.frequency_settings.case, 
+                                options: [
+                                    {name: 'match', label: 'Match query'},
+                                    {name: 'cs', label: 'Case sensitive'},
+                                    {name: 'ci', label: 'Case insensitive'}
+                                ]}
                         }
                     }
                 },
@@ -153,7 +181,7 @@ export class QueryPageComponent implements OnInit {
             this.collocations_settings.pattr = data['collocations'].fields.pattr.value;
             this.collocations_settings.window_size = data['collocations'].fields.window_size.value;
             this.collocations_settings.frequency_filter = data['collocations'].fields.frequency_filter.value;
-            this.collocations_settings.pos = Object.keys (data['collocations'].fields.pos.value_obj).filter ((el) => {return data['collocations'].fields.pos.value_obj[el]});
+            // this.collocations_settings.pos = Object.keys (data['collocations'].fields.pos.value_obj).filter ((el) => {return data['collocations'].fields.pos.value_obj[el]});
             this.configService.store ('collocations_settings', this.collocations_settings);
 
             this.frequency_settings.pattr = data['frequency'].fields.pattr.value;

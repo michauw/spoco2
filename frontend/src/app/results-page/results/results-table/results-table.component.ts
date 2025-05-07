@@ -49,14 +49,16 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
             const pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
             additional_post_data['window_size'] = settings['window_size'];
             additional_post_data['frequency_filter'] = settings['frequency_filter'];
-            additional_post_data['grouping_attribute'] = {name: settings['pattr'], position: this.get_pattr_position (settings['pattr'])};
+            additional_post_data['grouping_attribute'] = settings['pattr'];
             additional_post_data['context'] = this.config.fetch ('cwb')['context'];
             additional_post_data['to_show'] = pattrs_to_show;
+            additional_post_data['case'] = settings['case'];
         }
         else if (this.module === 'frequency') {
             const settings = this.config.fetch ('frequency_settings');
-            additional_post_data['grouping_attribute'] = {name: settings['pattr'], position: this.get_pattr_position (settings['pattr'])};
+            additional_post_data['grouping_attribute'] = settings['pattr'];
             additional_post_data['frequency_filter'] = settings['frequency_filter'];
+            additional_post_data['case'] = settings['case'];
         }
         let post_data: postDataTable = {
             ...base_post_data,

@@ -8,16 +8,16 @@ from typing import List, Dict
 from pathlib import Path
 import subprocess as sbp
 import stats
+import corpus_data
 import json
 import pickle
-from math import ceil
+import shutil
 import re
 import os
 import logging
 
-class PAttribute (BaseModel):
-    name: str
-    position: int
+class ResourceNotFound (Exception):
+    pass
 
 class Data (BaseModel):
     query: Dict
@@ -38,57 +38,94 @@ class CollocationData (Data):
     context: str
     window_size: int
     frequency_filter: int
-    grouping_attribute: PAttribute
+    grouping_attribute: str
+    case: str
 
 class FrequencyData (Data):
-    grouping_attribute: PAttribute
+    grouping_attribute: str
     frequency_filter: int
+    case: str
 
-def load_frequency_list (path):
-    name = 'freq'
-    if os.path.isdir (path):
-        for ending in ['json', 'pkl', 'csv', 'tsv']:
-            freq_path = os.path.join (path, f'{name}.{ending}')
-            if os.path.exists (freq_path):
-                break
-        else:
-            freq_path = ''
+def get_corpora ():
+    corpora = {}
+    for rfile in os.listdir (REGISTRY_PATH):
+        corpora[rfile] = corpus_data.CorpusData (rfile, Path (REGISTRY_PATH), CWB_BIN_PATH)
+    return corpora
+
+def load_freq_from_file (path, name = 'freq'):
+    for ending in ['json', 'pkl']:
+        freq_path = os.path.join (path, f'{name}.{ending}')
+        if os.path.exists (freq_path):
+            break
     else:
-        freq_path = path
-    if not os.path.exists (freq_path):
-        print ('(get results) warning: frequency file not found', f'({freq_path})' if freq_path else '')
-        freq = None
+        raise ResourceNotFound ('Frequency data could not be find')
     if freq_path.endswith ('.json'):
         with open (freq_path, encoding = 'utf8') as fjson:
             freq = json.load (fjson)
     elif freq_path.endswith ('.pkl'):
         with open (freq_path, 'rb') as fpkl:
             freq = pickle.load (fpkl)
-    else:
-        freq = {}
-        with open (freq_path, encoding = 'utf8') as fin:
-            for line in fin:
-                word, fr = line.split ('\t')
-                freq[word.strip ()] = int (fin)
+    
+    return freq
+    
+def get_frequency (corpora, save_format = 'pickle'):
+    freq_file_name = 'freq'
+    freq = {}
+    for name, corpus in corpora.items ():
+        path = Path ('.').absolute ().parent / 'resources' / corpus.name
+        if path.exists ():
+            try:
+                freq[corpus.name] = load_freq_from_file (path, freq_file_name)
+                continue
+            except:
+                logging.warning (f"Couldn't load frequency data for corpus {corpus.name}, (re)creating")
+                shutil.rmtree (path)
+        os.makedirs (path)
+        freq[corpus.name] = corpus.get_frequency ()
+        if save_format == 'pickle':
+            with open (path / f'{freq_file_name}.pkl', 'wb') as fpickle:
+                pickle.dump (freq[corpus.name], fpickle)
+        elif save_format == 'json':
+            with open (path / f'{freq_file_name.json}', 'w', encoding = 'utf8') as fjson:
+                json.dump (freq[corpus.name], ensure_ascii = False)
     
     return freq
 
+def get_case_sensitivity (query):
+    if '%c' in query:
+        return 'ci'
+    else:
+        return 'cs'
+    
+def get_grouping_attribute (query):
+    pat = r'([\w-]+)="'
+    attributes = re.findall (pat, query)
+    grouping = 'lemma'
+    if len (attributes) == 1:
+        grouping = attributes[0]
+    elif len (attributes) > 1:
+        precedence = ['lemma', 'word']
+        for attr in precedence:
+            if attr in attributes:
+                grouping = attr
+                break
+        else:
+            grouping = attributes[0]
+    
+    return grouping
+    
+    
+
 CONFIG_PATH = Path (__file__).parent.parent / 'settings' / 'config.json'
 PREF_PATH = Path (__file__).parent.parent / 'settings' / 'preferences.json'
+
 with open (CONFIG_PATH, encoding = 'utf8') as fjson:
     config = json.load (fjson)
 with open (PREF_PATH, encoding = 'utf8') as fjson:
     preferences = json.load (fjson)
 
-if 'FREQUENCY_LIST_PATH' in config:
-    FREQ_PATH = config['FREQUENCY_LIST_PATH']
-else:
-    FREQ_PATH = '/resources'
-try:
-    freq = load_frequency_list (FREQ_PATH)
-except:
-    freq = {}
-
+REGISTRY_PATH = Path (config['cwb']['paths']['registry-path'])
+CWB_BIN_PATH = Path (config['cwb']['paths']['bin'])
 AUDIO_DIR = ''
 if 'audio' in config:
     try:
@@ -100,6 +137,9 @@ if DOCKER:
     config['cwb']['paths'] = {'cqp-path': 'cqpcl', 'registry-path': '/internal'}
     if AUDIO_DIR:
         AUDIO_DIR = '/Corpus/Audio'
+
+corpora = get_corpora ()
+freq = get_frequency (corpora)
 
 backend = FastAPI()
 # origins = [origin]
@@ -114,14 +154,9 @@ backend.add_middleware(
 
 if AUDIO_DIR:
     backend.mount ('/api/audio', StaticFiles (directory = AUDIO_DIR), name = 'audio')
-    logging.info (f'mount audio directory: {AUDIO_DIR}')
+    logging.info (f'mounting audio directory: {AUDIO_DIR}')
 
- 
-@backend.get ('/api/')
-async def root ():
-    return {'message': 'Hello Spoco'}
-
-def get_command (data: Data, category = 'concordance'):
+def get_command (data: Data, category = 'concordance', grouping_attr = None):
 
     primary = data.query['primary']['query']
     if primary == 'mock':   # MOCK RESULTS
@@ -132,8 +167,8 @@ def get_command (data: Data, category = 'concordance'):
     for aligned_query in data.query['secondary']:
         query += f': {aligned_query["corpus"].upper ()} {aligned_query["query"]}'
 
-    PATH = config['cwb']['paths']['cqp-path']
-    REGISTRY = config['cwb']['paths']['registry-path']
+    CQPCL_PATH = CWB_BIN_PATH / 'cqpcl'
+    # REGISTRY = config['cwb']['paths']['registry-path']
     CONTEXT_ATTR = config['cwb'].get ('context', '')
     for corpus in data.corpora:
         if corpus['primary']:
@@ -143,15 +178,26 @@ def get_command (data: Data, category = 'concordance'):
         CORPUS_NAME = ''
     if category in ['concordance', 'collocations']:
         CONTEXT = f'set Context {CONTEXT_ATTR}'
-        to_show = [attr['name'] for attr in config['positionalAttributes'] if attr.get ('inResults', False)]
+
         for corpus in data.corpora:
             if not corpus['primary']:
                 to_show.append (corpus['cwb-corpus'])
-        TO_SHOW = ' '.join (['+' + el for el in to_show])
-        if TO_SHOW:
-            TO_SHOW = 'show ' + TO_SHOW
     else:
         CONTEXT = 'set Context 0'
+    hide_word = False
+    if category == 'concordance' or not grouping_attr:
+        to_show = [attr['name'] for attr in config['positionalAttributes'] if attr.get ('inResults', False)]
+    else:
+        if grouping_attr != 'word':
+            to_show = [grouping_attr]
+            hide_word = True
+        else:
+            to_show = []
+    TO_SHOW = ' '.join (['+' + el for el in to_show])
+    if TO_SHOW:
+        TO_SHOW = 'show ' + TO_SHOW
+        if hide_word:
+            TO_SHOW += ' -word'
     if category == 'concordance':
         s_attrs = [attr['name'] for attr in config['structuralAttributes'] if (attr.get ('inResults', False))]
         if CONTEXT_ATTR:
@@ -179,9 +225,9 @@ def get_command (data: Data, category = 'concordance'):
     elif category == 'collocations':
         cwb_query =  f'{CORPUS_NAME}; {CONTEXT}; {TO_SHOW}; {SEPARATOR}; {MATCH_INDICATOR}; {PRINT_MODE}; {query};'
     else:
-        cwb_query = f'{CORPUS_NAME}; set Context 0; {PRINT_MODE}; q={query}; group q match {data.grouping_attribute.name};'
+        cwb_query = f'{CORPUS_NAME}; set Context 0; {PRINT_MODE}; q={query}; group q match {grouping_attr};'
     print ('query:', cwb_query)
-    command = [PATH, '-r', REGISTRY, cwb_query]
+    command = [CQPCL_PATH, '-r', REGISTRY_PATH, cwb_query]
     print ('command:', command)
 
     return command
@@ -192,17 +238,19 @@ def check_error (process):
     return ''.join (error_lines)
 
 def valid_line (line):
+
     discard_patterns = [r'^<HR>', r'</UL>']
     
     return not re.search ('|'.join (discard_patterns), line)
 
-def prepare_response (data: Data, category):
+def prepare_response (data: Data, category, grouping_attr = None):
 
-    command = get_command (data, category = category)
+    command = get_command (data, category = category, grouping_attr = grouping_attr)
     pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
     return [line for line in pr.communicate ()[0].splitlines () if valid_line (line)]
 
 def prepare_response_stream (data: Data, category = 'concordance'):
+
     command = get_command (data, category = category)
     langs_number = len (data.query['secondary']) + 1
     pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
@@ -239,7 +287,6 @@ def prepare_response_stream (data: Data, category = 'concordance'):
         stream = stream_gen (pr)
     return stream
       
-      
 def stream_gen (process, batch_size = 100, limit = 0, name = ''):
     ind = 0
     end = False
@@ -260,6 +307,12 @@ def stream_gen (process, batch_size = 100, limit = 0, name = ''):
         ind += len (lines)
 
         yield ''.join (lines)
+
+# ENDPOINTS
+
+@backend.get ('/api/')
+async def root ():
+    return {'message': 'Hello Spoco'}
         
 @backend.post ('/api/concordance')
 async def get_concordance (data: ConcordanceData):
@@ -271,23 +324,34 @@ async def get_concordance (data: ConcordanceData):
 @backend.post ('/api/collocations')
 async def get_collocations (data: CollocationData):
 
-    response = prepare_response (data, category = 'collocations')
-    pname = data.grouping_attribute.name
-    position = data.grouping_attribute.position
+    if data.grouping_attribute == 'match':
+        grouping_attr = get_grouping_attribute (data.query['primary']['query'])
+    else:
+        grouping_attr = data.grouping_attribute
+    response = prepare_response (data, category = 'collocations', grouping_attr = grouping_attr)
     window_size = data.window_size
     frequency_filter = data.frequency_filter
-    pos = [] # data.pos
-    results = stats.get_collocations (response, pattr_no = position, freq = freq[pname], window_size = window_size, frequency_threshold = frequency_filter, allowed_pos = pos)
+    corpus_name = data.query['primary']['corpus']
+    if data.case == 'match':
+        sens = get_case_sensitivity (data.query['primary']['query'])
+    else:
+        sens = data.case
+    fr = freq[corpus_name][grouping_attr][sens]
+    corpus_size = corpora[corpus_name].size
+    results = stats.get_collocations (response, freq = fr, N = corpus_size, case_sensitive = sens == 'cs', window_size = window_size, frequency_threshold = frequency_filter)
 
-    return results;
+    return results
 
 @backend.post ('/api/frequency')
 async def get_frequency_list (data: FrequencyData):
 
-    response = prepare_response (data, category = 'frequency')
-    attribute = data.grouping_attribute.name
+    if data.grouping_attribute == 'match':
+        grouping_attr = get_grouping_attribute (data.query['primary']['query'])
+    else:
+        grouping_attr = data.grouping_attribute
+    response = prepare_response (data, category = 'frequency', grouping_attr = grouping_attr)
     frequency_filter = data.frequency_filter
-    results = stats.get_frequency (response, attribute = attribute, frequency_filter = frequency_filter)
+    results = stats.get_frequency (response, frequency_filter = frequency_filter)
         
     return results
 
@@ -297,8 +361,8 @@ async def get_context (data: ContextData):
     output = []
     result_id = int (data.id)
 
-    PATH = data.paths['cqp-path']
-    REGISTRY = data.paths['registry-path']
+    CQPCL_PATH = CWB_BIN_PATH / 'cqpcl'
+    # REGISTRY = data.paths['registry-path']
     for corpus in data.corpora:
         if corpus['primary']:
             CORPUS_NAME = corpus['id'].upper ()
@@ -312,7 +376,7 @@ async def get_context (data: ContextData):
         TO_SHOW = 'show ' + TO_SHOW
     for i in range (max (1, result_id - WINDOW_SIZE), result_id + WINDOW_SIZE):
         query = f'{CORPUS_NAME}; {TO_SHOW}; <{CONTEXT}_id="{i}">[] expand to {CONTEXT};'
-        command = [PATH, '-r', REGISTRY, query]
+        command = [CQPCL_PATH, '-r', REGISTRY_PATH, query]
         pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
         output.append (pr.communicate ()[0])
 

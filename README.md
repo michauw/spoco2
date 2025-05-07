@@ -93,7 +93,7 @@ To work properly, it is necessary to properly prepare the *config.json* file, wh
         - options: analogously to positional attributes
 - cwb: defines CWB paths and settings
     - paths: paths necessary for configuration
-        - cqp-path: path to the cqp tool
+        - bin: path to the directory containing CWB tools
         - registry-path: path to the directory where the corpus registry file(s) is located
     - context: structural attribute which provides the context for the match
 - audio: if present, the corpus is treated as spoken
