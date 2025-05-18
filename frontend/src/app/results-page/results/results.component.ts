@@ -84,18 +84,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         this.currentSlice = [];
         this.results_fetched = false;
         this.pattrs = this.config.fetch ('positionalAttributes');
-        // let post_data = this.get_post_data ('full');
-        // this.original_query = post_data.query.primary.query;
         this.results = [];
-        // let url: string = '';
-        // if (this.module === 'concordance')
-        //     url = `${base_url}/results`;
-        // else if (this.module === 'collocations') {
-        //     url = `${base_url}/collocations`;
-        // }
-        // else if (this.module === 'frequency')
-        //     url = `${base_url}/frequency`;
-        // this.make_request (url, post_data, 'full');
         this.downloadResultsSub = this.actions.downloadResults.subscribe (mode => this.downloadResults (mode));
     }
 
@@ -140,13 +129,6 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
 
 
     get_results_number () {
-        // if (this.module === 'concordance')
-        //     return this.results_number;
-        // if (this.module === 'collocations')
-        //     return this.collocations.length;
-        // if (this.module === 'frequency')
-        //     return this.frequency.length;
-        // return 0;
     }
 
     pageChanged (pageNumber: number) {
@@ -158,10 +140,6 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
             left: 0, 
             behavior: 'auto' 
           });
-        // if (this.module === 'concordance' && this.data_missing ())
-        //         this.load_missing_data (pageNumber);
-        // else
-        //     this.update_page ();
     }
 
     protected pageChangedChild (pageNumber: number) {
@@ -180,68 +158,10 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
             post_data['start'] = start;
         return post_data;
     }
-
-    
-
-    // private handle_big_results (last_chunk_start: number) {
-    //     this.results_history.push (last_chunk_start);
-    //     if (this.results_history.length > 1 && (this.results_history.length + 1) * this.CHUNK_SIZE + this.END_CHUNK_SIZE > this.MAX_RESULTS_SIZE) {
-    //         const oldest = this.results_history[0];
-    //         const undefs = Array (this.CHUNK_SIZE).fill (undefined);
-    //         this.results.splice (oldest, this.CHUNK_SIZE, ...undefs);
-    //         this.results_history.shift ();
-    //     }
-    // }
-    
     protected handle_static_response (request: Observable<any>, post_data: postData) {
-        // request.subscribe ({
-        //     next:
-        //         (responseData) => {
-        //             for (let datum of responseData) {
-        //                 if (this.module === 'collocations')
-        //                     this.collocations.push ({token: datum[0], am: datum[1], freq: datum[2]});
-        //                 else if (this.module === 'frequency')
-        //                     this.frequency.push ({token: datum[0], freq: datum[1]});
-        //             }
-        //             if (this.module === 'collocations')
-        //                 this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        //             else if (this.module === 'frequency')
-        //                 this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        //             this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.get_results_number ()});
-        //         },
-        //     error:
-        //         (response) => {
-        //             let error = '';
-        //             try {
-        //                 error = JSON.parse (response.error).detail;
-        //                 error = error.replace (/[\n\t]/g, ' ');
-        //             }
-        //             catch (e) {
-        //                 error = ':('
-        //             }
-        //             this.error.emit (error);
-        //         }
-        // });
     }
-        
-
-    
-
-    // private load_missing_data (pageNumber: number) {
-    //     const location = pageNumber * this.sliceSize;
-    //     const chunk_start = Math.floor (location / this.CHUNK_SIZE) * this.CHUNK_SIZE;
-    //     // this.results_first_empty = chunk_start;
-    //     const post_data = this.get_post_data ('partial', chunk_start);
-    //     const url = `${base_url}/results`;
-    //     this.make_request (url, post_data, 'partial');
-    //     this.handle_big_results (chunk_start);
-    // }
 
     protected make_request (url: string, post_data: postData, mode: 'full' | 'partial') {
-        
-        // const request: Observable<any> = this.http.post (url, post_data);
-        // this.handle_static_response (request, post_data);
-        // }
     }
 
     protected words_to_string (words: Word[], pattr: string = 'word') {
@@ -267,62 +187,11 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         writeFileXLSX (workbook, 'results.xlsx');
     }
 
-    
-
-    // private parse_results (lines: any) {
-    //     let output: ConcordanceEntry[] = [];
-    //     const corpusType = (this.corpora.length === 1) ? 'mono' : 'parallel';
-    //     let parallel_batch = [];
-    //     // this.results_number = parseInt (lines[0]);
-    //     for (let i = 0; i < lines.length; ++i) {
-    //         let line = lines[i];
-    //         if (!line)
-    //             continue;
-    //         if (corpusType === 'mono'){
-    //             const parsed = this.parse_primary_line (line);
-    //             if (parsed.id)
-    //                 output.push (parsed);
-    //         }
-    //         else {
-    //             parallel_batch.push (line);
-    //             if (parallel_batch.length === this.corpora.length) {
-    //                 const parsed = this.parse_parallel_line (parallel_batch);
-    //                 if (parsed.id)
-    //                     output.push (parsed);
-    //                 parallel_batch = [];
-    //             }
-    //         }
-    //     }
-
-    //     return output;
-    // }
-
-    // private get_position_from_line (line: string): {position: number, start: number}  {
-    //     const pattern = /^(\d+):\s*/;
-    //     const match = pattern.exec (line);
-    //     return {position: parseInt (match![1]), start: match![0].length}
-    // } 
-
     private parse_stats_line (line: string, separator: string = '\t') {
         return line.trim ().split (separator);
     }
 
-    // private parse_frequency (data: any) {
-    //     let output: frequency[] = [];
-    //     for (let line of data) {
-    //         const entry = line.split ('\t');
-    //         output.push ({'token': entry[0], 'freq': entry[1]});
-    //     }
-    //     return output;
-    // }
-
     private update_page () {
-        // if (this.module === 'concordance')
-        //     this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        // else if (this.module === 'collocations')
-        //     this.currentSliceCol = this.collocations.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        // else if (this.module === 'frequency')
-        //     this.currentSliceFreq = this.frequency.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
     }
 
 }
