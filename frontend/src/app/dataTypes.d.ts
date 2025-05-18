@@ -18,7 +18,7 @@ export interface PAttribute {
     valueTrue?: string;                 // only for checkboxes: map boolean true value to the corresponding string
     valueFalse?: string;                // as above, but for the false val
     options?: Option[];                 // for select and multiselect
-    inTooltip?: boolean;                 // whether to show the attribute value in a tooltip on the results page
+    inResults?: boolean;                 // whether to show the attribute value in a tooltip on the results page
     layer?: number;
 }
 
@@ -66,7 +66,8 @@ interface Corpus {
 
 interface Word {
     word: string;           // basic positional attribute
-    [key: string]: string;  // additional positional attributes
+    [key: string]: string | boolean;  // additional positional attributes
+    _sticky: boolean;
 }
 
 interface GenericEntry {

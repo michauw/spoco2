@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
+import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, WordPrev, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable, Subscription } from 'rxjs';
@@ -36,6 +36,8 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     locked: number[];
     visible_columns: number[];
     displayLayers: string[];
+    annotationDisplay: ('tooltip' | 'mixed' | 'inline')[] = ['tooltip', 'mixed', 'inline'];
+    currentDisplay: 'tooltip' | 'mixed' | 'inline' = 'tooltip';
     currentLayer: string;
     row_icon_states: {playing: boolean, extended: boolean}[] = [];
     playing: string = '';
@@ -49,6 +51,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     displayModeChangedSub: Subscription;
     displayLayerChangedSub: Subscription;
     showMetaChangedSub: Subscription;
+    annotationDisplayChangedSub: Subscription;
     
     constructor (private http: HttpClient) {
         super (...ResultsComponent.inject_dependencies ());
@@ -88,6 +91,17 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                 }
             }
         });
+        this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe (() => {
+            for (let i = 0; i < this.annotationDisplay.length; ++i) {
+                if (this.annotationDisplay[i] === this.currentDisplay) {
+                    if (i === this.annotationDisplay.length - 1)
+                        this.currentDisplay = this.annotationDisplay[0];
+                    else
+                        this.currentDisplay = this.annotationDisplay[i + 1];
+                    break;
+                }
+            }
+        });
     }
 
     ngOnChanges(): void {
@@ -100,6 +114,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         super.ngOnDestroy ();
         this.displayModeChangedSub.unsubscribe ();
         this.displayLayerChangedSub.unsubscribe ();
+        this.annotationDisplayChangedSub.unsubscribe ();
         this.showMetaChangedSub.unsubscribe ();
     }
     
@@ -140,7 +155,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
 
     protected override get_post_data (mode: 'full' | 'partial', size?: number | undefined) {
         
-        this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
+        this.pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inResults).map ((el: PAttribute) => el.name);
         if (!this.pattrs_to_show.length || this.pattrs_to_show[0] !== 'word')
             this.pattrs_to_show = ['word'].concat (this.pattrs_to_show);
         // const context = this.config.fetch ('cwb')['context'];
@@ -314,11 +329,38 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         return sattrs;
     }
 
+    private isSticky (word: string, opened: Set<string>): string {    
+        const stickyLeft = ['.', ',', ':', ';', '?', '!', ')', ']',  '}', '”', '»', '›', '…'];
+        const stickyRight = ['(', '[', '«', '{', '„',  '“', '‹'];
+        const ambiguous = ['"', "'"]
+        if (stickyLeft.includes (word))
+            return 'left';
+        if (stickyRight.includes (word))
+            return 'right';
+        if (ambiguous.includes (word)) {
+            if (opened.has (word)) {
+                opened.delete (word);
+                return 'left';
+            }
+            else
+            {
+                opened.add (word);
+                return 'right';
+            }
+        }
+        return '';
+    }
+
     private to_words (text: string) {
         let words: Word[] = [];
-        for (let token of text.split (' ')) {
-            let elements = token.split ('\t');
-            let w: Word = {word: ''};
+        const text_words = text.trim ().split (' ');
+        let sticky_right_set = false;
+        let opened = new Set<string>();
+        for (let i = 0; i < text_words.length; ++i) {
+            let elements = text_words[i].split ('\t');
+            let sticky = this.isSticky (elements[0], opened);
+            let w: Word = {word: '', _sticky: (sticky === 'left' || sticky_right_set)};
+            sticky_right_set = (sticky === 'right');
             for (let ipattr = 0; ipattr < this.pattrs_to_show.length; ++ipattr)
                 w[this.pattrs_to_show[ipattr]] = elements[ipattr];
             words.push (w)
@@ -360,7 +402,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         else (side == 'right')
             return context.slice (0, this.maxContextSize + 1);
     }
-
+    
     toList (meta: metaObj) {
         let lst = [];
         for (let name in meta)
@@ -368,15 +410,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                 lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
 
         return lst;
-    }
-
-    get_tooltip (word: Word) {
-        let tooltip = [];
-        for (let pattr of this.pattrs_to_show)
-            if (pattr !== 'word')
-                tooltip.push (word[pattr]);
-
-        return tooltip.join (' : ');
     }
 
     /* Methods for the spoken mode */

@@ -1,4 +1,5 @@
 import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
+import { faC, faClose } from '@fortawesome/free-solid-svg-icons';
 import { ActivatedRoute, Params } from '@angular/router';
 
 export type modules = 'concordance' | 'collocations' | 'frequency';
@@ -13,7 +14,8 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
     tab_module_names: {[key: string]: string} = {concordance: 'concordance', collocations: 'collocations', frequency: 'frequency list'}
     current_tab: number = 0;
-
+    close = {'icon': faClose};
+    
     constructor(private route: ActivatedRoute) { }
 
     ngOnInit(): void {

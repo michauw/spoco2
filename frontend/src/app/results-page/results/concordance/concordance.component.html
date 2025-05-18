@@ -1,4 +1,5 @@
 <!-- PLAIN MODE -->
+
 <table class="table results" *ngIf="mode == 'plain'">
     <thead>
         <tr class="header" *ngIf="corpusType !== 'mono'">
@@ -29,36 +30,64 @@
                     </audio>
                 </td>
                 <td>
-                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
-                    <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
-                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
+                    <spoco-annotated-word *ngFor="let word of row.left_context" 
+                        [word]="word" 
+                        [role]="'context'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.match" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.right_context" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
                     <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
                 </td>
             </ng-container>
-            <ng-container *ngIf="corpusType == 'parallel'">
+            <ng-container *ngIf="corpusType === 'parallel'">
                 <td *ngIf="visible_columns.includes (0)">
-                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word.word }}
-                    </span>
-                    <span *ngFor="let word of row.match" class="match" matTooltip="'{{ get_tooltip (word) }}'" matTooltipPosition="above">
-                        {{ word.word }}
-                    </span>
-                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word.word }}
-                    </span>
+                    <spoco-annotated-word *ngFor="let word of row.left_context" 
+                        [word]="word" 
+                        [role]="'context'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.match" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.right_context" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
                     <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
                 </td>
                 <ng-container *ngFor="let corpus of row.aligned; let ong = index">
                     <td *ngIf="visible_columns.includes (ong + 1)">
-                        <span *ngFor="let word of corpus.content" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                            {{ word.word }}
-                        </span>
+                        <spoco-annotated-word *ngFor="let word of corpus.content" 
+                            [word]="word" 
+                            [role]="'context'" 
+                            [displayMode]="currentDisplay" 
+                            [currentLayer]="currentLayer" 
+                            [toShow]="pattrs_to_show">
+                        </spoco-annotated-word>
                     </td>
                 </ng-container>
             </ng-container>
@@ -102,31 +131,55 @@
             <td>
                 <div class="row thin">
                     <div class="col-sm-5 text-end">
-                        <span *ngFor="let word of cutContext (row.left_context, 'left')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                            {{ word[currentLayer] }}
-                        </span>
+                        <spoco-annotated-word *ngFor="let word of cutContext (row.left_context, 'left')" 
+                            [word]="word" 
+                            [role]="'context'" 
+                            [displayMode]="currentDisplay" 
+                            [currentLayer]="currentLayer" 
+                            [toShow]="pattrs_to_show">
+                        </spoco-annotated-word>
                     </div>
                     <div class="col-sm-2 text-center">
-                        <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                            {{ word[currentLayer] }}
-                        </span>
+                        <spoco-annotated-word *ngFor="let word of row.match" 
+                            [word]="word" 
+                            [role]="'match'" 
+                            [displayMode]="currentDisplay" 
+                            [currentLayer]="currentLayer" 
+                            [toShow]="pattrs_to_show">
+                        </spoco-annotated-word>
                     </div>
                     <div class="col-sm-5">
-                        <span *ngFor="let word of cutContext (row.right_context, 'right')" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                            {{ word[currentLayer] }}
-                        </span>
+                        <spoco-annotated-word *ngFor="let word of cutContext (row.right_context, 'right')" 
+                            [word]="word" 
+                            [role]="'context'" 
+                            [displayMode]="currentDisplay" 
+                            [currentLayer]="currentLayer" 
+                            [toShow]="pattrs_to_show">
+                        </spoco-annotated-word>
                     </div>
                 </div>
                 <div *ngIf="row_icon_states[i]['extended']" class="col-12 mt-3">
-                    <span *ngFor="let word of row.left_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
-                    <span *ngFor="let word of row.match" class="match" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
-                    <span *ngFor="let word of row.right_context" matTooltip="{{ get_tooltip (word) }}" matTooltipPosition="above">
-                        {{ word[currentLayer] }}
-                    </span>
+                    <spoco-annotated-word *ngFor="let word of row.left_context" 
+                        [word]="word" 
+                        [role]="'context'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.match" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
+                    <spoco-annotated-word *ngFor="let word of row.right_context" 
+                        [word]="word" 
+                        [role]="'match'" 
+                        [displayMode]="currentDisplay" 
+                        [currentLayer]="currentLayer" 
+                        [toShow]="pattrs_to_show">
+                    </spoco-annotated-word>
                 </div>
                 <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
             </td>

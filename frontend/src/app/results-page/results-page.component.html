@@ -12,7 +12,13 @@
     </div>
     <div class="col-md-10 offset-md-1">
         <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs">
-            <mat-tab *ngFor="let tab of tabs; index as i" label="{{ get_tab_name (i) }}">
+            <mat-tab *ngFor="let tab of tabs; index as i">
+                <ng-template mat-tab-label>
+                    <span class="tab-label">
+                        <span class="tab-name">{{ get_tab_name (i)}}</span>
+                        <fa-icon [icon]="close.icon"></fa-icon>
+                    </span>
+                  </ng-template>
                 <spoco-concordance *ngIf="tabs[i].module === 'concordance'"
                     (results_fetched_event)="results_fetched($event, i)" 
                     (results_added_event)="add_tab($event)" 

@@ -22,6 +22,7 @@ import { InfoBoxComponent } from './results-page/results/info-box/info-box.compo
 import { ActionBoxComponent } from './results-page/results/info-box/action-box/action-box.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ConcordanceComponent } from './results-page/results/concordance/concordance.component';
+import { AnnotatedWordComponent } from './results-page/results/concordance/annotated-word/annotated-word.component';
 import { ResultsTableComponent } from './results-page/results/results-table/results-table.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MetaShowComponent } from './results-page/results/meta-show/meta-show.component';
@@ -47,6 +48,7 @@ import { MatTabsModule } from '@angular/material/tabs';
         CorporaRibbonComponent,
         ResultsPageComponent,
         ConcordanceComponent,
+        AnnotatedWordComponent,
         InfoBoxComponent,
         ActionBoxComponent,
         MetaShowComponent,

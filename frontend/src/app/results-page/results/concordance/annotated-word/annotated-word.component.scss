@@ -1,0 +1,15 @@
+.match {
+    color: red;
+    & .annotation-inline {
+        color: rgb(255, 123, 123);
+    }
+}
+
+.annotation-inline {
+    font-size: .8rem;
+    color: gray;
+}
+
+.sticky {
+    margin-left: -.25em;
+}

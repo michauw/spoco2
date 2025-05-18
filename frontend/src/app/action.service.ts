@@ -15,6 +15,7 @@ export class ActionService {
     displayLayerChanged = new Subject<void> ();
     showMetaChanged = new Subject<boolean> ();
     downloadResults = new Subject< 'all' | 'checked' > ();
+    annotationDisplayChanged = new Subject<void> ();
 
     setDisplayMode (dm: resultsDisplayMode) {
         this.displayMode = dm;
@@ -40,6 +41,10 @@ export class ActionService {
 
     download (mode: 'all' | 'checked') {
         this.downloadResults.next (mode);
+    }
+
+    toggleAnnotationDisplay () {
+        this.annotationDisplayChanged.next ();
     }
     
 }

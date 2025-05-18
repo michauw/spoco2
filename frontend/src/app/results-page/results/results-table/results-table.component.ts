@@ -46,7 +46,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
         let additional_post_data: any = {};
         if (this.module === 'collocations') {
             const settings = this.config.fetch ('collocations_settings');
-            const pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inTooltip).map ((el: PAttribute) => el.name);
+            const pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inResults).map ((el: PAttribute) => el.name);
             additional_post_data['window_size'] = settings['window_size'];
             additional_post_data['frequency_filter'] = settings['frequency_filter'];
             additional_post_data['grouping_attribute'] = this.get_grouping_attribute (settings['pattr'], base_post_data.query.primary.query);

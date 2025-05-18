@@ -1,0 +1,3 @@
+<span [matTooltip]="place === 'tooltip' ? annotation : ''" matTooltipPosition="above" (click)="toggleDisplay()" [ngClass]="{'match': role === 'match', 'sticky': word._sticky}">
+    {{ word[currentLayer] }} <span class="annotation-inline">{{ (place === 'inline' && annotation.length) ? '[' + annotation + ']': '' }}</span>
+</span>

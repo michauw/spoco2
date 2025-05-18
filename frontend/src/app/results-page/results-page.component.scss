@@ -7,3 +7,24 @@
 mat-tab-header {
     background-color: lightskyblue !important;
 }
+
+::ng-deep .mdc-tab__content {
+    width: 100%; // Ensure tab label takes full tab width
+}
+
+::ng-deep .mdc-tab__text-label {
+    width: 100%;
+}
+
+.tab-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; /* ensures full width so space-between works */
+    gap: 8px; /* optional, for spacing between name and icon */
+    & .tab-name {
+        margin-left: auto;
+        margin-right: auto;
+    }
+  }
+
