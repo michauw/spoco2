@@ -14,3 +14,10 @@
         </tr>
     </table>
 </div>
+
+
+<!-- PAGINATOR -->
+
+<div class="col-md-12 mt-4 paginator">
+    <spoco-paginator [resLen]="results.length" [perPage]="sliceSize" *ngIf="results.length > sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
+</div>

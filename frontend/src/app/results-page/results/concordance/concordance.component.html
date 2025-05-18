@@ -22,7 +22,7 @@
         </tr>
     </thead>
     <ng-container *ngIf="results_fetched">
-        <tr *ngFor="let row of results">
+        <tr *ngFor="let row of currentSlice">
             <ng-container *ngIf="corpusType != 'parallel'">
                 <td *ngIf="corpusType == 'spoken'">
                     <audio controls preload="none">
@@ -117,7 +117,7 @@
         </tr>
     </thead>
     <ng-container *ngIf="results_fetched">
-        <tr *ngFor="let row of results; let i = index">
+        <tr *ngFor="let row of currentSlice; let i = index">
             <td *ngIf="corpusType === 'spoken'">
                 <fa-icon [icon]="icons[row_icon_states[i]['playing'] ? 'stop' : 'play']" (click)="play(i, row)" class="darken clickable"></fa-icon>
             </td>

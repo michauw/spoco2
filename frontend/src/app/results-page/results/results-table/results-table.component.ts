@@ -58,13 +58,13 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
             const settings = this.config.fetch ('frequency_settings');
             additional_post_data['grouping_attribute'] = this.get_grouping_attribute (settings['pattr'], base_post_data.query.primary.query);
             additional_post_data['frequency_filter'] = settings['frequency_filter'];
-            additional_post_data['case'] = this.get_case_sensitivity (settings['case'], base_post_data.query.primary.query);
+            additional_post_data['case'] = this.get_case_sensitivity ('match', base_post_data.query.primary.query);
         }
         let post_data: postDataTable = {
             ...base_post_data,
             ...additional_post_data
         }
-
+        console.log ('post data:', post_data);
         return post_data;
     }
 

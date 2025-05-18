@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, WordPrev, metaObj } from 'src/app/dataTypes';
+import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable, Subscription } from 'rxjs';
@@ -242,6 +242,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                         if (mode === 'full') {
                             this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.results_number});
                         }
+                        this.currentSlice = this.results.slice (0, this.sliceSize);
                         // else if (mode === 'partial')
                         //     this.update_page ();
                     }
