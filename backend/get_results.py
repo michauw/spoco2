@@ -35,6 +35,7 @@ class ContextData (ConcordanceData):
     pass
 
 class CollocationData (Data):
+    ams: List
     context: str
     window_size: int
     frequency_filter: int
@@ -300,12 +301,13 @@ async def get_concordance (data: ConcordanceData):
 async def get_collocations (data: CollocationData):
 
     response = prepare_response (data, category = 'collocations', grouping_attr = data.grouping_attribute)
+    ams = data.ams
     window_size = data.window_size
     frequency_filter = data.frequency_filter
     corpus_name = data.query['primary']['corpus']
     fr = freq[corpus_name][data.grouping_attribute][data.case]
     corpus_size = corpora[corpus_name].size
-    results = stats.get_collocations (response, freq = fr, N = corpus_size, case_sensitive = data.case == 'cs', window_size = window_size, frequency_threshold = frequency_filter)
+    results = stats.get_collocations (response, freq = fr, N = corpus_size, case_sensitive = data.case == 'cs', assoc_measures = ams, window_size = window_size, frequency_threshold = frequency_filter)
 
     return results
 

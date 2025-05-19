@@ -1,7 +1,8 @@
 import re
+import sys
 from collections import defaultdict
 from string import punctuation
-from math import log
+from math import log, sqrt
 
 def pos_allowed_nkjp (pos, allowed):
     if pos in 'fin praet aglt bedzie inf imps impt pact ppas pcon pant ger winien'.split ():
@@ -34,10 +35,59 @@ def get_window_words (input_words, window_size, direction):
 def pmi (xy, x, y, N):
     return log (xy / N / (x * y / N ** 2), 2)
 
-def get_collocations (lines, freq, N, case_sensitive, window_size = 1, frequency_threshold = 5):
+def t_score (xy, x, y, N):
+    expected = x * y / N
+    return (xy - expected) / sqrt (xy) if xy > 0 else 0
 
-    
-    assoc_measure = pmi
+def log_likelihood_ratio (xy, x, y, N):
+    o11 = xy
+    o12 = x - xy
+    o21 = y - xy
+    o22 = N - x - y + xy
+
+    row1 = o11 + o12
+    row2 = o21 + o22
+    col1 = o11 + o21
+    col2 = o12 + o22
+
+    e11 = row1 * col1 / N
+    e12 = row1 * col2 / N
+    e21 = row2 * col1 / N
+    e22 = row2 * col2 / N
+
+    def safe_log (o, e):
+        return o * log(o / e) if o > 0 and e > 0 else 0
+
+    return 2 * (
+        safe_log (o11, e11) +
+        safe_log (o12, e12) +
+        safe_log (o21, e21) +
+        safe_log (o22, e22)
+    )
+
+def dice (xy, x, y, N):
+    denom = x + y
+    return 2 * xy / denom if denom > 0 else 0
+
+def chi_square (xy, x, y, N):
+    o11 = xy
+    o12 = x - xy
+    o21 = y - xy
+    o22 = N - x - y + xy
+
+    e11 = x * y / N
+    e12 = x * (N - y) / N
+    e21 = (N - x) * y / N
+    e22 = (N - x) * (N - y) / N
+
+    def safe_term (o, e):
+        return (o - e) ** 2 / e if e > 0 else 0
+
+    return safe_term (o11, e11) + safe_term (o12, e12) + safe_term (o21, e21) + safe_term (o22, e22)
+
+
+def get_collocations (lines, freq, N, case_sensitive, assoc_measures = ['pmi'], window_size = 1, frequency_threshold = 5):
+
     patttern_html = r'.*</EM>(.*)<B>.*?</B>(.*)'
     frequencies = defaultdict (int)
     for line in lines:
@@ -63,9 +113,13 @@ def get_collocations (lines, freq, N, case_sensitive, window_size = 1, frequency
         except KeyError:
             print (f'(get_collocations) warning: word "{word}" not found in the frequency dict')
             continue
-        res[word] = (assoc_measure (xy, x, y, N), xy)
+        res[word] = []
+        for am in assoc_measures:
+            amf = getattr (sys.modules[__name__], am)
+            res[word].append (amf (xy, x, y, N))
+        res[word].append (xy)
     
-    return sorted ([(el[0], el[1][0], el[1][1]) for el in res.items ()], key = lambda x: -x[1])
+    return sorted ([[k] + v for k, v in res.items ()], key = lambda x: -x[1])
 
 def get_frequency (lines, frequency_filter = 0):
     patttern_html = r'^<TR><TD>.*?<TD>(.*?)<TD>(.*?)</TR>'

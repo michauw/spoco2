@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 type fieldData = {
     type: 'select' | 'number' | 'multiselect',
-    value?: string | number,
+    value?: string | number | string[],
     value_obj?: {[key: string]: boolean},
     description: string,
     options?: {name: string, label: string, initial_check?: boolean}[]
@@ -32,6 +32,7 @@ export class SettingsBoxComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+        console.log ('data', this.data['collocations']);
         let controls: {[key: string]: UntypedFormControl} = {};
         for (let group_name in this.data) {
             for (let field_name in this.data[group_name].fields) {
@@ -39,8 +40,9 @@ export class SettingsBoxComponent implements OnInit {
                 if (field.type !== 'multiselect')
                     controls[`${group_name}--${field_name}`] = new UntypedFormControl (field.value);
                 else {
+                    // controls[`${group_name}--${field_name}`] = new UntypedFormControl (field.value_obj);
                     for (let option_checkbox of field.options!) {
-                        controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new UntypedFormControl (option_checkbox.initial_check);
+                        controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new UntypedFormControl (field.value_obj!.hasOwnProperty (option_checkbox.name));
                     }
                 }
             }
@@ -50,11 +52,15 @@ export class SettingsBoxComponent implements OnInit {
         this.settingsForm.valueChanges.subscribe (data => {
             for (let key in data) {
                 const parts = key.split ('--');
-                if (this.data[parts[0]].fields[parts[1]] !== undefined)
+                if (parts.length === 2 && this.data[parts[0]].fields[parts[1]] !== undefined)
                     this.data[parts[0]].fields[parts[1]].value = data[key];
                 else {
                     if (this.data[parts[0]].fields[parts[1]].value_obj !== undefined)
                         this.data[parts[0]].fields[parts[1]].value_obj![parts[2]] = data[key];
+                }
+                if (this.data[parts[0]].fields[parts[1]].type === 'multiselect') {
+                    const obj = this.data[parts[0]].fields[parts[1]].value_obj;
+                    this.data[parts[0]].fields[parts[1]].value = Object.keys (obj!).filter (key => obj![key]);
                 }
             }
         });

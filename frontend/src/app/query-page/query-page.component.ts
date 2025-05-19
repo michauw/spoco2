@@ -11,9 +11,11 @@ import { faSliders } from '@fortawesome/free-solid-svg-icons';
 
 
 type collocationsSettings = {
-    case: string, pattr: string, window_size: number, frequency_filter: number, pos?: string[]
+    ams: string[], case: string, pattr: string, window_size: number, frequency_filter: number, pos?: string[]
 };
-type frequencySettings = {pattr: string, frequency_filter: number};
+type frequencySettings = {
+    pattr: string, frequency_filter: number
+};
 
 @Component({
     selector: 'spoco-query-page',
@@ -87,10 +89,20 @@ export class QueryPageComponent implements OnInit {
             }
         );
         const default_pattr = this.pattrs.map ((el: PAttribute) => el.name).includes ('lemma') ? 'lemma' : this.pattrs[0].name;
-        this.collocations_settings = {case: 'match', pattr: 'match', window_size: 3, frequency_filter: 5};
-        this.frequency_settings = {pattr: 'match', frequency_filter: 5};
-        this.configService.store ('collocations_settings', this.collocations_settings)
-        this.configService.store ('frequency_settings', this.frequency_settings)
+        if (this.configService.is_set ('collocations_settings')) {
+            this.collocations_settings = this.configService.fetch ('collocations_settings');
+        }
+        else {
+            this.collocations_settings = {ams: ['pmi'], case: 'match', pattr: 'match', window_size: 3, frequency_filter: 5};
+            this.configService.store ('collocations_settings', this.collocations_settings)
+        }
+        if (this.configService.is_set ('frequency_settings')) {
+            this.frequency_settings = this.configService.fetch ('frequency_settings');
+        }
+        else {
+            this.frequency_settings = {pattr: 'match', frequency_filter: 5};
+            this.configService.store ('frequency_settings', this.frequency_settings)
+        }
     }
 
     clear () {
@@ -125,6 +137,17 @@ export class QueryPageComponent implements OnInit {
                     collocations: {
                         header: 'Collocations',
                         fields: {
+                            ams: {
+                                description: 'Association measures', 
+                                type: 'multiselect', 
+                                value_obj: Object.fromEntries (this.collocations_settings.ams.map (am => [am, true])), 
+                                options: [
+                                    {name: 'pmi', label: 'Pointwise Mutual Information'},
+                                    {name: 't_score', label: "Student's t"},
+                                    {name: 'log_likelihood_ratio', label: 'Log-likelihodd ratio'},
+                                    {name: 'dice', label: 'Dice coefficient'},
+                                    {name: 'chi_square', label: 'Chi-square'}
+                                ]},
                             window_size: {description: 'Window size', type: 'number', value: this.collocations_settings.window_size},
                             frequency_filter: {description: 'Frequency threshold', type: 'number', value: this.collocations_settings.frequency_filter},
                             pattr: {
@@ -163,15 +186,6 @@ export class QueryPageComponent implements OnInit {
                                 type: 'select', 
                                 value: this.frequency_settings.pattr, 
                                 options: [{name: 'match', label: 'Match query'}].concat (this.pattrs.map (el => { return {name: el.name, label: el.description}}))}
-                            // case: {
-                            //     description: 'Case sensitive', 
-                            //     type: 'select', 
-                            //     value: this.frequency_settings.case, 
-                            //     options: [
-                            //         {name: 'match', label: 'Match query'},
-                            //         {name: 'cs', label: 'Case sensitive'},
-                            //         {name: 'ci', label: 'Case insensitive'}
-                            //     ]}
                         }
                     }
                 },
@@ -179,6 +193,7 @@ export class QueryPageComponent implements OnInit {
         });
         dialogRef.afterClosed ().subscribe (data => {
             this.collocations_settings.pattr = data['collocations'].fields.pattr.value;
+            this.collocations_settings.ams = data['collocations'].fields.ams.value;
             this.collocations_settings.window_size = data['collocations'].fields.window_size.value;
             this.collocations_settings.frequency_filter = data['collocations'].fields.frequency_filter.value;
             this.collocations_settings.case = data['collocations'].fields.case.value;

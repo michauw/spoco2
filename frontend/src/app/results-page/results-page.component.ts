@@ -1,6 +1,7 @@
 import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import { faC, faClose } from '@fortawesome/free-solid-svg-icons';
 import { ActivatedRoute, Params } from '@angular/router';
+import { ConfigService } from '../config.service';
 
 export type modules = 'concordance' | 'collocations' | 'frequency';
 
@@ -16,7 +17,7 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     current_tab: number = 0;
     close = {'icon': faClose};
     
-    constructor(private route: ActivatedRoute) { }
+    constructor(private route: ActivatedRoute, private config: ConfigService) { }
 
     ngOnInit(): void {
         this.route.params.subscribe ((params: Params) => {
@@ -41,6 +42,13 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
         this.tabs.push ({name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...', error: '', results_fetched: false});
         this.current_tab = this.tabs.length - 1;
         this.header_visibility ();
+    }
+
+    get_collocation_columns () {
+        const ams: string[] = this.config.fetch ('collocations_settings').ams;
+        const names = {'pmi': 'PMI', 't_score': 'T-score', 'log_likelihood_ratio': 'LLR', 'dice': 'Dice', 'chi_square': 'Chi-square'};
+        const am_columns = ams.map ((am) => ({name: names[am as keyof typeof names], format: '1.2-2'}));
+        return [{name: 'Collocate', format: ''}].concat (am_columns).concat ([{name: 'Frequency', format: '1.0-0'}]);
     }
 
     results_fetched (results_data: {query: string, number_of_results: number}, index: number) {

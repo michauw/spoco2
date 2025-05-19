@@ -10,7 +10,7 @@
                 </select>
                 <div *ngIf="data[group].fields[field].type === 'multiselect'">
                     <label class="form-label">{{ data[group].fields[field].description }}</label>
-                    <div  class="form-check" *ngFor="let option of data[group].fields[field].options; index as chi">
+                    <div class="form-check" *ngFor="let option of data[group].fields[field].options; index as chi">
                         <input class="form-check-input" id="field-{{ gi }}-{{ fi }}={{ chi }}" type="checkbox" [formControlName]="group + '--' + field + '--' + option.name">
                         <label class="form-check-label" for="field-{{ gi }}-{{ fi }}={{ chi }}">{{ option.label }}</label>
                     </div>

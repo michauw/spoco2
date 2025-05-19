@@ -26,14 +26,14 @@
                     (error)="tabs[current_tab].error = $event">
                 </spoco-concordance>
                 <spoco-results-table *ngIf="tabs[i].module === 'collocations'"
-                    [columns]="[{'name': 'collocate', format: ''}, {'name': 'score', 'format': '1.2-2'}, {'name': 'frequency', 'format': '1.0-0'}]"
+                    [columns]="get_collocation_columns()"
                     [module]="'collocations'"
                     (results_fetched_event)="results_fetched($event, i)"
                     (results_added_event)="add_tab($event)"
                     (error)="tabs[current_tab].error = $event">
                 </spoco-results-table>
                 <spoco-results-table *ngIf="tabs[i].module === 'frequency'"
-                    [columns]="[{'name': 'token', format: ''}, {'name': 'frequency', 'format': '1.0-0'}]"
+                    [columns]="[{'name': 'Token', format: ''}, {'name': 'Frequency', 'format': '1.0-0'}]"
                     [module]="'frequency'"
                     (results_fetched_event)="results_fetched($event, i)"
                     (results_added_event)="add_tab($event)"

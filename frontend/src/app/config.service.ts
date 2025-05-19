@@ -15,6 +15,10 @@ export class ConfigService {
         return this.configSettings[name];
     }
 
+    is_set (name: string) {
+        return this.configSettings.hasOwnProperty (name);
+    }
+
     store (name: string, data: any) {
         this.configSettings[name] = data;
     }
