@@ -99,6 +99,19 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
         });
     }
 
+    protected override sort_results (by: number): void {
+        if (this.sort_ascending === undefined)
+            this.sort_ascending = true;
+        else
+            this.sort_ascending = !this.sort_ascending;
+        this.results.sort ((a, b) => {
+            if (a.values[by] < b.values[by]) return this.sort_ascending ? -1 : 1;
+            if (a.values[by] > b.values[by]) return this.sort_ascending ? 1 : -1;
+            return 0;
+        });
+        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+    }
+
     get_concordance (token: string) {
         if (this.module === 'frequency') {
             const settings = this.config.fetch ('frequency_settings');

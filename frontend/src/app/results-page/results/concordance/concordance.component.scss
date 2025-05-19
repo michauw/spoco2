@@ -1,1 +1,9 @@
-@import '../results.component.scss'
+@import '../results.component.scss';
+
+.clickable {
+    cursor: pointer;
+}
+
+.plain td > * {
+    padding: 0;
+}

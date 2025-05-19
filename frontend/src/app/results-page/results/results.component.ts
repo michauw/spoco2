@@ -47,6 +47,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     results_number: number;
     results_position: number = 0;
     results_history: number[] = [];
+    sort_ascending: boolean;
 
     SIZE_LIMIT: number = 10000;
     CHUNK_SIZE: number = 10000;
@@ -126,20 +127,21 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         return -1;
     }
 
-
-
     get_results_number () {
     }
 
     pageChanged (pageNumber: number) {
-        this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
-        this.pageChangedChild (pageNumber);
-        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+            this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
+            this.pageChangedChild (pageNumber);
+            this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
         window.scroll({ 
             top: 0, 
             left: 0, 
             behavior: 'auto' 
           });
+    }
+
+    protected sort_results (by: number | 'left_context' | 'match' | 'right_context', in_context?: boolean) {
     }
 
     protected pageChangedChild (pageNumber: number) {

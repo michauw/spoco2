@@ -1,7 +1,7 @@
 <div class="col-md-6 offset-md-3">
     <table class="table results mt-4 collocations">
         <tr class="header">
-            <th *ngFor="let column of columns">{{ column.name }}</th>
+            <th *ngFor="let column of columns; let i = index;" class="clickable" (click)="sort_results(i)">{{ column.name }}</th>
         </tr>
         <tr *ngFor="let col of currentSlice">
             <td *ngFor="let element of getColumnValue(col); index as ind">

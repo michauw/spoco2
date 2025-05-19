@@ -123,6 +123,25 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             this.load_missing_data (pageNumber)
     }
 
+    protected override sort_results (by: 'left_context' | 'match' | 'right_context', in_context: boolean = false): void {
+        if (this.sort_ascending === undefined)
+            this.sort_ascending = true;
+        else
+            this.sort_ascending = !this.sort_ascending;
+        let ind_a = 0;
+        let ind_b = 0;
+        this.results.sort ((a, b) => {
+            if (in_context && by === 'left_context') {
+                ind_a = Math.max (a[by].length - this.maxContextSize - 1, 0);
+                ind_b = Math.max (b[by].length - this.maxContextSize - 1, 0);
+            }
+            if (a[by][ind_a].word.toLocaleLowerCase () < b[by][ind_b].word.toLocaleLowerCase ()) return this.sort_ascending ? -1 : 1;
+            if (a[by][ind_a].word.toLocaleLowerCase () > b[by][ind_b].word.toLocaleLowerCase ()) return this.sort_ascending ? 1 : -1;
+            return 0;
+        });
+        this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
+    }
+
     private data_missing () {
         return Boolean (this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize).filter (el => el === undefined).length);
     }
