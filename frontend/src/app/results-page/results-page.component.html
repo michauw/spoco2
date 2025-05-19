@@ -28,13 +28,15 @@
                 <spoco-results-table *ngIf="tabs[i].module === 'collocations'"
                     [columns]="get_collocation_columns()"
                     [module]="'collocations'"
+                    [scale]="wp_scale.scale"
                     (results_fetched_event)="results_fetched($event, i)"
                     (results_added_event)="add_tab($event)"
                     (error)="tabs[current_tab].error = $event">
                 </spoco-results-table>
                 <spoco-results-table *ngIf="tabs[i].module === 'frequency'"
-                    [columns]="[{'name': 'Token', format: ''}, {'name': 'Frequency', 'format': '1.0-0'}]"
+                    [columns]="get_frequency_columns()"
                     [module]="'frequency'"
+                    [scale]="wp_scale.scale"
                     (results_fetched_event)="results_fetched($event, i)"
                     (results_added_event)="add_tab($event)"
                     (error)="tabs[current_tab].error = $event">

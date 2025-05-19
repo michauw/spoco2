@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { PAttribute, TableEntry } from 'src/app/dataTypes';
+import { CorpusInfo, PAttribute, TableEntry } from 'src/app/dataTypes';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -19,6 +19,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
 
     @Input() module: 'frequency' | 'collocations';
     @Input() columns: {name: string, format: string}[];
+    @Input() scale: number;
 
     constructor (private http: HttpClient) {
         super (...ResultsComponent.inject_dependencies ());
@@ -79,6 +80,8 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
             next:
                 (responseData) => {
                     for (let datum of responseData) {
+                        if (this.scale !== undefined)
+                            datum.push (datum[datum.length - 1] / this.scale);
                         this.results.push ({values: datum, meta: {}, selected: false});
                     }
                     this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);

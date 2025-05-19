@@ -34,6 +34,7 @@ import { SettingsBoxComponent } from './query-page/settings-box/settings-box.com
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
+import { CorpusDataResolver } from './corpus-data-resolver.service';
 
 @NgModule({
     declarations: [
@@ -70,7 +71,7 @@ import { MatTabsModule } from '@angular/material/tabs';
         MatDialogModule,
         MatTabsModule
   ],
-  providers: [ConfigResolver, PreferencesResolver, provideHttpClient(withFetch())],
+  providers: [ConfigResolver, PreferencesResolver, CorpusDataResolver, provideHttpClient(withFetch())],
   bootstrap: [SpocoComponent]
 })
 export class SpocoModule { }

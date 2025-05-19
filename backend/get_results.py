@@ -350,6 +350,14 @@ async def get_context (data: ContextData):
 def get_config ():
     return config
 
+@backend.get ('/api/corpora')
+def get_corpora_info ():
+    info = {}
+    for corpus in corpora.values ():
+        info[corpus.name] = {'size': corpus.size, 'pattrs': corpus.pattrs, 'satttrs': corpus.sattrs}
+    return info
+
+
 @backend.get ('/api/preferences')
 def get_preferences ():
     return preferences

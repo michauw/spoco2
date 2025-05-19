@@ -6,10 +6,11 @@ import { PreferencesResolver } from './preferences-resolver.service';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
 import { ResultsPageComponent } from './results-page/results-page.component';
 import { queryEmptyGuard } from './query-empty.guard';
+import { CorpusDataResolver } from './corpus-data-resolver.service';
 
 const routes: Routes = [
     {path: '', component: QueryPageComponent, resolve: {config: ConfigResolver, preferences: PreferencesResolver }},
-    {path: 'results/:module', component: ResultsPageComponent, resolve: {config: ConfigResolver }, canActivate: [queryEmptyGuard]},
+    {path: 'results/:module', component: ResultsPageComponent, resolve: {config: ConfigResolver, corpus_data: CorpusDataResolver}, canActivate: [queryEmptyGuard]},
     {path: 'config', component: ConfigCreatorComponent}
 ];
 

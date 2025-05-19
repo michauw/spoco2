@@ -92,4 +92,15 @@ interface Query {
     secondary: {'corpus': string, 'query': string}[];
 }
 
+interface CorpusInfo {
+    id: string;
+    size: number;
+    pattrs: string[];
+    sattrs: string[];
+}
+
+interface CorporaInfo {
+    [key: string]: CorpusInfo;
+}
+
 

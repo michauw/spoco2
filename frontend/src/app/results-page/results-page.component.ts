@@ -1,7 +1,8 @@
 import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import { faC, faClose } from '@fortawesome/free-solid-svg-icons';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Data, Params } from '@angular/router';
 import { ConfigService } from '../config.service';
+import { CorporaKeeperService } from '../corpora-keeper.service';
 
 export type modules = 'concordance' | 'collocations' | 'frequency';
 
@@ -15,15 +16,26 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
     tab_module_names: {[key: string]: string} = {concordance: 'concordance', collocations: 'collocations', frequency: 'frequency list'}
     current_tab: number = 0;
+    wp_scale: {label: 'B' | 'M' | 'T', scale: number};
     close = {'icon': faClose};
     
-    constructor(private route: ActivatedRoute, private config: ConfigService) { }
+    constructor(private route: ActivatedRoute, private config: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
+        const primary = this.corporaKeeper.getPrimary ();
         this.route.params.subscribe ((params: Params) => {
             const module = params['module'];
             this.add_tab (module);
         });
+        this.route.data.subscribe ((data: Data) => {
+            const size = data['corpus_data'][primary.id].size;
+            if (size > 1000000000)
+                this.wp_scale = {label: 'B', scale: 1000000000};
+            else if (size > 1000000)
+                this.wp_scale = {label: 'M', scale: 1000000}
+            else
+                this.wp_scale = {label: 'T', scale: 1000};
+        })
         // this.header_visibility (this.header_visible);
     }
 
@@ -48,7 +60,20 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
         const ams: string[] = this.config.fetch ('collocations_settings').ams;
         const names = {'pmi': 'PMI', 't_score': 'T-score', 'log_likelihood_ratio': 'LLR', 'dice': 'Dice', 'chi_square': 'Chi-square'};
         const am_columns = ams.map ((am) => ({name: names[am as keyof typeof names], format: '1.2-2'}));
-        return [{name: 'Collocate', format: ''}].concat (am_columns).concat ([{name: 'Frequency', format: '1.0-0'}]);
+        let columns = [{name: 'Collocate', format: ''}].concat (am_columns).concat ([{name: 'Frequency', format: '1.0-0'}]);
+        if (this.wp_scale !== undefined) {
+            columns.push ({name: `WP${this.wp_scale.label}`, format: '1.2-2'});
+        }
+        return columns;
+    }
+
+    get_frequency_columns () {
+        let columns = [{'name': 'Token', format: ''}, {'name': 'Frequency', 'format': '1.0-0'}];
+        if (this.wp_scale !== undefined) {
+            columns.push ({name: `WP${this.wp_scale.label}`, format: '1.2-2'});
+        }
+        
+        return columns;
     }
 
     results_fetched (results_data: {query: string, number_of_results: number}, index: number) {
