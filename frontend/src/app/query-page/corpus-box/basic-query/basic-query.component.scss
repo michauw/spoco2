@@ -19,11 +19,23 @@ $slide: .5rem;
     }
 }
 
-.corpus-info {
+.card-body.secondary {
+    background-color: #fafafa;
+}
+
+div.corpus-info {
     // font-weight: 600;
     color: #111519;
     font-size: 1.1rem;
     padding-top: .9rem;
+}
+
+span.corpus-name {
+    font-weight: 500;
+}
+
+span.corpus-type-info {
+    font-size: 1rem;
 }
 
 span.corpus-controls {

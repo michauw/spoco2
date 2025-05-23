@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { Subscription } from 'rxjs';
@@ -6,6 +6,11 @@ import { ConfigService } from 'src/app/config.service';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 import { QueryKeeperService } from 'src/app/query-keeper.service';
 import { Filters, Corpus, Option, PAttribute } from '../../../../dataTypes';
+
+interface Group {
+    name: string, 
+    fields: PAttribute[]
+};
 
 @Component({
     selector: 'spoco-filters',
@@ -15,22 +20,30 @@ import { Filters, Corpus, Option, PAttribute } from '../../../../dataTypes';
 })
 export class FiltersComponent implements OnInit, OnDestroy {
 
-    constructor(private configService: ConfigService, private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
+    @Input () visible: boolean;
+
+    currentCorpus: Corpus;
+    currentCorpusChanged: Subscription;
+    valueChanged: Subscription;
+    groups: Group[];
+    filtersOptions: {[key: string]: {[key: string]: Option[] | undefined}} = {};
+    filtersForm: UntypedFormGroup;
+    active_group: number;
+    multiselectSettings: IDropdownSettings = {
+        singleSelection: false,
+        idField: 'value',
+        textField: 'label',
+        itemsShowLimit: 2,
+        allowSearchFilter: false,
+        enableCheckAll: true
+      };
+
+constructor(private configService: ConfigService, private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
         this.groups = this.configService.fetch ('filters');
         this.active_group = 0;
-        let formGroups: { [key: string]: UntypedFormGroup } = {};
-        for (let group of this.groups) {
-            this.filtersOptions[group.name] = {};
-            let controls: { [key: string]: UntypedFormControl } = {};
-            for (let field of group.fields) {
-                controls[field.name] = new UntypedFormControl ();
-                this.filtersOptions[group.name][field.name] = field.options;
-            }
-            formGroups[group.name] = new UntypedFormGroup (controls);
-        }
-        this.filtersForm = new UntypedFormGroup (formGroups);
+        this.filtersForm = this.createForm (this.groups);
         this.currentCorpus = this.corporaKeeper.getCurrent ();
 
         this.filtersForm.valueChanges.subscribe(data => {
@@ -49,30 +62,18 @@ export class FiltersComponent implements OnInit, OnDestroy {
                 }
             }
             this.queryKeeper.setFilters (filters, this.currentCorpus.id);
-
+        });
+        this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
+            if (changeType == 'clear')
+                this.filtersForm.reset ();
         });
         this.currentCorpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => this.currentCorpus = corpus);
-
     }
 
     ngOnDestroy(): void {
         this.currentCorpusChanged.unsubscribe ();
+        this.valueChanged.unsubscribe ();
     }
-
-    currentCorpus: Corpus;
-    currentCorpusChanged: Subscription;
-    groups: {name: string, fields: PAttribute[]}[];
-    filtersOptions: {[key: string]: {[key: string]: Option[] | undefined}} = {};
-    filtersForm: UntypedFormGroup;
-    active_group: number;
-    multiselectSettings: IDropdownSettings = {
-        singleSelection: false,
-        idField: 'value',
-        textField: 'label',
-        itemsShowLimit: 2,
-        allowSearchFilter: false,
-        enableCheckAll: true
-      };
 
     chooseActive (name: string) {
         for (let group_ind = 0; group_ind < this.groups.length; ++group_ind)
@@ -82,4 +83,18 @@ export class FiltersComponent implements OnInit, OnDestroy {
         }
     }
 
+    private createForm (groups: Group[]) {
+        let formGroups: { [key: string]: UntypedFormGroup } = {};
+        for (let group of this.groups) {
+            this.filtersOptions[group.name] = {};
+            let controls: { [key: string]: UntypedFormControl } = {};
+            for (let field of group.fields) {
+                controls[field.name] = new UntypedFormControl ();
+                this.filtersOptions[group.name][field.name] = field.options;
+            }
+            formGroups[group.name] = new UntypedFormGroup (controls);
+        }
+
+        return new UntypedFormGroup (formGroups);
+    }
 }

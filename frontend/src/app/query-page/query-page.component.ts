@@ -1,6 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, Data, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../config.service';
 import { QueryKeeperService } from '../query-keeper.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -129,6 +128,10 @@ export class QueryPageComponent implements OnInit {
     @HostListener ('window:keyup.escape')
     onEscape () {
         this.clear ();
+    }
+
+    get_query () {
+        return this.queryKeeper.getFinalQuery ();
     }
 
     set_stat_settings () {

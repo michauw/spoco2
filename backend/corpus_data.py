@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess as sb
+import json
 from collections import defaultdict
 
 class CorpusData:
@@ -68,5 +69,61 @@ class CorpusData:
                     res[sattr].add (val)
 
         return res
+    
+    def to_config (self, to_do = ['pattr', 'sattr', 'filters'], include = {}, exclude = {}, filters = {}, indent = 4):
+
+        def get_list (attrs, include, exclude):
+            filtered = attrs
+            if include:
+                filtered = [att for att in filtered if att in include]
+            if exclude:
+                filtered = [att for att in filtered if att not in exclude]
+            return filtered
+        
+        parts = {}
+        if 'pattr' in to_do:
+            pattrs = get_list (self.pattrs, include.get ('pattrs', {}), exclude.get ('pattrs', {}))
+            pattr_list = []
+            for pattr in pattrs:
+                pattr_list.append ({'name': pattr, 'type': 'text', 'initValue': '', 'description': f'Attribute {pattr}', 'inResults': False})
+            parts['positionalAttributes'] = pattr_list
+        if 'sattr' in to_do:
+            sattrs = get_list (self.sattrs, include.get ('sattrs', {}), exclude.get ('sattrs', {}))
+            sattr_list = []
+            for sattr in sattrs:
+                sattr_list.append ({'name': sattr, 'description': f'Attribute: {sattr}', 'type': 'text', 'inResults': True})
+            parts['structuralAttributes'] = sattr_list
+        if 'filters' in to_do:
+            group_list = []
+            if filters:
+                groups = list (filters.keys ())
+            else:
+                groups = ['main']
+            for group in groups:
+                if filters:
+                    fields = list (filters[group].keys ())
+                else:
+                    fields = get_list (self.sattrs, include, exclude)
+                field_list = []
+                for field in fields:
+                    if filters:
+                        ftype = filters[group][field]
+                    else:
+                        ftype = 'text'
+                    if ftype == 'text':
+                        field_list.append ({'name': field, 'description': f'Filter {field}', 'type': 'text'})
+                    else:
+                        if not self.sattr_values:
+                            self.sattr_values = self.get_sattr_values ()
+                        option_list = []
+                        for value in self.sattr_values[field]:
+                            option_list.append ({'label': value, 'value': value})
+                        field_list.append ({'name': field, 'description': f'Filter {field}', 'type': ftype, 'options': option_list})
+                group_list.append ({'name': group, 'fields': field_list})
+            parts['filters'] = group_list
+        
+        return json.dumps (parts, indent = indent, ensure_ascii = False)
+            
+        
 
 

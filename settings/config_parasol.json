@@ -1,0 +1,336 @@
+{
+    "projectName": "Parasol Corpus",
+    "corpora": 
+        [
+            {"name": "Spanish", "id": "es", "primary": true},
+            {"name": "Russian", "id": "ru", "primary": false}
+        ],
+    "positionalAttributes":
+        [
+            {"name": "word", "type": "text", "initValue": "", "description": "Word form"},
+            {"name": "lemma", "type": "text", "initValue": "", "description": "Lemma", "inResults": true, "inTooltip": true},
+            {"name": "pos", "type": "text", "initValue": "", "description": "Grammatic tag", "inResults": true, "inTooltip": true}
+        ],
+    "modifiers": 
+    [
+        {"name": "beginning", "type": "checkbox", "initValue": false, "description": "begins with"},
+        {"name": "ending", "type": "checkbox", "initValue": false, "description": "ends with"},
+        {"name": "caseSensitive", "type": "checkbox", "initValue": false, "description": "case sensitive"},
+        {"name": "ignoreDiacritics", "type": "checkbox", "initValue": false, "description": "ignore diacritics", "use": false}
+    ],
+    "structuralAttributes": [
+        {
+        "name": "text_title_orig",
+        "description": "Original title",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_title_trans",
+        "description": "Translated title",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_author",
+        "description": "Author",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_translator",
+        "description": "Tranlator",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_year_ru",
+        "description": "Year of publish (ru)",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_year_es",
+        "description": "Year of publish (es)",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_orig_lang",
+        "description": "Languate of original",
+        "type": "text",
+        "inResults": true
+        },
+        {
+        "name": "text_text",
+        "description": "Text",
+        "type": "text",
+        "inResults": true
+        }
+    ],
+    "filters": [
+        {
+            "name": "Origin", 
+            "fields": [
+                {
+                    "name": "text_title_orig",
+                    "description": "Original title",
+                    "type": "multiselect",
+                    "options": [
+                        {
+                            "label": "Master i Margarita",
+                            "value": "Master i Margarita"
+                        },
+                        {
+                            "label": "Deti Arbata",
+                            "value": "Deti Arbata"
+                        },
+                        {
+                            "label": "La casa de los espíritos",
+                            "value": "La casa de los espíritos"
+                        },
+                        {
+                            "label": "Doctor Živago",
+                            "value": "Doctor Živago"
+                        },
+                        {
+                            "label": "El túnel",
+                            "value": "El túnel"
+                        },
+                        {
+                            "label": "Dar",
+                            "value": "Dar"
+                        },
+                        {
+                            "label": "El juguete rabioso",
+                            "value": "El juguete rabioso"
+                        },
+                        {
+                            "label": "El club dumas o la sombra de Richelieu",
+                            "value": "El club dumas o la sombra de Richelieu"
+                        }
+                    ]
+                },
+                {
+                    "name": "text_author",
+                    "description": "Author",
+                    "type": "multiselect",
+                    "options": [
+                    {
+                        "label": "Anatolij Naumovič Rybakov",
+                        "value": "Anatolij Naumovič Rybakov"
+                    },
+                    {
+                        "label": "Roberto Arlt",
+                        "value": "Roberto Arlt"
+                    },
+                    {
+                        "label": "Mikhail Bulgakov",
+                        "value": "Mikhail Bulgakov"
+                    },
+                    {
+                        "label": "Arturo Pérez-Reverte",
+                        "value": "Arturo Pérez-Reverte"
+                    },
+                    {
+                        "label": "Ernesto Sábato",
+                        "value": "Ernesto Sábato"
+                    },
+                    {
+                        "label": "Boris Pasternak",
+                        "value": "Boris Pasternak"
+                    },
+                    {
+                        "label": "Vladimir Nabokov",
+                        "value": "Vladimir Nabokov"
+                    },
+                    {
+                        "label": "Isabel Allende",
+                        "value": "Isabel Allende"
+                    }
+                    ]
+                },
+                {
+                    "name": "text_orig_lang",
+                    "description": "Languate of original",
+                    "type": "select",
+                    "options": [
+                    {
+                        "label": "es",
+                        "value": "es"
+                    },
+                    {
+                        "label": "ru",
+                        "value": "ru"
+                    }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Translated",
+            "fields": [
+                {
+                    "name": "text_title_trans",
+                    "description": "Translated title",
+                    "type": "multiselect",
+                    "options": [
+                    {
+                        "label": "Fernando Gutiérrez",
+                        "value": "Fernando Gutiérrez"
+                    },
+                    {
+                        "label": "Dom duchov",
+                        "value": "Dom duchov"
+                    },
+                    {
+                        "label": "Zlaja igruška",
+                        "value": "Zlaja igruška"
+                    },
+                    {
+                        "label": "La dádiva",
+                        "value": "La dádiva"
+                    },
+                    {
+                        "label": "El Maestro y Margarita",
+                        "value": "El Maestro y Margarita"
+                    },
+                    {
+                        "label": "Tunnel'",
+                        "value": "Tunnel'"
+                    },
+                    {
+                        "label": "Los hijos del Arbat",
+                        "value": "Los hijos del Arbat"
+                    }
+                    ]
+                },
+                {
+                    "name": "text_translator",
+                    "description": "Translator",
+                    "type": "multiselect",
+                    "options": [
+                    {
+                        "label": "Carmen Giralt",
+                        "value": "Carmen Giralt"
+                    },
+                    {
+                        "label": "Amaya Lacasa Sancha",
+                        "value": "Amaya Lacasa Sancha"
+                    },
+                    {
+                        "label": "Simonov, Vladimir V. /Federov, V./ Nikolaeva, S./ Kogan, G. A./ Michajlov, V./ Šlejfer, A.",
+                        "value": "Simonov, Vladimir V. /Federov, V./ Nikolaeva, S./ Kogan, G. A./ Michajlov, V./ Šlejfer, A."
+                    },
+                    {
+                        "label": "Natal'ja Bogomlova",
+                        "value": "Natal'ja Bogomlova"
+                    },
+                    {
+                        "label": "Isabel Vicente",
+                        "value": "Isabel Vicente"
+                    },
+                    {
+                        "label": "El Doctor Zhivago",
+                        "value": "El Doctor Zhivago"
+                    },
+                    {
+                        "label": "Susanna P. Nikolaeva",
+                        "value": "Susanna P. Nikolaeva"
+                    },
+                    {
+                        "label": "Irina V. Gluščenka",
+                        "value": "Irina V. Gluščenka"
+                    }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Other",
+            "fields": [
+                {
+                    "name": "text_year_ru",
+                    "description": "Year of publish (ru)",
+                    "type": "multiselect",
+                    "options": [
+                    {
+                        "label": "2002",
+                        "value": "2002"
+                    },
+                    {
+                        "label": "1984",
+                        "value": "1984"
+                    },
+                    {
+                        "label": "1983",
+                        "value": "1983"
+                    },
+                    {
+                        "label": "1938",
+                        "value": "1938"
+                    },
+                    {
+                        "label": "1989",
+                        "value": "1989"
+                    },
+                    {
+                        "label": "2001",
+                        "value": "2001"
+                    },
+                    {
+                        "label": "1958",
+                        "value": "1958"
+                    }
+                    ]
+                },
+                {
+                    "name": "text_year_es",
+                    "description": "Year of publish (es)",
+                    "type": "text_text",
+                    "options": [
+                    {
+                        "label": "2017",
+                        "value": "2017"
+                    },
+                    {
+                        "label": "1984",
+                        "value": "1984"
+                    },
+                    {
+                        "label": "1982",
+                        "value": "1982"
+                    },
+                    {
+                        "label": "1926",
+                        "value": "1926"
+                    },
+                    {
+                        "label": "1989",
+                        "value": "1989"
+                    },
+                    {
+                        "label": "1993",
+                        "value": "1993"
+                    },
+                    {
+                        "label": "1959",
+                        "value": "1959"
+                    },
+                    {
+                        "label": "1988",
+                        "value": "1988"
+                    }
+                    ]
+                }
+            ]
+        }
+    ],
+    "cwb": {
+        "paths": {
+            "bin":"C:\\Praca\\narzedzia\\cwb\\cwb3.4\\bin",
+            "registry-path":"C:\\Praca\\spoco\\spoco\\tests\\Corpora\\parallel\\parasol_ru_es\\Corpus\\Registry"
+        },
+        "context":"Align"
+    }
+}

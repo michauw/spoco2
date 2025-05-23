@@ -1,13 +1,34 @@
 <div class="col-12">
-    <div class="row {{ displayMode === 'ribbon' ? 'shifted' : ''">
-        <div class="col-1" *ngIf="displayMode === 'ribbon'">
-            <spoco-corpora-ribbon></spoco-corpora-ribbon>
+    <div *ngIf="displayMode === 'ribbon'">
+        <div class="row shifted">
+            <div class="col-1">
+                <spoco-corpora-ribbon></spoco-corpora-ribbon>
+            </div>
+            <div class="col-md-10"> 
+                <span *ngFor="let corpus of corpora">
+                    <spoco-basic-query 
+                        *ngIf="corpus === currentCorpus"
+                        [corpus]="corpus"
+                        [displayMode]="displayMode"
+                        (toggleViewClicked)="toggleView()">
+                    </spoco-basic-query>
+                </span>
+            </div>
         </div>
-        <div class="col-md-10 {{ displayMode !== 'ribbon' ? 'offset-md-1' : '' }}">
-            <spoco-basic-query></spoco-basic-query>
+    </div>
+    <div *ngIf="displayMode !== 'ribbon'">
+        <div class="row">
+            <div class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }}" *ngFor="let corpus of corpora">
+                <spoco-basic-query [corpus]="corpus" [displayMode]="displayMode" (toggleViewClicked)="toggleView ()"></spoco-basic-query>
+                <div class="my-3"></div>
+            </div>
         </div>
     </div>
     <div class="my-3"></div>
-    <spoco-cqp-query></spoco-cqp-query>
+    <div class="row">
+        <div class="{{ spacing_advanced['col'] }} {{ spacing_advanced['offset'] }}">
+            <spoco-cqp-query></spoco-cqp-query>
+        </div>
+    </div>
     <div class="my-2"></div>
 </div>  

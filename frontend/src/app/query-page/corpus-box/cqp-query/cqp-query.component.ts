@@ -19,26 +19,26 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.valueChanged = this.queryKeeper.valueChanged.subscribe (_changeType => {
-            const cqpQuery: string = this.queryKeeper.getQuery (this.corpus.id);
+            const cqpQuery: string = this.queryKeeper.getFinalQuery ();
             this.autoChange = true;
             this.cqpQueryForm.setValue ({cqp: cqpQuery});
         });
         this.cqpQueryForm.valueChanges.subscribe (data => {
             if (!this.autoChange)
-                this.queryKeeper.setQuery (data.cqp, this.corpus.id);
+                this.queryKeeper.setFinalQuery (data.cqp);
             this.autoChange = false;
         });  
-        this.corpus = this.corporaKeeper.getCurrent ();
-        this.corpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => {
-            this.corpus = corpus;
-            this.cqpQueryForm.patchValue ({cqp: this.queryKeeper.getQuery (this.corpus.id)});
-        });
+        // this.corpus = this.corporaKeeper.getCurrent ();
+        // this.corpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => {
+        //     this.corpus = corpus;
+        //     this.cqpQueryForm.patchValue ({cqp: this.queryKeeper.getQuery (this.corpus.id)});
+        // });
         
     }
 
     ngOnDestroy(): void {
         this.valueChanged.unsubscribe ();
-        this.corpusChanged.unsubscribe ();
+        // this.corpusChanged.unsubscribe ();
     }
 
     cqpQueryForm: UntypedFormGroup = new UntypedFormGroup ({

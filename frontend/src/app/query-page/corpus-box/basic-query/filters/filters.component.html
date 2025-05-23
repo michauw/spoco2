@@ -1,7 +1,7 @@
-<div class="" *ngIf="groups.length">
+<div [ngStyle]="{visibility: visible ? 'visible' : 'hidden'}" *ngIf="groups.length">
     <div class="row">
         <div class="col-4 ml-4 mb-2">
-            <b>Filtry</b>
+            <span class="section-name">Filters</span>
         </div>
     </div>
     <div class="row mb-4" *ngIf="groups.length > 1">

@@ -27,11 +27,12 @@ export class CorporaKeeperService {
         return pos;
       }
 
-    moveCorpus (direction: string) {
-        let position: number = this.findCorpusPosition (this.current);
+    moveCorpus (direction: string, corpus: Corpus) {
+        let position: number = this.findCorpusPosition (corpus);
+        this.corpora.splice(0, 0, )
         if (direction === 'down')
             position += 1;
-        if ((direction === 'up' && position <= 1) || (direction === 'down' && position >= this.corpora.length - 1))
+        if ((direction === 'up' && position <= 1) || (direction === 'down' && position >= this.corpora.length))
             return 0;
         this.corpora.splice (position - 1, 0, this.corpora.splice (position, 1)[0]);
         this.corporaChange.next (this.corpora);

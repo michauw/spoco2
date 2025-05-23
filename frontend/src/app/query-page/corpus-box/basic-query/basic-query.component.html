@@ -1,12 +1,12 @@
 <div class="card basic-box">
     <div class="card-header corpus-info" *ngIf="corpora.length > 1">
-        Query for {{ currentCorpus.name }} ({{ currentCorpus === primaryCorpus ? 'primary' : 'secondary - only filtering'}})
-        <span class="corpus-controls">   <!-- for small displays -->
-            <span class="corpus-controls-small">
+        Corpus: <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus === primaryCorpus ? 'primary' : 'secondary - only filtering'}}]</span>
+        <span class="corpus-controls">
+            <span class="corpus-controls-small">    <!-- for small displays -->
                 <form [formGroup]="corpusSelect">
                     <label for="chooseCurrent">active:</label>
                     <select name="chooseCurrent" formControlName="currentCorpus">
-                        <option *ngFor="let corpus of corpora" [ngValue]="corpus" selected="{{ corpus === currentCorpus ? 'selected' : '' }}">{{corpus.id}}</option>
+                        <option *ngFor="let available_corpus of corpora" [ngValue]="corpus" selected="{{ corpus === available_corpus ? 'selected' : '' }}">{{ available_corpus.id }}</option>
                     </select>
                     <label for="choosePrimary">primary:</label>
                     <select name="choosePrimary" formControlName="primaryCorpus">
@@ -15,21 +15,45 @@
                 </form>
             </span>
             <span class="corpus-controls-normal"> <!-- medium+ displays -->
-                <i *ngIf="currentCorpus === primaryCorpus" class="bi bi-1-square"></i>
-                <i 
-                    *ngIf="currentCorpus !== primaryCorpus" 
+                <i *ngIf="corpus === primaryCorpus" 
+                    class="bi bi-1-square" 
+                    matTooltip="Primary corpus" 
+                    matTooltipPosition="above"
+                    [matTooltipShowDelay]="tooltipShowDelay">
+                </i>
+                <i *ngIf="corpus !== primaryCorpus" 
                     class="bi bi-2-square clickable"
+                    matTooltip="Set as primary corpus"
+                    matTooltipPosition="above"
+                    [matTooltipShowDelay]="tooltipShowDelay"
                     (mouseenter)="switchIcon($event, 'bi-2-square', 'bi-1-square')"
                     (mouseleave)="switchIcon($event, 'bi-1-square', 'bi-2-square')"
-                    (click)="setAsPrimary()"    
-                ></i>
-                <i class="bi bi-layout-split clickable"
-                    (mouseenter)="switchIcon($event, '', 'text-danger')"
-                    (mouseleave)="switchIcon($event, 'text-danger', '')">
+                    (click)="setAsPrimary()">
                 </i>
-                <span *ngIf="corpora.length > 2 && currentCorpus !== primaryCorpus">
-                    <i class="bi bi-arrow-up {{ isArrowEnabled ('up') ? 'arrow-enabled' : 'arrow-disabled' }}" (click)="moveCorpus('up')"></i>
-                    <i class="bi bi-arrow-down {{ isArrowEnabled ('down') ? 'arrow-enabled' : 'arrow-disabled' }}" (click)="moveCorpus('down')"></i>
+                <i *ngIf="corpus === primaryCorpus || displayMode === 'ribbon'" 
+                    class="bi bi-{{ displayMode === 'ribbon' ? 'layout-split' : 'list-stars' }} clickable"
+                    matTooltip="Switch to {{ displayMode === 'ribbon' ? '\"multiple boxes\"' : '\"one box\"'}} view"
+                    matTooltipPosition="above"
+                    [matTooltipShowDelay]="tooltipShowDelay"
+                    (mouseenter)="switchIcon($event, '', 'text-danger')"
+                    (mouseleave)="switchIcon($event, 'text-danger', '')"
+                    (click)="toggleView()">
+                </i>
+                <span *ngIf="corpora.length > 2 && corpus !== primaryCorpus">
+                    <i 
+                        class="bi bi-arrow-up {{ isArrowEnabled ('up') ? 'arrow-enabled' : 'arrow-disabled' }} clickable" 
+                        matTooltip="{{ isArrowEnabled('up') ?  'Move secondary corpus up' : 'Corpus already at the top position'}}"
+                        matTooltipPosition="above"
+                        [matTooltipShowDelay]="tooltipShowDelay"
+                        (click)="moveCorpus('up')">
+                    </i>
+                    <i 
+                        class="bi bi-arrow-down {{ isArrowEnabled ('down') ? 'arrow-enabled' : 'arrow-disabled' }} clickable" 
+                        matTooltip="{{ isArrowEnabled('down') ?  'Move secondary corpus down' : 'Corpus already at the bottom position'}}"
+                        matTooltipPosition="above"
+                        [matTooltipShowDelay]="tooltipShowDelay"
+                        (click)="moveCorpus('down')">
+                    </i>
                 </span>
             </span>
         </span>
@@ -39,13 +63,13 @@
             <h5 class="card-title my-auto py-1">Basic search</h5>
         </div>
     </div>
-    <div class="card-body">
-        <spoco-query-row [queryRowIndex]="qr" *ngFor="let qr of qrRange()"></spoco-query-row>
+    <div class="card-body {{ corpus !== primaryCorpus ? 'secondary' : ''}}">
+        <spoco-query-row [corpus]="corpus" [queryRowIndex]="qr" *ngFor="let qr of qrRange()"></spoco-query-row>
         <div class="plus-minus float-end">
-            <button class="btn row-button theme-dark" (click)="lessRows()" *ngIf="queryRowNumber > 1">
+            <button class="btn row-button theme-dark" (click)="lessRows()" *ngIf="queryRowNumber > 1" matTooltip="Remove row" [matTooltipShowDelay]="tooltipShowDelay">
                 -
             </button>
-            <button class="btn row-button theme-dark" (click)="moreRows()">
+            <button class="btn row-button theme-dark" (click)="moreRows()" matTooltip="Add row" [matTooltipShowDelay]="tooltipShowDelay">
                 +
             </button>
         </div>
@@ -54,6 +78,6 @@
                 <hr>
             </div>
         </div>
-        <spoco-filters></spoco-filters>
+        <spoco-filters [visible]="corpus === primaryCorpus || displayMode === 'ribbon'"></spoco-filters>
     </div>
 </div>

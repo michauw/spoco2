@@ -1,7 +1,7 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { Corpus } from 'src/app/dataTypes';
+import { Corpus, queryPageDisplayMode } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 import { QueryKeeperService } from '../../../query-keeper.service';
 
@@ -16,33 +16,42 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
 
     queryRowNumber: number = 0;
 
-    @Input() currentCorpus: Corpus;
+    @Input() corpus: Corpus;
     @Input() primaryCorpus: Corpus;
     @Input() corpora: Corpus[];
+    @Input() displayMode: queryPageDisplayMode;
+    @Output () toggleViewClicked = new EventEmitter<void> ();
 
     corpusSelect: UntypedFormGroup;
+    tooltipShowDelay: number = 400;
     private subscriptions: Subscription[];
 
     ngOnInit(): void {
-        this.queryRowNumber = 1;
+        this.queryRowNumber = this.queryKeeper.getNumberOfRows (this.corpus.id);
         this.corpusSelect = new UntypedFormGroup({
-            'currentCorpus': new UntypedFormControl(this.currentCorpus),
-            'primaryCorpus': new UntypedFormControl(this.primaryCorpus)
+            'currentCorpus': new UntypedFormControl (this.corpus),
+            'primaryCorpus': new UntypedFormControl (this.primaryCorpus)
         });
 
         this.corpusSelect.valueChanges.subscribe(data => {
-            this.corporaKeeper.setCurrent(data.currentCorpus);
-            this.corporaKeeper.setPrimary(data.primaryCorpus);
+            this.corporaKeeper.setCurrent (data.currentCorpus);
+            this.corporaKeeper.setPrimary (data.primaryCorpus);
         });
 
         this.corpora = this.corporaKeeper.getCorpora ();
-        this.currentCorpus = this.corporaKeeper.getCurrent ();
         this.primaryCorpus = this.corporaKeeper.getPrimary ();
 
-        let sub_current = this.corporaKeeper.currentChange.subscribe(corpus => this.currentCorpus = corpus);
-        let sub_primary = this.corporaKeeper.primaryChange.subscribe(corpus => this.primaryCorpus = corpus);
+        let sub_primary = this.corporaKeeper.primaryChange.subscribe (corpus => {
+            this.primaryCorpus = corpus;
+            this.corpora = this.corporaKeeper.getCorpora ();
+        });
 
-        this.subscriptions = [sub_current, sub_primary];
+        let sub_queryChanged = this.queryKeeper.valueChanged.subscribe (type => {
+            if (type === 'clear')
+                this.queryRowNumber = 1;
+        });
+
+        this.subscriptions = [sub_primary, sub_queryChanged]; // [sub_current, sub_primary];
     }
 
     ngOnDestroy(): void {
@@ -51,7 +60,7 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
     }
 
     qrRange() {
-        return Array(this.queryRowNumber).fill(0).map((x, i) => i);
+        return Array(this.queryRowNumber).fill(0).map ((x, i) => i);
     }
 
     moreRows() {
@@ -60,16 +69,16 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
 
     lessRows() {
         this.queryRowNumber -= 1;
-        this.queryKeeper.pop(this.currentCorpus.id);
+        this.queryKeeper.pop (this.corpus.id);
     }
 
     moveCorpus (direction: string) {
-        this.corporaKeeper.moveCorpus (direction);
+        this.corporaKeeper.moveCorpus (direction, this.corpus);
     }
 
     isArrowEnabled(direction: string) {
 
-        let pos: number = this.corporaKeeper.findCorpusPosition(this.currentCorpus);
+        let pos: number = this.corporaKeeper.findCorpusPosition (this.corpus);
 
         if (direction === 'up' && pos > 1)
             return true;
@@ -80,15 +89,20 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
     }
 
     setAsPrimary() {
-        this.corporaKeeper.setPrimary (this.currentCorpus);
+        this.corporaKeeper.setPrimary (this.corpus);
+        this.corporaKeeper.setCurrent (this.corpus);
     }
 
-    switchIcon(event: any, toRemove: string, toAdd: string) {
+    switchIcon (event: any, toRemove: string, toAdd: string) {
         let target = event.target;
         if (toRemove)
-            target.classList.remove(toRemove);
+            target.classList.remove (toRemove);
         if (toAdd)
-            target.classList.add(toAdd);
+            target.classList.add (toAdd);
+    }
+
+    toggleView () {
+        this.toggleViewClicked.emit ();
     }
 
 }

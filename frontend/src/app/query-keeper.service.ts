@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { Filters, Corpus, QueryRow, Query } from './dataTypes';
 import { CorporaKeeperService } from './corpora-keeper.service';
 
@@ -12,7 +12,12 @@ export class QueryKeeperService {
     filters: Filters;
     corpusQueryRows: {[corpus: string]: QueryRow[]} = {};   // stores the query row data for each corpus box
     corpusQuery: {[corpus: string]: string} = {};   // stores the cqp query for each corpus
+    finalQuery: string;
     valueChanged = new Subject<string> ();  
+    corporaChanged: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => {
+        this.finalQuery = this.getFinalQuery ();
+        this.valueChanged.next ('order');
+    });
 
     // constructs CQP query for one query-row
 
@@ -103,6 +108,7 @@ export class QueryKeeperService {
             this.corpusQuery[corpusName] = '';
         }
         this.filters = {};
+        // this.finalQuery = '';
         this.valueChanged.next ('clear');
     }
 
@@ -111,19 +117,14 @@ export class QueryKeeperService {
         // constructs final CQP query
 
         let corpusQueryRows = this.corpusQueryRows[corpus];
-        const filtersPart: string = this.getFilters ();
         let query: string = '';
 
-        if (corpusQueryRows === undefined && !filtersPart) 
+        if (corpusQueryRows === undefined) 
             return '';
         else if (corpusQueryRows === undefined)
             corpusQueryRows = [];
         for (let queryRow of corpusQueryRows)
             query += this.getRowQuery (queryRow);
-
-        if (query === '')
-            query = '[]';
-        query += filtersPart;
         
         return query;
     }
@@ -131,14 +132,20 @@ export class QueryKeeperService {
     getFinalQuery () {
         const primary = this.corporaKeeper.getPrimary ();
         const secondary = this.corporaKeeper.getSecondary ();
+        const filters: string = this.getFilters ();
         let query = this.getBasicQuery (primary.id);
         for (let corp of secondary) {
             let lang_query = this.getBasicQuery (corp.id);
-            if (lang_query)
+            if (lang_query) {
+                if (!query)
+                    query = '[]';
                 query += `:${corp.id.toUpperCase ()} ${lang_query}`;
+            }
         }
+        if (!query && filters)
+            query = '[]';
 
-        return query;   
+        return query + filters;   
     }
 
     getCorpusQueries (): Query {
@@ -164,8 +171,17 @@ export class QueryKeeperService {
         return this.corpusQuery[corpus];
     }
 
+    getNumberOfRows (corpus_id: string) {
+        try {
+            return Math.max (this.corpusQueryRows[corpus_id].length, 1);
+        } catch {
+            return 1;
+        }
+    }
+
     pop (corpus: string) {
         this.corpusQueryRows[corpus].pop ();
+        this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('pop');
     }
 
@@ -182,16 +198,22 @@ export class QueryKeeperService {
         else
             corpusQueryRows[index] = data;
         this.corpusQuery[corpus] = this.getBasicQuery (corpus);
+        this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('set');
     }
 
     setFilters (data: Filters, corpus: string) {
         this.filters = data;
         this.corpusQuery[corpus] = this.getBasicQuery (corpus);
+        this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('set');
     }
 
     setQuery (query: string, corpus: string) {
         this.corpusQuery[corpus] = query;
+    }
+
+    setFinalQuery (query: string) {
+        this.finalQuery = query;
     }
 }
