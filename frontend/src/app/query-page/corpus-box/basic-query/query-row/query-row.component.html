@@ -9,7 +9,7 @@
                 [ngClass]="pattrClasses"
                 formGroupName="{{ pattr.name }}"
                 *ngFor="let pattr of filterByType ('text')">
-                    <input class="form-control pattr-input" type="text" placeholder="{{ corpus.id}}: {{ pattr.description }}" formControlName="value" (focusin)="currentGroup = pattr.name">
+                    <input class="form-control pattr-input" type="text" placeholder="{{ pattr.description }}" formControlName="value" (focusin)="currentGroup = pattr.name">
             </div>
         </div>
 

@@ -75,7 +75,7 @@
                     </spoco-annotated-word>
                     <spoco-annotated-word *ngFor="let word of row.right_context" 
                         [word]="word" 
-                        [role]="'match'" 
+                        [role]="'context'" 
                         [displayMode]="currentDisplay" 
                         [currentLayer]="currentLayer" 
                         [toShow]="pattrs_to_show">
@@ -179,7 +179,7 @@
                     </spoco-annotated-word>
                     <spoco-annotated-word *ngFor="let word of row.right_context" 
                         [word]="word" 
-                        [role]="'match'" 
+                        [role]="'context'" 
                         [displayMode]="currentDisplay" 
                         [currentLayer]="currentLayer" 
                         [toShow]="pattrs_to_show">
