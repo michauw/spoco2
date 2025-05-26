@@ -29,9 +29,9 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
         });
         this.route.data.subscribe ((data: Data) => {
             const size = data['corpus_data'][primary.id].size;
-            if (size > 1000000000)
+            if (size > 10000000000)
                 this.wp_scale = {label: 'B', scale: 1000000000};
-            else if (size > 1000000)
+            else if (size > 10000000)
                 this.wp_scale = {label: 'M', scale: 1000000}
             else
                 this.wp_scale = {label: 'T', scale: 1000};
@@ -42,7 +42,6 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     ngAfterViewInit(): void {
         this.header_visibility ();
     }
-
 
     get_tab_name (index: number) {
         let name = this.tabs[index].name;

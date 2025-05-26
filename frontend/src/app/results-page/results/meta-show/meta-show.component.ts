@@ -5,14 +5,9 @@ import { Component, Input, OnInit } from '@angular/core';
     templateUrl: './meta-show.component.html',
     styleUrls: ['./meta-show.component.scss']
 })
-export class MetaShowComponent implements OnInit {
+export class MetaShowComponent {
 
     constructor() { }
-
-    ngOnInit(): void {
-        console.log ('meta:', this.meta);
-
-    }
 
     @Input() meta: {name: string, value: string}[];
 }

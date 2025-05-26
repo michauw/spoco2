@@ -155,6 +155,9 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
     hide_word = False
     if category == 'concordance' or not grouping_attr:
         to_show = [attr['name'] for attr in config['positionalAttributes'] if attr.get ('inResults', False)]
+        for corpus in data.corpora:
+            if not corpus['primary']:
+                to_show.append (corpus['id'])
     else:
         if grouping_attr != 'word':
             to_show = [grouping_attr]
@@ -163,9 +166,6 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
             to_show = []
     if category in ['concordance', 'collocations']:
         CONTEXT = f'set Context {CONTEXT_ATTR}'
-        for corpus in data.corpora:
-            if not corpus['primary']:
-                to_show.append (corpus['id'])
     else:
         CONTEXT = 'set Context 0'
     TO_SHOW = ' '.join (['+' + el for el in to_show])

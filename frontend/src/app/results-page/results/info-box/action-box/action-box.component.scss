@@ -1,14 +1,31 @@
 .action-box {
     font-size: 1.2rem;  
     & .icon {
-        margin-left: .6rem;
-        margin-right: .6rem;
-        cursor: pointer;
+        // margin-left: .6rem;
+        // margin-right: .6rem;
+        padding: .5rem .6rem;
+        &.plain:hover {
+            // padding: 2px;
+            // border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 20%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        &.flavoured:hover {
+            border-radius: 20%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
     }
+}
+
+.clickable {
+    cursor: pointer;
 }
 
 .gray {
     color: gray;
+    &.background {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 }
 
 .enlarge {
@@ -17,4 +34,46 @@
 
 .enlarge:hover {
     font-size: 110%;
+}
+
+.icon-wrapper {
+    position: relative;
+    display: inline-block;
+
+    &:hover .icon-dropdown,
+    &:focus-within .icon-dropdown {
+        display: flex;
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+    }
+}
+
+.icon-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    display: flex;
+    position: absolute;
+    top: 115%; // directly below main icon
+    // left: 110%;
+    // transform: translateX(-50%);
+    flex-direction: row;
+    gap: 0.4rem;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 0.3rem 0.2rem;
+    z-index: 1000;
+    border-radius: 0.4rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.icon.option {
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.icon.option:hover {
+    transform: scale(1.1);
 }

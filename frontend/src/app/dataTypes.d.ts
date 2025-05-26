@@ -103,4 +103,6 @@ interface CorporaInfo {
     [key: string]: CorpusInfo;
 }
 
+type AnnotationDisplay = 'tooltip' | 'mixed' | 'inline';
+
 

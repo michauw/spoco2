@@ -1,10 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { faExchangeAlt, faInfoCircle, faEye, faDownload, IconDefinition, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShuffle, faLeftRight, faExchangeAlt, faInfoCircle, faEye, faDownload, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { faComment } from '@fortawesome/free-regular-svg-icons';
 import { faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import { ActionService } from 'src/app/action.service';
 import { ConfigService } from 'src/app/config.service';
+import { AnnotationDisplay } from 'src/app/dataTypes';
 
-type IconControl = {icon: IconDefinition, enabled: boolean, show: boolean, help: string};
+interface IconControl {
+    icon: IconDefinition, 
+    enabled: boolean, 
+    show: boolean, 
+    help: string
+};
+interface FlavouredIconControl extends IconControl {
+    flavours: {[key: string]: IconControl}
+};
 
 @Component({
     selector: 'spoco-action-box',
@@ -13,28 +23,41 @@ type IconControl = {icon: IconDefinition, enabled: boolean, show: boolean, help:
 })
 export class ActionBoxComponent implements OnInit {
 
+    exchange: IconControl;
+    meta: IconControl;
+    layers: IconControl;
+    download: FlavouredIconControl;
+    annotation: FlavouredIconControl;
+    annotationSetting: AnnotationDisplay = 'tooltip';
+    tooltipDelay = 500;
+
     constructor(private actions: ActionService, private config: ConfigService) { }
 
     ngOnInit(): void {
         const layers = this.config.fetch ('layers');
         this.exchange = {icon: faExchangeAlt, enabled: true, show: true, help: 'Toggle display mode'};
-        this.info = {icon: faInfoCircle, enabled: false, show: true, help: 'Show/hide metadata'};
-        this.annotation = {icon: faPlusCircle, enabled: true, show: true, help: 'Togggle additional annotation display'}
-        this.layers = {icon: faEye, enabled: true, show: layers.length > 1, help: 'Toggle display layers'};
-        this.download_selected = {icon: faSquareCheck, enabled: true, show: true, help: 'Download selected results'};
-        this.download_all = {icon: faDownload, enabled: true, show: true, help: 'Download all results'};
-    }
-
-    exchange: IconControl;
-    info: IconControl;
-    layers: IconControl;
-    download_selected: IconControl;
-    download_all: IconControl;
-    annotation: IconControl;
-
-    onClick (name: string) {
-        if (name == 'info')
-            this.info.enabled = !this.info.enabled;
+        this.meta = {icon: faInfoCircle, enabled: false, show: true, help: 'Show/hide metadata'};
+        this.layers = {icon: faEye, enabled: true, show: layers.length > 1, help: 'Switch display layers'};
+        this.download = {
+            icon: faDownload, 
+            enabled: true, show: 
+            true, help: 'Download results',
+            flavours: {
+                selected: {icon: faSquareCheck, enabled: true, show: true, help: 'Selected results'},
+                all: {icon: faDownload, enabled: true, show: true, help: 'All results'}
+            }
+        };
+        this.annotation = {
+            icon: faComment, 
+            enabled: true, 
+            show: true, 
+            help: 'Additional annotation display',
+            flavours: {
+                tooltip: {icon: faComment, enabled: false, show: true, help: 'tooltip'},
+                mixed: {icon: faShuffle, enabled: true, show: true, help: 'context: tooltip, match: inline'},
+                inline: {icon: faLeftRight, enabled: true, show: true, help: 'inline'},
+            }
+        }
     }
 
     switchDisplayMode () {
@@ -47,15 +70,18 @@ export class ActionBoxComponent implements OnInit {
 
     switchMeta () {
         this.actions.switchShowMeta ();
-        this.info.enabled = !this.info.enabled;
+        this.meta.enabled = !this.meta.enabled;
     }
 
     downloadResults (mode: 'all' | 'checked') {
         this.actions.download (mode);
     }
 
-    toggleAnnotationDisplay () {
-        this.actions.toggleAnnotationDisplay ();
+    setAnnotationDisplay (setting: AnnotationDisplay) {
+        this.actions.setAnnotationDisplay (setting);
+        for (let key in this.annotation.flavours) {
+            this.annotation.flavours[key].enabled = !(key === setting);
+        }
     }
 
 }

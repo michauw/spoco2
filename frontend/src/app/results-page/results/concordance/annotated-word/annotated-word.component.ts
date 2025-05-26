@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { Word } from 'src/app/dataTypes';
+import { AnnotationDisplay, Word } from 'src/app/dataTypes';
 
 @Component({
     selector: 'spoco-annotated-word',
@@ -9,7 +9,7 @@ import { Word } from 'src/app/dataTypes';
 export class AnnotatedWordComponent implements OnInit, OnChanges {
   
     @Input () word: Word;
-    @Input () displayMode: 'tooltip' | 'mixed' | 'inline';
+    @Input () displayMode: AnnotationDisplay;
     @Input () role: 'context' | 'match' | 'aligned';
     @Input () toShow: string[];
     @Input () currentLayer: string;

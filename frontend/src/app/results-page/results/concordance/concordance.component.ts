@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
+import { AnnotationDisplay, ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable, Subscription } from 'rxjs';
@@ -36,8 +36,8 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     locked: number[];
     visible_columns: number[];
     displayLayers: string[];
-    annotationDisplay: ('tooltip' | 'mixed' | 'inline')[] = ['tooltip', 'mixed', 'inline'];
-    currentDisplay: 'tooltip' | 'mixed' | 'inline' = 'tooltip';
+    annotationDisplay: AnnotationDisplay[] = ['tooltip', 'mixed', 'inline'];
+    currentDisplay: AnnotationDisplay = 'tooltip';
     currentLayer: string;
     row_icon_states: {playing: boolean, extended: boolean}[] = [];
     playing: string = '';
@@ -91,16 +91,17 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                 }
             }
         });
-        this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe (() => {
-            for (let i = 0; i < this.annotationDisplay.length; ++i) {
-                if (this.annotationDisplay[i] === this.currentDisplay) {
-                    if (i === this.annotationDisplay.length - 1)
-                        this.currentDisplay = this.annotationDisplay[0];
-                    else
-                        this.currentDisplay = this.annotationDisplay[i + 1];
-                    break;
-                }
-            }
+        this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe ((setting) => {
+            // for (let i = 0; i < this.annotationDisplay.length; ++i) {
+            //     if (this.annotationDisplay[i] === this.currentDisplay) {
+            //         if (i === this.annotationDisplay.length - 1)
+            //             this.currentDisplay = this.annotationDisplay[0];
+            //         else
+            //             this.currentDisplay = this.annotationDisplay[i + 1];
+            //         break;
+            //     }
+            // }
+            this.currentDisplay = setting;
         });
     }
 
@@ -495,7 +496,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     }
 
     shift_possible (direction: Direction) {
-        console.log ('dir:', direction);
         if (this.locked.length === this.max_visible)
             return false;
         const not_locked = this.visible_columns.filter (el => !this.locked.includes (el));  

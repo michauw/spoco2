@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { resultsDisplayMode } from './dataTypes';
+import { AnnotationDisplay, resultsDisplayMode } from './dataTypes';
 
 @Injectable({
     providedIn: 'root'
@@ -15,7 +15,7 @@ export class ActionService {
     displayLayerChanged = new Subject<void> ();
     showMetaChanged = new Subject<boolean> ();
     downloadResults = new Subject< 'all' | 'checked' > ();
-    annotationDisplayChanged = new Subject<void> ();
+    annotationDisplayChanged = new Subject<AnnotationDisplay> ();
 
     setDisplayMode (dm: resultsDisplayMode) {
         this.displayMode = dm;
@@ -43,8 +43,8 @@ export class ActionService {
         this.downloadResults.next (mode);
     }
 
-    toggleAnnotationDisplay () {
-        this.annotationDisplayChanged.next ();
+    setAnnotationDisplay (setting: AnnotationDisplay) {
+        this.annotationDisplayChanged.next (setting);
     }
     
 }
