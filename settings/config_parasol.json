@@ -57,7 +57,7 @@
         },
         {
         "name": "text_orig_lang",
-        "description": "Languate of original",
+        "description": "Language of original",
         "type": "text",
         "inResults": true
         },
@@ -152,7 +152,7 @@
                 },
                 {
                     "name": "text_orig_lang",
-                    "description": "Languate of original",
+                    "description": "Language of original",
                     "type": "select",
                     "options": [
                     {
@@ -287,7 +287,7 @@
                 {
                     "name": "text_year_es",
                     "description": "Year of publish (es)",
-                    "type": "text_text",
+                    "type": "text",
                     "options": [
                     {
                         "label": "2017",

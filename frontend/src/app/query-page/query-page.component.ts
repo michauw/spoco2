@@ -3,7 +3,7 @@ import { Router, Data, ActivatedRoute } from '@angular/router';
 import { ConfigService } from '../config.service';
 import { QueryKeeperService } from '../query-keeper.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Corpus, PAttribute, SAttribute, corpusType } from '../dataTypes';
+import { Corpus, PAttribute, SAttribute, corpusType, queryPageDisplayMode } from '../dataTypes';
 import { SettingsBoxComponent } from './settings-box/settings-box.component';
 import { CorporaKeeperService } from '../corpora-keeper.service';
 import { faSliders } from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +27,7 @@ export class QueryPageComponent implements OnInit {
     frequency_settings: frequencySettings;
     pattrs: PAttribute[];
     sliders = faSliders;
+    displayMode: queryPageDisplayMode;
     
     constructor (
         private router: Router, 

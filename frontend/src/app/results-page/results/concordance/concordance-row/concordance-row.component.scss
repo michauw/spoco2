@@ -1,0 +1,62 @@
+div.inline {
+    display: inline;
+}
+
+div.transparent {
+    display: inline;
+}
+
+.right {
+    float: right;
+}
+
+.break {
+    display: block;
+}
+
+.context-icon {
+    color: gray;
+    cursor: pointer;
+    transition: all ease-out 0.3s;
+    &:hover {
+        color: black;
+    }
+    &.leftside {
+        margin-right: .8rem;
+    }
+    &.rightside {
+        margin-left: .8rem;
+    }
+    &.both-sides {
+        float: right;
+        margin-right: .5rem;
+    }
+}
+
+.play-mini {
+    cursor: pointer;
+    color: gray;
+    padding-left: .2rem;
+    padding-right: .4rem;
+    &:hover {
+        color: black;
+    }
+}
+
+.speaker {
+    color: gray;
+    margin-right: .5rem;
+}
+
+.aligned-extended {
+    opacity: .7;
+    &.gap {
+        margin-top: 1rem;
+    }
+}
+
+.aligned-corpus-name {
+    // font-size: 1.2rem;
+    font-weight: 500;
+    color: rgb(83, 83, 83);
+}

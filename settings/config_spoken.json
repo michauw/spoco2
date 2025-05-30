@@ -454,6 +454,7 @@
     },
     "audio": {
         "data-dir": "C:\\Praca\\spoco\\spoco\\tests\\Corpora\\spoken\\silesian\\AudioBits",
-        "attribute": "utterance_file"
+        "file": "utterance_file",
+        "speaker": "speaker_id"
     }
 }

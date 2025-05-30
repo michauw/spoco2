@@ -75,12 +75,23 @@ interface GenericEntry {
     selected: boolean;
 }
 
+interface ContextEntry {
+    content: Word[],
+    id: string;
+    speaker?: string,
+    file?: string
+}
+
 interface ConcordanceEntry extends GenericEntry {
     left_context: Word[] ;
     match: Word[] ;
     right_context: Word[];
     id: string;
     aligned: {corpus_name: string, content: Word[]}[];
+    broader_context: {
+        left: ContextEntry[],
+        right: ContextEntry[]
+    }
 }
 
 export interface TableEntry extends GenericEntry {

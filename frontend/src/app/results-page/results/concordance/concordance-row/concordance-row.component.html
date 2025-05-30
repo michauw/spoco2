@@ -1,0 +1,123 @@
+<ng-container *ngIf="mode !== 'aligned'">
+    <ng-container *ngIf="mode !== 'kwic'"> <!-- BROAD CONTEXT: LEFT, not displayed in the 'kwic' mode -->
+        <fa-icon 
+            *ngIf="row.broader_context.left.length"
+            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'leftside' }}" 
+            [icon]="icons['context_left']" 
+            (click)="getBroaderContext('left')"
+            [matTooltip]="'Show broader context (left)'"
+            [matTooltipShowDelay]="600">
+        </fa-icon>
+        <span *ngFor="let bcontext of row.broader_context.left; let ind = index;" class="broad-context">
+            <span *ngIf="corpusType === 'spoken' && differentSpeaker (ind, 'left', -1)" class="speaker">{{ bcontext.speaker }}</span>
+            <spoco-annotated-word *ngFor="let word of bcontext.content" 
+                [word]="word" 
+                [role]="'broad context'" 
+                [displayMode]="annotationDisplay" 
+                [currentLayer]="currentLayer" 
+                [toShow]="pattrs_to_show">
+            </spoco-annotated-word>
+            <span *ngIf="corpusType === 'spoken'" class="play-mini">
+                <fa-icon [icon]="isPlaying('left', ind) ? icons.stop : icons.play" (click)="playStop('left', ind)"></fa-icon>
+            </span>
+            <br *ngIf="differentSpeaker (ind, 'left', 1)">
+        </span>
+    </ng-container>
+
+    <!-- MAIN SECTION -->
+    <span *ngIf="corpusType === 'spoken' && mode !== 'kwic' && broadContextLoaded () && differentSpeaker (0, 'central', -1)" class="speaker">{{ row.meta[speaker!].value! }}</span>
+    <div [ngClass]="mode === 'kwic' ? 'col-sm-5 text-end' : 'transparent'"> <!-- IMMEDIATE CONTEXT: LEFT, abbreviated in the 'kwic' mode -->
+        <spoco-annotated-word *ngFor="let word of immediate_context.left" 
+            [word]="word" 
+            [role]="'immediate context'" 
+            [displayMode]="annotationDisplay" 
+            [currentLayer]="currentLayer" 
+            [toShow]="pattrs_to_show"
+            [highlightOriginal]="mode !== 'kwic' && broadContextLoaded()">
+        </spoco-annotated-word>
+    </div>
+    <div [ngClass]="mode === 'kwic' ? 'col-sm-2 text-center' : 'transparent'"> <!-- MATCH -->
+        <spoco-annotated-word *ngFor="let word of row.match" 
+            [word]="word" 
+            [role]="'match'" 
+            [displayMode]="annotationDisplay" 
+            [currentLayer]="currentLayer" 
+            [toShow]="pattrs_to_show"
+            [highlightOriginal]="mode !== 'kwic' && broadContextLoaded()">
+        </spoco-annotated-word>
+    </div>
+    <div [ngClass]="mode === 'kwic' ? 'col-sm-5' : 'transparent'"> <!-- IMMEDIATE CONTEXT: RIGHT, abbreviated in the 'kwic' mode -->
+        <spoco-annotated-word *ngFor="let word of immediate_context.right" 
+            [word]="word" 
+            [role]="'immediate context'" 
+            [displayMode]="annotationDisplay" 
+            [currentLayer]="currentLayer" 
+            [toShow]="pattrs_to_show"
+            [highlightOriginal]="mode !== 'kwic' && broadContextLoaded()">
+        </spoco-annotated-word>
+        <span *ngIf="corpusType === 'spoken' && mode !== 'kwic' && broadContextLoaded ()" class="play-mini">
+            <fa-icon [icon]="isPlaying ('central') ? icons.stop : icons.play" (click)="playStop('central')"></fa-icon>
+        </span>
+    </div>
+    <div *ngIf="broadContextLoaded () && differentSpeaker (0, 'central', 1)"></div>
+
+    <!-- END OF MAIN SECTION -->
+
+    <ng-container *ngIf="mode !== 'kwic'"> <!-- BROAD CONTEXT: RIGHT, not displayed in the 'kwic' mode -->
+        <div *ngFor="let bcontext of row.broader_context.right; let ind = index;" class="broad-context" [ngClass]="differentSpeaker (ind, 'right', 1) ? 'break' : 'inline'">
+            <span *ngIf="corpusType === 'spoken' && differentSpeaker (ind, 'right', -1)" class="speaker">{{ bcontext.speaker }}</span>
+            <spoco-annotated-word *ngFor="let word of bcontext.content" 
+                [word]="word" 
+                [role]="'broad context'" 
+                [displayMode]="annotationDisplay" 
+                [currentLayer]="currentLayer" 
+                [toShow]="pattrs_to_show">
+            </spoco-annotated-word>
+            <span *ngIf="corpusType === 'spoken'" class="play-mini">
+                <fa-icon [icon]="isPlaying ('right', ind) ? icons.stop : icons.play" (click)="playStop('right', ind)"></fa-icon>
+            </span>
+        </div>
+        <fa-icon 
+            *ngIf="row.broader_context.right.length"
+            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'rightside' }}" 
+            [icon]="icons['context_right']" 
+            (click)="getBroaderContext('right')"
+            [matTooltip]="'Show broader context (right)'"
+            [matTooltipShowDelay]="600">
+        </fa-icon>
+        <fa-icon 
+            *ngIf="!(row.broader_context.left.length + row.broader_context.right.length)"
+            class="context-icon both-sides" 
+            [icon]="icons['context_both']" 
+            (click)="getBroaderContext('both')"
+            [matTooltip]="'Show broader context'"
+            [matTooltipShowDelay]="600">
+        </fa-icon>
+        <ng-container *ngIf="mode === 'extended'"> <!-- ALIGNED CORPORA ('extended' mode)-->
+            <div *ngFor="let corpus of row.aligned; let aind = index;" class="col-12 aligned-extended {{aind ? '' : 'gap'}}">
+                <span class="aligned-corpus-name">[{{ corpus.corpus_name| uppercase }}]</span>
+                <spoco-annotated-word *ngFor="let word of corpus.content" 
+                    [word]="word" 
+                    [role]="'aligned'" 
+                    [displayMode]="annotationDisplay" 
+                    [currentLayer]="currentLayer" 
+                    [toShow]="pattrs_to_show">
+                </spoco-annotated-word>
+            </div>
+        </ng-container>
+    </ng-container>
+
+    <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show> <!-- METADATA BOX -->
+</ng-container>
+
+<ng-container *ngIf="mode === 'aligned'"> <!-- ALIGNED CORPORA ('plain' mode)-->
+    <spoco-annotated-word *ngFor="let word of words"
+        [word]="word" 
+        [role]="'aligned'" 
+        [displayMode]="annotationDisplay" 
+        [currentLayer]="currentLayer" 
+        [toShow]="pattrs_to_show">
+    </spoco-annotated-word>
+</ng-container>
+
+

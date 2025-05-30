@@ -10,10 +10,11 @@ export class AnnotatedWordComponent implements OnInit, OnChanges {
   
     @Input () word: Word;
     @Input () displayMode: AnnotationDisplay;
-    @Input () role: 'context' | 'match' | 'aligned';
+    @Input () role: 'broad context' | 'immediate context' | 'match' | 'aligned';
     @Input () toShow: string[];
     @Input () currentLayer: string;
-
+    @Input () highlightOriginal?: boolean;
+    
     place: 'tooltip' | 'inline';
     annotation: string;
 

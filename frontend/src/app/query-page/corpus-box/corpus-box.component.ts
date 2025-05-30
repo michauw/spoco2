@@ -14,6 +14,8 @@ import { Subscription } from 'rxjs';
 @Injectable()
 export class CorpusBoxComponent implements OnInit, OnDestroy {
 
+    @Output () displayModeSet = new EventEmitter<queryPageDisplayMode> ();
+
     primaryCorpus: Corpus;
     secondaryCorpora: Corpus[];
     corpora: Corpus[];
@@ -47,6 +49,7 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
             default:
                 this.displayMode = 'ribbon';    // three or more corpora: corpora ribbon
         }
+        this.displayModeSet.emit (this.displayMode);
         this.setSpacing ();
         this.sub_corporaChanged = this.corporaKeeper.corporaChange.subscribe ((corpora) => {
             this.primaryCorpus = this.corporaKeeper.getPrimary ();
@@ -84,5 +87,6 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
         else if (this.displayMode === 'boxes')
             this.displayMode = 'ribbon';
         this.setSpacing ()
+        this.displayModeSet.emit (this.displayMode);
     }
 }

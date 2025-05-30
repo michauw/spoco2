@@ -78,8 +78,11 @@ export class CorporaKeeperService {
 
     setPrimary (corpus: Corpus) {
         let pos: number = this.findCorpusPosition (corpus);
+        corpus.primary = true;
         this.corpora.splice (pos, 1);
         this.corpora = [corpus].concat (this.corpora);
+        for (let i = 1; i < this.corpora.length; ++i)
+            this.corpora[i].primary = false;
         this.corporaChange.next (this.corpora);
         this.primaryChange.next (corpus);
     }

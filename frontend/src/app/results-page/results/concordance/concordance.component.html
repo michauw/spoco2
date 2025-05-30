@@ -1,14 +1,10 @@
 <!-- PLAIN MODE -->
-
 <table class="table results plain" *ngIf="mode == 'plain'">
     <thead>
         <tr *ngIf="corpusType === 'mono'" class="header">
             <th class="clickable" (click)="sort_results('left_context')">Results</th>
         </tr>
         <tr class="header" *ngIf="corpusType !== 'mono'">
-            <!-- <ng-container  *ngIf="corpusType == 'mono'">
-                <th>Concordance</th>
-            </ng-container> -->
             <ng-container *ngIf="corpusType == 'spoken'">
                 <th class="audio">Recording</th>
                 <th class="clickable" (click)="sort_results('left_context')">Transcription</th>
@@ -25,74 +21,44 @@
         </tr>
     </thead>
     <ng-container *ngIf="results_fetched">
-        <tr *ngFor="let row of currentSlice">
-            <ng-container *ngIf="corpusType != 'parallel'">
-                <td *ngIf="corpusType == 'spoken'">
-                    <audio controls preload="none">
-                        <source [src]="get_audio(row)">
-                    </audio>
+        <tr *ngFor="let row of currentSlice; let ind = index;">
+            <td *ngIf="corpusType == 'spoken'">
+                <audio #bigAudioControl 
+                    controls 
+                    preload="none"
+                    (play)="onBigAudioPlay()">
+                    <source [src]="getAudio(ind)">
+                </audio>
+            </td>
+            <td *ngIf="corpusType !== 'parallel' || visible_columns!.includes (0)">
+                <spoco-concordance-row
+                    [row] = row
+                    [mode]="'plain'"
+                    [corpusType]="corpusType"
+                    [annotationDisplay]="currentDisplay"
+                    [currentLayer]="currentLayer"
+                    [pattrs_to_show]="pattrs_to_show" 
+                    [showMeta]="showMeta"
+                    [speaker]="audio_speaker"
+                    [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                    (broaderContextRequest)="getContext(ind, $event)"
+                    (audioEvent)="onChildAudioEvent (row, ind, $event)">
+                </spoco-concordance-row>
+            </td>
+            <ng-container *ngFor="let corpus of row.aligned; let ong = index"> 
+                <td *ngIf="visible_columns!.includes (ong + 1)">
+                    <spoco-concordance-row
+                        [row] = row
+                        [words] = corpus.content
+                        [mode]="'aligned'"
+                        [corpusType]="corpusType"
+                        [annotationDisplay]="currentDisplay"
+                        [currentLayer]="currentLayer"
+                        [pattrs_to_show]="pattrs_to_show"
+                        [showMeta]="showMeta"
+                        (broaderContextRequest)="getContext(ind, $event)">
+                    </spoco-concordance-row>
                 </td>
-                <td>
-                    <spoco-annotated-word *ngFor="let word of row.left_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.match" 
-                        [word]="word" 
-                        [role]="'match'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.right_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
-                </td>
-            </ng-container>
-            <ng-container *ngIf="corpusType === 'parallel'">
-                <td *ngIf="visible_columns.includes (0)">
-                    <spoco-annotated-word *ngFor="let word of row.left_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.match" 
-                        [word]="word" 
-                        [role]="'match'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.right_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
-                </td>
-                <ng-container *ngFor="let corpus of row.aligned; let ong = index">
-                    <td *ngIf="visible_columns.includes (ong + 1)">
-                        <spoco-annotated-word *ngFor="let word of corpus.content" 
-                            [word]="word" 
-                            [role]="'context'" 
-                            [displayMode]="currentDisplay" 
-                            [currentLayer]="currentLayer" 
-                            [toShow]="pattrs_to_show">
-                        </spoco-annotated-word>
-                    </td>
-                </ng-container>
             </ng-container>
             <td>
                 <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
@@ -104,7 +70,6 @@
 <!-- KWIC MODE -->
 <table class="table results" *ngIf="mode == 'kwic'">
     <thead>
-        {{ sort_ascending }}
         <tr class="text-center header">
             <ng-container *ngIf="corpusType === 'spoken'">
                 <th class="expand hidden"></th>
@@ -121,71 +86,48 @@
         </tr>
     </thead>
     <ng-container *ngIf="results_fetched">
-        <tr *ngFor="let row of currentSlice; let i = index">
+        <tr *ngFor="let row of currentSlice; let ind = index">
             <td *ngIf="corpusType === 'spoken'">
-                <fa-icon [icon]="icons[row_icon_states[i]['playing'] ? 'stop' : 'play']" (click)="play(i, row)" class="darken clickable"></fa-icon>
+                <fa-icon [icon]="icons[row_icon_states[currentSliceBegin + ind]['playing'] ? 'stop' : 'play']" (click)="playStop(row, ind)" class="darken clickable"></fa-icon>
             </td>
             <td class="expand">   
                 <fa-icon 
-                    [icon]="icons[row_icon_states[i]['extended'] ? 'minus' : 'plus']" 
-                    class="darken text-bigger clickable" 
-                    (click)="row_icon_states[i]['extended'] = !row_icon_states[i]['extended']">
+                    [icon]="icons[isExtended (ind) ? 'minus' : 'plus']" 
+                    class="enlarge text-bigger clickable" 
+                    (click)="toggleExtended(ind)">
                 </fa-icon>
             </td>
             <td>
-                <div class="row thin">
-                    <div class="col-sm-5 text-end">
-                        <spoco-annotated-word *ngFor="let word of cutContext (row.left_context, 'left')" 
-                            [word]="word" 
-                            [role]="'context'" 
-                            [displayMode]="currentDisplay" 
-                            [currentLayer]="currentLayer" 
-                            [toShow]="pattrs_to_show">
-                        </spoco-annotated-word>
-                    </div>
-                    <div class="col-sm-2 text-center">
-                        <spoco-annotated-word *ngFor="let word of row.match" 
-                            [word]="word" 
-                            [role]="'match'" 
-                            [displayMode]="currentDisplay" 
-                            [currentLayer]="currentLayer" 
-                            [toShow]="pattrs_to_show">
-                        </spoco-annotated-word>
-                    </div>
-                    <div class="col-sm-5">
-                        <spoco-annotated-word *ngFor="let word of cutContext (row.right_context, 'right')" 
-                            [word]="word" 
-                            [role]="'context'" 
-                            [displayMode]="currentDisplay" 
-                            [currentLayer]="currentLayer" 
-                            [toShow]="pattrs_to_show">
-                        </spoco-annotated-word>
-                    </div>
+                <div class="thin">
+                    <spoco-concordance-row
+                        [row] = row
+                        [mode]="'kwic'"
+                        [corpusType]="corpusType"
+                        [annotationDisplay]="currentDisplay"
+                        [currentLayer]="currentLayer"
+                        [pattrs_to_show]="pattrs_to_show"
+                        [showMeta]="showMeta"
+                        [speaker]="audio_speaker"
+                        [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                        (broaderContextRequest)="getContext(ind, $event)"
+                        (audioEvent)="onChildAudioEvent(row, ind, $event)">
+                    </spoco-concordance-row>
                 </div>
-                <div *ngIf="row_icon_states[i]['extended']" class="col-12 mt-3">
-                    <spoco-annotated-word *ngFor="let word of row.left_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.match" 
-                        [word]="word" 
-                        [role]="'match'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
-                    <spoco-annotated-word *ngFor="let word of row.right_context" 
-                        [word]="word" 
-                        [role]="'context'" 
-                        [displayMode]="currentDisplay" 
-                        [currentLayer]="currentLayer" 
-                        [toShow]="pattrs_to_show">
-                    </spoco-annotated-word>
+                <div *ngIf="isExtended (ind)" class="col-12 mt-3">
+                    <spoco-concordance-row
+                        [row] = row
+                        [mode]="'extended'"
+                        [corpusType]="corpusType"
+                        [annotationDisplay]="currentDisplay"
+                        [currentLayer]="currentLayer"
+                        [pattrs_to_show]="pattrs_to_show"
+                        [showMeta]="showMeta"
+                        [speaker]="audio_speaker"
+                        [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                        (broaderContextRequest)="getContext(ind, $event)"
+                        (audioEvent)="onChildAudioEvent(row, ind, $event)">
+                    </spoco-concordance-row>                
                 </div>
-                <spoco-meta-show [meta]="toList (row.meta)" *ngIf="showMeta"></spoco-meta-show>
             </td>
             <td>
                 <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">

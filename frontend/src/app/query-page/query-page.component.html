@@ -1,7 +1,7 @@
 <spoco-header></spoco-header>
 <div class="container-fluid pb-4">
-    <spoco-corpus-box></spoco-corpus-box>
-    <div class="col-md-10 offset-md-1 search-buttons">
+    <spoco-corpus-box (displayModeSet)="displayMode = $event"></spoco-corpus-box>
+    <div class="col-md-10 {{ displayMode !== 'boxes' ? 'offset-md-1' : '' }} search-buttons">
         <button class="btn btn-success" (click)="search()">Search</button>
         <button class="btn btn-success" (click)="collocations()">Collocations</button>
         <button class="btn btn-success" (click)="frequency_list()">Frequency list</button>

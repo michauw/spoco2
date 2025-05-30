@@ -4,6 +4,20 @@
     cursor: pointer;
 }
 
+fa-icon.right {
+    float: right;
+    margin-right: .5rem;
+}
+
 .plain td > * {
     padding: 0;
+}
+
+.enlarge {
+    transition: transform 0.2s ease;
+    display: inline-block;
+    padding: 0;
+    &:hover {
+        transform: scale(1.2);
+    }
 }

@@ -130,7 +130,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     get_results_number () {
     }
 
-    pageChanged (pageNumber: number) {
+    protected pageChanged (pageNumber: number) {
             this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
             this.pageChangedChild (pageNumber);
             this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);

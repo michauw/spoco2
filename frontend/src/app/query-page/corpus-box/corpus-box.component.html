@@ -18,7 +18,7 @@
     </div>
     <div *ngIf="displayMode !== 'ribbon'">
         <div class="row">
-            <div class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }}" *ngFor="let corpus of corpora">
+            <div *ngFor="let corpus of corpora" class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }} {{ spacing_basic['offset']}}" >
                 <spoco-basic-query [corpus]="corpus" [displayMode]="displayMode" (toggleViewClicked)="toggleView ()"></spoco-basic-query>
                 <div class="my-3"></div>
             </div>

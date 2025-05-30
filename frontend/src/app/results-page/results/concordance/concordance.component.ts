@@ -1,14 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
-import { AnnotationDisplay, ConcordanceEntry, Corpus, PAttribute, SAttribute, Word, metaObj } from 'src/app/dataTypes';
+import { AnnotationDisplay, ConcordanceEntry, ContextEntry, Corpus, PAttribute, Query, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { ActionService } from 'src/app/action.service';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
-import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop } from '@fortawesome/free-solid-svg-icons';
-
-
+import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faCircle, faArrowLeftLong, faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
 
 interface postDataConcordance extends postData {
     size_limit?: number;
@@ -16,6 +14,12 @@ interface postDataConcordance extends postData {
     end_chunk_size?: number
     mode?: 'full' | 'partial';
     separator?: string;
+}
+
+interface postDataContext extends postData {
+    id: string;
+    direction: 'left' | 'right' | 'both';
+    audio?: {file: string, speaker: string};
 }
 
 type results_data = {'query': string, 'number_of_results': number};
@@ -39,12 +43,15 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     annotationDisplay: AnnotationDisplay[] = ['tooltip', 'mixed', 'inline'];
     currentDisplay: AnnotationDisplay = 'tooltip';
     currentLayer: string;
-    row_icon_states: {playing: boolean, extended: boolean}[] = [];
+    row_icon_states: {playing: boolean, extended: boolean, child: boolean[]}[] = [];
     playing: string = '';
     audio: HTMLAudioElement | null = null;
-    audio_attribute: string;
+    audio_file: string;
+    audio_speaker: string;
     audio_path: string;
-    currently_playing: string = '';
+    audioEvent$ = new Subject<'play' | 'pause'>;
+    @ViewChildren('bigAudioControl') audioRefs!: QueryList<ElementRef<HTMLAudioElement>>;
+    currently_playing: {parent: number, child: number} = {parent: -1, child: -1};
     icons = {'plus': faPlus, 'minus': faMinus, 'play': faPlay, 'stop': faStop}
     arrow_left = faArrowAltCircleLeft;
     arrow_right = faArrowAltCircleRight;
@@ -52,6 +59,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     displayLayerChangedSub: Subscription;
     showMetaChangedSub: Subscription;
     annotationDisplayChangedSub: Subscription;
+    contextIcons = {'both': faPlus, 'left': faArrowLeftLong, 'right': faArrowRightLong};
     
     constructor (private http: HttpClient) {
         super (...ResultsComponent.inject_dependencies ());
@@ -66,7 +74,8 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         this.currentLayer = this.displayLayers[0];
         if (this.corpusType === 'spoken') {
             const config_audio = this.config.fetch ('audio');
-            this.audio_attribute = config_audio.attribute;
+            this.audio_speaker = config_audio.speaker;
+            this.audio_file = config_audio.file;
             this.audio_path = config_audio['data-dir'];
         }
         this.make_request (url, post_data, 'full');
@@ -78,7 +87,11 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         this.locked = [0];
         this.visible_columns = this.get_visible_columns ();
         
-        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => this.mode = mode);
+        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => {
+            this.mode = mode;
+            if (this.corpusType === 'spoken')
+                this.pauseAudio ();
+        });
         this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
         this.displayLayerChangedSub = this.actions.displayLayerChanged.subscribe (() => {
             for (let i = 0; i < this.displayLayers.length; ++i) {
@@ -92,23 +105,81 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             }
         });
         this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe ((setting) => {
-            // for (let i = 0; i < this.annotationDisplay.length; ++i) {
-            //     if (this.annotationDisplay[i] === this.currentDisplay) {
-            //         if (i === this.annotationDisplay.length - 1)
-            //             this.currentDisplay = this.annotationDisplay[0];
-            //         else
-            //             this.currentDisplay = this.annotationDisplay[i + 1];
-            //         break;
-            //     }
-            // }
             this.currentDisplay = setting;
         });
     }
 
     ngOnChanges(): void {
-        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false }));
+        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, child: [false] }));
         if (this.corpusType === 'spoken' && this.audio)
             this.audio.pause ();
+    }
+
+    getContext (ind: number, direction: 'left' | 'right' | 'both') {
+        let result: ConcordanceEntry = this.currentSlice[ind];
+        interface BroadContext {
+            primary: {content: string, id: string, speaker?: string, file?: string},
+            secondary: {corpus_name: string, content: string}[]
+        }
+        let to_do: ('left' | 'right')[] = [];
+        if (direction === 'both')
+            to_do = to_do.concat (['left', 'right']);
+        else
+            to_do.push (direction);
+        for (let dir of to_do) {
+            let id = result.id;
+            if (dir === 'left' && result.broader_context.left.length)
+                id = result.broader_context.left[0].id;
+            if (dir === 'right' && result.broader_context.right.length)
+                id = result.broader_context.right[result.broader_context.right.length - 1].id;
+
+            const post_data = this.get_post_data_context (id, dir);
+            const url = BASE_URL + '/context';
+            this.http.post<BroadContext> (url, post_data).subscribe ({
+                next: 
+                    (response) => {
+                        if (response.primary) {
+                            const words: Word[] = this.to_words (response.primary.content);
+                            const ce: ContextEntry = {content: words, speaker: response.primary.speaker, file: response.primary.file, id: response.primary.id}
+                            const ind_res = this.currentSliceBegin + ind;
+                            if (dir === 'left') {
+                                result.broader_context.left.splice (0, 0, ce);
+                                this.row_icon_states[ind_res].child.splice (0, 0, false);
+                            }
+                            else {
+                                result.broader_context.right.push (ce);
+                                this.row_icon_states[ind_res].child.push (false)
+                            }
+                            for (let aligned of response.secondary) {
+                                for (let res_corpus of result.aligned) {
+                                    if (res_corpus.corpus_name === aligned.corpus_name) {
+                                        const content: Word[] = this.to_words (aligned.content);
+                                        if (dir === 'left')
+                                            res_corpus.content = content.concat (res_corpus.content);
+                                        else
+                                            res_corpus.content = res_corpus.content.concat (content);
+                                        break;
+                                    }
+                                    
+                                }
+                            }
+                            this.currentSlice[ind] = {...result};
+                        }
+                    },
+                error: (err) => {
+                    console.log ('context error');
+                }
+            });
+        }
+    }
+
+    onBigAudioPlay () {
+        this.pauseAudio (false);
+    }
+
+    onChildAudioEvent (row: ConcordanceEntry, ind: number, child_ind: number) {
+        this.audio?.pause ();       
+        this.playStop (row, ind, child_ind);
     }
 
     override ngOnDestroy(): void {
@@ -183,8 +254,8 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         const sattrs_cwb = sattrs.filter ((el: SAttribute) => el.inResults || el.context || el.audio).map ((el: SAttribute) => el.name);
         this.sattrs_to_show = sattrs.filter ((el: SAttribute) => el.inResults);
         
-        let base_post_data = super.get_post_data (mode, size);
-        let post_data: postDataConcordance = {
+        const base_post_data = super.get_post_data (mode, size);
+        const post_data: postDataConcordance = {
             ...base_post_data,
             size_limit: this.SIZE_LIMIT,
             chunk_size: this.CHUNK_SIZE,
@@ -193,6 +264,20 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             separator: this.STREAM_SEPARATOR_TEXT
         }
 
+        return post_data;
+    }
+
+    private get_post_data_context (token_id: string, direction: 'left' | 'right') {
+        const post_data: postDataContext = {
+            query: {} as Query,
+            corpora: this.corpora,
+            id: token_id,
+            direction: direction,
+        }
+        if (this.corpusType === 'spoken') {
+            post_data.audio = {file: this.audio_file, speaker: this.audio_speaker};
+        }
+        
         return post_data;
     }
 
@@ -228,7 +313,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             else if (stages[stage_index] === 'size') {
                                 this.results_number = parseInt (line);
                                 this.results = Array (this.results_number).fill (undefined);
-                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false }));
+                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, child: [false] }));
                                 this.results_updated_event.emit (this.results_number);
                             }
                             else {
@@ -283,7 +368,16 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
 
     private parse_primary_line (line: string): ConcordanceEntry {
         const pattern = /^<LI><EM>(\d+):<\/EM>(?:<EM>(.*?)<\/EM>)? *(.*)<B>(.*)<\/B>(.*)/;
-        let line_out: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
+        let line_out: ConcordanceEntry = {
+            left_context: [], 
+            match: [], 
+            right_context: [], 
+            id: '', 
+            meta: {}, 
+            aligned: [], 
+            selected: false, 
+            broader_context: {left: [], right: []}
+        };
         const match = pattern.exec (line);
         if (!match)
             return line_out;
@@ -313,8 +407,17 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     }
 
     private parse_parallel_batch (batch: string[]) {
-        const pattern_aligned = /<P><B><EM>--&gt;(.*?)<\/EM><\/B>&nbsp;&nbsp;(.*)/
-        let parsed: ConcordanceEntry = {left_context: [], match: [], right_context: [], id: '', meta: {}, aligned: [], selected: false };
+        const pattern_aligned = /<P><B><EM>--&gt;(.*?):<\/EM><\/B>&nbsp;&nbsp;(.*)/
+        let parsed: ConcordanceEntry = {
+            left_context: [], 
+            match: [], 
+            right_context: [], 
+            id: '', 
+            meta: {}, 
+            aligned: [], 
+            selected: false, 
+            broader_context: {left: [], right: []}       
+        };
         for (let i = 0; i < this.corpora.length; ++i) {
             const line = batch[i];
             if (i === 0) {
@@ -329,6 +432,52 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         }
 
         return parsed;
+    }
+
+    private parse_context_line (line: string, direction: 'left' | 'right' | 'both') {
+        type contextInstance = {corpus_name: string, content: string, number?: string, speaker?: string, file?: string};
+
+        const primaryRegex = /^(\d+):\s*(?:(<[^>]+>)+:\s*)?(.*)$/;
+        const secondaryRegex = /^-->(\w+):\s*(.*)$/;
+
+        const primaryMatch = line.match (primaryRegex);
+        
+        if (primaryMatch) {
+            const [, number, sattrRaw, content] = primaryMatch;
+
+            const sattr_matches: Record<string, string> = {};
+            const attrRegex = /<([^>]+)>/g;
+            let match;
+            while ((match = attrRegex.exec(sattrRaw)) !== null) {
+                const [key, ...rest] = match[1].split (' ');
+                sattr_matches[key] = rest.join (' ');
+            }
+
+            const result: contextInstance = {
+                corpus_name: 'primary',
+                content: content,
+                number: number
+            };
+
+            if (sattr_matches[this.audio_speaker]) {
+                result.speaker = sattr_matches[this.audio_speaker];
+            }
+
+            if (sattr_matches[this.audio_file]) {
+                result.file = sattr_matches[this.audio_file];
+            }
+
+            return result;
+        }
+
+        // Secondary format
+        const secondaryMatch = line.match (secondaryRegex);
+        if (secondaryMatch) {
+            const [, corpus_name, content] = secondaryMatch;
+            return { corpus_name, content };
+        }
+
+        return null;
     }
 
     private get_sattrs (text: string) {
@@ -390,6 +539,11 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         return words;
     }
 
+    protected override pageChanged(pageNumber: number): void {
+        super.pageChanged (pageNumber);
+        this.pauseAudio ();
+    }
+
     protected override get_aoa (entries: ConcordanceEntry[]) {
         let data = [];
         let header = ['Left Context', 'Match', 'Match (lemma)', 'Right Context'];
@@ -415,58 +569,84 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         return data;
     }
 
-    /* Methods for all the modes */
-
-    cutContext (context: Word[], side: string) {
-        if (side === 'left')
-            return context.slice (-this.maxContextSize - 1);
-        else (side == 'right')
-            return context.slice (0, this.maxContextSize + 1);
+    isExtended (slice_ind: number) {
+        return this.row_icon_states[this.currentSliceBegin + slice_ind].extended;
     }
-    
-    toList (meta: metaObj) {
-        let lst = [];
-        for (let name in meta)
-            if (meta[name].show)
-                lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
 
-        return lst;
+    toggleExtended (slice_ind: number) {
+        this.row_icon_states[this.currentSliceBegin + slice_ind].extended = !this.row_icon_states[this.currentSliceBegin + slice_ind].extended;
     }
 
     /* Methods for the spoken mode */
 
-    get_audio (row: ConcordanceEntry) {
-        return `${BASE_URL}/audio/${row.meta[this.audio_attribute].value}`;
-    }
-
-    play (index: number, row: ConcordanceEntry) {
-        const audioPath = this.get_audio (row);
-        if (this.audio) {
-            this.audio.pause ();
-        }
-        if (this.currently_playing === row.id) {
-            this.currently_playing = '';
-            this.row_icon_states[index].playing = false;
+    getAudio (slice_index: number, child_index?: number) {
+        const row_index = this.currentSliceBegin + slice_index;
+        let audioFileName: string;
+        if (child_index !== undefined) {
+            const lcontext = this.results[row_index].broader_context.left.length;
+            if (child_index < lcontext)
+                audioFileName = this.results[row_index].broader_context.left[child_index].file!;
+            else if (child_index === lcontext)
+                audioFileName = this.results[row_index].meta[this.audio_file].value;
+            else
+                audioFileName = this.results[row_index].broader_context.right[child_index - lcontext - 1].file!;
         }
         else {
-            if (this.currently_playing) {
-                for (let state of this.row_icon_states)
-                    if (state.playing)
-                        state.playing = false;
+            audioFileName = this.results[row_index].meta[this.audio_file].value;
+        }
+        return `${BASE_URL}/audio/${audioFileName}`;
+    }
+
+    getCurrentlyPlaying (slice_ind: number, mode: 'parent' | 'child') {
+        const res_ind = this.currentSliceBegin + slice_ind;
+        if (mode === 'child' && res_ind === this.currently_playing.parent)
+            return this.currently_playing.child;
+        else if (mode === 'parent')
+            return this.currently_playing.parent;
+        return -1;
+    }
+
+    private pauseAudio (pause_big = true) {
+        this.audio?.pause ();
+        if (pause_big) {
+            for (let ar of this.audioRefs.toArray ())
+                if (!ar.nativeElement.paused)
+                    ar.nativeElement.pause ();
+        }
+        if (this.currently_playing.child >= 0 && this.currently_playing.parent >= 0)
+            this.row_icon_states[this.currently_playing.parent].child[this.currently_playing.child] = false;
+        else if (this.currently_playing.parent >= 0)
+            this.row_icon_states[this.currently_playing.parent].playing = false;
+        this.currently_playing = {parent: -1, child: -1};
+    }
+
+    playStop (row: ConcordanceEntry, slice_index: number, child_index?: number) {
+        const row_index = this.currentSliceBegin + slice_index;
+        const in_child = child_index !== undefined;
+        let audioAction: 'play' | 'pause';
+        if (in_child)
+            audioAction = this.row_icon_states[row_index].child[child_index] ? 'pause' : 'play';
+        else
+            audioAction = this.row_icon_states[row_index].playing ? 'pause' : 'play';
+        this.pauseAudio ();
+        if (audioAction === 'play') {
+            this.currently_playing.parent = row_index;
+            if (in_child) {
+                this.row_icon_states[row_index].child[child_index] = true;
+                this.currently_playing.child = child_index;
             }
-            this.currently_playing = row.id;
-            this.row_icon_states[index].playing = true;
+            else
+                this.row_icon_states[row_index].playing = true;
+            const audioPath = this.getAudio (slice_index, child_index)
             this.audio = new Audio (audioPath);
-            this.audio.play().catch (() => {
-                this.row_icon_states[index].playing = false; // Reset state on error
+            this.audio.play ().catch (() => {
+                this.pauseAudio (); // reset state on error
             });
             this.audio.onended = () => {
-                console.log ('end, ', index);
-                this.row_icon_states[index].playing = false;
-                this.currently_playing = '';
-            };
+                this.pauseAudio ();
+            }
         }
-      }
+    }
 
     /* Methods for the parallel mode */
 

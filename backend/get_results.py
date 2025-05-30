@@ -31,8 +31,10 @@ class ConcordanceData (Data):
     separator: str = None
     mode: str
 
-class ContextData (ConcordanceData):
-    pass
+class ContextData (Data):
+    id: str
+    direction: str
+    audio: Dict = None
 
 class CollocationData (Data):
     ams: List
@@ -178,7 +180,7 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
         if CONTEXT_ATTR:
             s_attrs.append (CONTEXT_ATTR)
         if 'audio' in config:
-            s_attrs.append (config['audio']['attribute'])
+            s_attrs.append (config['audio']['file'])
         s_attrs = list (set (s_attrs))
         PRINT_STRUCTURES = ', '.join (s_attrs)
         if PRINT_STRUCTURES:
@@ -204,6 +206,41 @@ def get_command (data: Data, category = 'concordance', grouping_attr = None):
     print ('query:', cwb_query)
     command = [CQPCL_PATH, '-r', REGISTRY_PATH, cwb_query]
     print ('command:', command)
+
+    return command
+
+def get_context_command (data):
+    primary = None
+    secondary = []
+    context = config['cwb']['context']
+    to_show = [context] if data.direction == 'left' else []
+    for corpus in data.corpora:
+        if corpus['primary']:
+            primary = corpus['id']
+        else:
+            secondary.append (corpus)
+            to_show.append (corpus['id'])
+    to_show += [attr['name'] for attr in config['positionalAttributes'] if attr.get ('inResults', False)]
+    if data.audio:
+        ps = f'set PrintStructures "{data.audio["file"]}, {data.audio["speaker"]}"; '
+    else:
+        ps = ' '
+    show = ' '.join (['+' + el for el in to_show])
+    if show:
+        show = f'show {show}; '
+    if data.direction.lower () in ['l', 'left']:
+        direction = 'left'
+        span = ' 2'
+        query = f'[_ = {data.id}]'
+    elif data.direction.lower () in ['r', 'right']:
+        direction = ''
+        span = ''
+        query = f'[] :: lbound_of({context}, match) > {data.id} cut 1'
+
+    settings = 'set AttributeSeparator "\t"; set ld "<#"; set rd "#>";'
+    query = f'{primary.upper ()}; set Context 0; {ps}{settings} {show}{query} expand {direction} to{span} {context};'
+    command = [CWB_BIN_PATH / 'cqpcl', '-r', REGISTRY_PATH, query]
+    print ('context command:', command)
 
     return command
 
@@ -296,6 +333,7 @@ async def get_concordance (data: ConcordanceData):
     
     return StreamingResponse (stream, media_type = 'application/x-ndjson')
 
+
 @backend.post ('/api/collocations')
 async def get_collocations (data: CollocationData):
 
@@ -322,28 +360,39 @@ async def get_frequency_list (data: FrequencyData):
 @backend.post ('/api/context')
 async def get_context (data: ContextData):
     
-    output = []
-    result_id = int (data.id)
-
-    CQPCL_PATH = CWB_BIN_PATH / 'cqpcl'
-    # REGISTRY = data.paths['registry-path']
-    for corpus in data.corpora:
-        if corpus['primary']:
-            CORPUS_NAME = corpus['id'].upper ()
-            break
+    command = get_context_command (data)
+    pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
+    lines = pr.communicate ()[0].splitlines ()
+    results = {'primary': None, 'secondary': []}
+    context = config['cwb']['context']
+    if not lines:
+        return results
+    if data.direction == 'left' and lines[0].count (f'<{context}>') == 1:
+        return results
+    primary = lines[0].replace ('<#', '').replace ('#>', '').strip ()
+    secondary = lines[1:]
+    if data.audio:
+        number, audio_attrs, content = primary.split (':', 2)
     else:
-        CORPUS_NAME = ''
-    CONTEXT = data.context
-    WINDOW_SIZE = data.window_size
-    TO_SHOW = ' '.join (['+' + el for el in data.to_show])
-    if TO_SHOW:
-        TO_SHOW = 'show ' + TO_SHOW
-    for i in range (max (1, result_id - WINDOW_SIZE), result_id + WINDOW_SIZE):
-        query = f'{CORPUS_NAME}; {TO_SHOW}; <{CONTEXT}_id="{i}">[] expand to {CONTEXT};'
-        command = [CQPCL_PATH, '-r', REGISTRY_PATH, query]
-        pr = sbp.Popen (command, stdout = sbp.PIPE, encoding = 'utf8')
-        output.append (pr.communicate ()[0])
+        number, content = primary.split (':', 1)
+        audio_attrs = None
+    if data.direction == 'left':
+        content = re.search (f'<{context}>(.*)</{context}>', content).group (1)
+    results['primary'] = {'id': str (number), 'content': content.strip ()}
+    if audio_attrs:
+        for attr in re.findall ('<(.*?)>', audio_attrs):
+            key, value = attr.split ()
+            if key == data.audio['speaker']:
+                results['primary']['speaker'] = value
+            if key == data.audio['file']:
+                results['primary']['file'] = value
+    for sec in secondary:
+        corpus, content = re.search (r'^-->(.*?):\s*(.*)', sec).groups ()
+        if data.direction == 'left':
+            content = re.search (f'<{context}>(.*?)</{context}>', content).group (1)
+        results['secondary'].append ({'corpus_name': corpus, 'content': content.strip ()})
 
+    return results
 
 @backend.get ('/api/config')
 def get_config ():
