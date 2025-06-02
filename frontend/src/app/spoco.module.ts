@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 
@@ -37,8 +37,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CorpusDataResolver } from './corpus-data-resolver.service';
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         SpocoComponent,
         QueryRowComponent,
         CqpQueryComponent,
@@ -60,20 +59,14 @@ import { CorpusDataResolver } from './corpus-data-resolver.service';
         PaginatorComponent,
         SettingsBoxComponent,
         ResultsTableComponent
-  ],
-    imports: [
-        BrowserModule,
+    ],
+    bootstrap: [SpocoComponent], imports: [BrowserModule,
         SpocoRoutingModule,
         ReactiveFormsModule,
-        HttpClientModule,
         NgMultiSelectDropDownModule.forRoot(),
         FontAwesomeModule,
         BrowserAnimationsModule,
         MatTooltipModule,
         MatDialogModule,
-        MatTabsModule
-  ],
-  providers: [ConfigResolver, PreferencesResolver, CorpusDataResolver, provideHttpClient(withFetch())],
-  bootstrap: [SpocoComponent]
-})
+        MatTabsModule], providers: [ConfigResolver, PreferencesResolver, CorpusDataResolver, provideHttpClient(withFetch()), provideHttpClient(withInterceptorsFromDi())] })
 export class SpocoModule { }
