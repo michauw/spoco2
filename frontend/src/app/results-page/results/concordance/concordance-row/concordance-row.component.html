@@ -2,7 +2,7 @@
     <ng-container *ngIf="mode !== 'kwic'"> <!-- BROAD CONTEXT: LEFT, not displayed in the 'kwic' mode -->
         <fa-icon 
             *ngIf="row.broader_context.left.length"
-            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'leftside' }}" 
+            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'leftside' }} {{ contextExhausted.left ? 'disabled' : '' }}" 
             [icon]="icons['context_left']" 
             (click)="getBroaderContext('left')"
             [matTooltip]="'Show broader context (left)'"
@@ -79,7 +79,7 @@
         </div>
         <fa-icon 
             *ngIf="row.broader_context.right.length"
-            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'rightside' }}" 
+            class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'rightside' }} {{ contextExhausted.right ? 'disabled' : '' }}" 
             [icon]="icons['context_right']" 
             (click)="getBroaderContext('right')"
             [matTooltip]="'Show broader context (right)'"

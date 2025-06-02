@@ -23,6 +23,7 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
     @Input () pattrs_to_show: string[];
     @Input () showMeta: boolean;
     @Input () currentlyPlaying: number;
+    @Input () contextExhausted: {left: boolean, right: boolean};
     @Input () words?: Word[]
     @Input () speaker?: string;
     @Output () broaderContextRequest: EventEmitter<'left' | 'right' | 'both'> = new EventEmitter<'left' | 'right' | 'both'> ();

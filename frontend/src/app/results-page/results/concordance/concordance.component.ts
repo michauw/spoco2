@@ -1,12 +1,11 @@
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
 import { AnnotationDisplay, ConcordanceEntry, ContextEntry, Corpus, PAttribute, Query, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { ActionService } from 'src/app/action.service';
-import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
-import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faCircle, faArrowLeftLong, faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
+import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faArrowLeftLong, faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface postDataConcordance extends postData {
     size_limit?: number;
@@ -43,7 +42,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     annotationDisplay: AnnotationDisplay[] = ['tooltip', 'mixed', 'inline'];
     currentDisplay: AnnotationDisplay = 'tooltip';
     currentLayer: string;
-    row_icon_states: {playing: boolean, extended: boolean, child: boolean[]}[] = [];
+    row_icon_states: {playing: boolean, extended: boolean, no_context: {left: boolean, right: boolean}, child: boolean[]}[] = [];
     playing: string = '';
     audio: HTMLAudioElement | null = null;
     audio_file: string;
@@ -61,7 +60,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     annotationDisplayChangedSub: Subscription;
     contextIcons = {'both': faPlus, 'left': faArrowLeftLong, 'right': faArrowRightLong};
     
-    constructor (private http: HttpClient) {
+    constructor (private http: HttpClient, private snack: MatSnackBar) {
         super (...ResultsComponent.inject_dependencies ());
     }
 
@@ -110,7 +109,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     }
 
     ngOnChanges(): void {
-        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, child: [false] }));
+        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, no_context: {left: false, right: false}, child: [false] }));
         if (this.corpusType === 'spoken' && this.audio)
             this.audio.pause ();
     }
@@ -126,6 +125,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             to_do = to_do.concat (['left', 'right']);
         else
             to_do.push (direction);
+        let context_errors: string[] = [];
         for (let dir of to_do) {
             let id = result.id;
             if (dir === 'left' && result.broader_context.left.length)
@@ -164,6 +164,20 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                                 }
                             }
                             this.currentSlice[ind] = {...result};
+                        }
+                        else {
+                            this.row_icon_states[this.currentSliceBegin + ind].no_context[dir] = true;
+                            context_errors.push (dir);
+                        }
+                        if (dir === to_do[to_do.length -1] && context_errors.length) {
+                            const more = result.broader_context.left.length + result.broader_context.right.length > 0 ? ' more ' : ' ';
+                            const sides = to_do.filter (el => result.broader_context[el].length === 0);
+                            const side = (sides.length === 1) ? ` (${sides[0]})` : '';
+                            const message = `No${more}context found${side}.`;
+                            this.snack.open (message, 'x', {
+                                duration: 3000,
+                                verticalPosition: 'top',
+                            });
                         }
                     },
                 error: (err) => {
@@ -313,7 +327,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             else if (stages[stage_index] === 'size') {
                                 this.results_number = parseInt (line);
                                 this.results = Array (this.results_number).fill (undefined);
-                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, child: [false] }));
+                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, no_context: {left: false, right: false}, child: [false] }));
                                 this.results_updated_event.emit (this.results_number);
                             }
                             else {

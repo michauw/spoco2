@@ -41,6 +41,7 @@
                     [showMeta]="showMeta"
                     [speaker]="audio_speaker"
                     [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                    [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
                     (broaderContextRequest)="getContext(ind, $event)"
                     (audioEvent)="onChildAudioEvent (row, ind, $event)">
                 </spoco-concordance-row>
@@ -56,6 +57,7 @@
                         [currentLayer]="currentLayer"
                         [pattrs_to_show]="pattrs_to_show"
                         [showMeta]="showMeta"
+                        [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
                         (broaderContextRequest)="getContext(ind, $event)">
                     </spoco-concordance-row>
                 </td>
@@ -109,6 +111,7 @@
                         [showMeta]="showMeta"
                         [speaker]="audio_speaker"
                         [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                        [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
                         (broaderContextRequest)="getContext(ind, $event)"
                         (audioEvent)="onChildAudioEvent(row, ind, $event)">
                     </spoco-concordance-row>
@@ -124,6 +127,7 @@
                         [showMeta]="showMeta"
                         [speaker]="audio_speaker"
                         [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                        [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
                         (broaderContextRequest)="getContext(ind, $event)"
                         (audioEvent)="onChildAudioEvent(row, ind, $event)">
                     </spoco-concordance-row>                

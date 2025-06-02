@@ -31,6 +31,10 @@ div.transparent {
         float: right;
         margin-right: .5rem;
     }
+    &.disabled {
+        opacity: .5;
+        pointer-events: none;
+    }
 }
 
 .play-mini {
