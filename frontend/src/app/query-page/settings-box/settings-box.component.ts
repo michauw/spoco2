@@ -21,6 +21,7 @@ export interface DialogData {
     selector: 'spoco-settings-box',
     templateUrl: './settings-box.component.html',
     styleUrls: ['./settings-box.component.scss'],
+    standalone: false
 })
 export class SettingsBoxComponent implements OnInit {
 

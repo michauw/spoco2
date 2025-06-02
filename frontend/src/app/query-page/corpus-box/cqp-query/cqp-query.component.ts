@@ -8,7 +8,8 @@ import { QueryKeeperService } from '../../../query-keeper.service';
 @Component({
     selector: 'spoco-cqp-query',
     templateUrl: './cqp-query.component.html',
-    styleUrls: ['./cqp-query.component.scss']
+    styleUrls: ['./cqp-query.component.scss'],
+    standalone: false
 })
 export class CqpQueryComponent implements OnInit, OnDestroy {
 

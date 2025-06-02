@@ -23,7 +23,8 @@ export type ResultsDependencies = [QueryKeeperService, ConfigService, CorporaKee
 @Component({
     selector: 'spoco-results',
     templateUrl: './results.component.html',
-    styleUrls: ['./results.component.scss']
+    styleUrls: ['./results.component.scss'],
+    standalone: false
 })
 export abstract class ResultsComponent<T extends GenericEntry> implements OnInit, OnDestroy {
 

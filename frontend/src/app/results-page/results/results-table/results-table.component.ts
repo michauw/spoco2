@@ -13,7 +13,8 @@ interface postDataTable extends postData {
 @Component({
     selector: 'spoco-results-table',
     templateUrl: './results-table.component.html',
-    styleUrl: './results-table.component.scss'
+    styleUrl: './results-table.component.scss',
+    standalone: false
 })
 export class ResultsTableComponent extends ResultsComponent<TableEntry> {
 

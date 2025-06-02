@@ -4,7 +4,8 @@ import { ConfigService } from 'src/app/config.service';
 @Component({
     selector: 'spoco-paginator',
     templateUrl: './paginator.component.html',
-    styleUrls: ['./paginator.component.scss']
+    styleUrls: ['./paginator.component.scss'],
+    standalone: false
 })
 export class PaginatorComponent implements OnInit {
 

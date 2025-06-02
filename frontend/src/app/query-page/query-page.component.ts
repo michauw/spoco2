@@ -19,7 +19,8 @@ type frequencySettings = {
 @Component({
     selector: 'spoco-query-page',
     templateUrl: './query-page.component.html',
-    styleUrls: ['./query-page.component.scss']
+    styleUrls: ['./query-page.component.scss'],
+    standalone: false
 })
 export class QueryPageComponent implements OnInit {
 

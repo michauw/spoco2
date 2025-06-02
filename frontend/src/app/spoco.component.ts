@@ -4,7 +4,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
     selector: 'spoco-root',
     templateUrl: './spoco.component.html',
     styleUrls: ['./spoco.component.scss'],
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class SpocoComponent {
     title = 'spoco';

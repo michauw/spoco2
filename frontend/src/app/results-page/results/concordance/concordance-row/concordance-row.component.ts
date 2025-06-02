@@ -11,7 +11,8 @@ type Sides = 'left' | 'central' | 'right';
 @Component({
     selector: 'spoco-concordance-row',
     templateUrl: './concordance-row.component.html',
-    styleUrl: './concordance-row.component.scss'
+    styleUrl: './concordance-row.component.scss',
+    standalone: false
 })
 export class ConcordanceRowComponent implements OnInit, OnChanges {
 

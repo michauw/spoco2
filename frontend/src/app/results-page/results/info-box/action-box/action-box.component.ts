@@ -19,7 +19,8 @@ interface FlavouredIconControl extends IconControl {
 @Component({
     selector: 'spoco-action-box',
     templateUrl: './action-box.component.html',
-    styleUrls: ['./action-box.component.scss']
+    styleUrls: ['./action-box.component.scss'],
+    standalone: false
 })
 export class ActionBoxComponent implements OnInit {
 

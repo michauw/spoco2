@@ -6,9 +6,10 @@ import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'spoco-corpus-box',
-  templateUrl: './corpus-box.component.html',
-  styleUrls: ['./corpus-box.component.scss']
+    selector: 'spoco-corpus-box',
+    templateUrl: './corpus-box.component.html',
+    styleUrls: ['./corpus-box.component.scss'],
+    standalone: false
 })
 
 @Injectable()

@@ -4,7 +4,8 @@ import { AnnotationDisplay, Word } from 'src/app/dataTypes';
 @Component({
     selector: 'spoco-annotated-word',
     templateUrl: './annotated-word.component.html',
-    styleUrl: './annotated-word.component.scss'
+    styleUrl: './annotated-word.component.scss',
+    standalone: false
 })
 export class AnnotatedWordComponent implements OnInit, OnChanges {
   

@@ -9,7 +9,8 @@ export type modules = 'concordance' | 'collocations' | 'frequency';
 @Component({
     selector: 'spoco-results-page',
     templateUrl: './results-page.component.html',
-    styleUrls: ['./results-page.component.scss']
+    styleUrls: ['./results-page.component.scss'],
+    standalone: false
 })
 export class ResultsPageComponent implements OnInit, AfterViewInit {
 

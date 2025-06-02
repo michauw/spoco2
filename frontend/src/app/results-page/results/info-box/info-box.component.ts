@@ -4,7 +4,8 @@ import { ConfigService } from 'src/app/config.service';
 @Component({
     selector: 'spoco-info-box',
     templateUrl: './info-box.component.html',
-    styleUrls: ['./info-box.component.scss']
+    styleUrls: ['./info-box.component.scss'],
+    standalone: false
 })
 export class InfoBoxComponent implements OnInit, OnChanges {
 

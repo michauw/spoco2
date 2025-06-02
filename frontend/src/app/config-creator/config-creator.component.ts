@@ -11,7 +11,8 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'spoco-config-creator',
     templateUrl: './config-creator.component.html',
-    styleUrls: ['./config-creator.component.scss']
+    styleUrls: ['./config-creator.component.scss'],
+    standalone: false
 })
 export class ConfigCreatorComponent implements OnInit {
 

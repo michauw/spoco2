@@ -6,7 +6,8 @@ import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
 @Component({
     selector: 'spoco-corpora-ribbon',
     templateUrl: './corpora-ribbon.component.html',
-    styleUrls: ['./corpora-ribbon.component.scss']
+    styleUrls: ['./corpora-ribbon.component.scss'],
+    standalone: false
 })
 export class CorporaRibbonComponent implements OnInit, OnDestroy {
 

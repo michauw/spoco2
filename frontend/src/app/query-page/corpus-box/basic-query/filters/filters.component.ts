@@ -16,7 +16,9 @@ interface Group {
     selector: 'spoco-filters',
     templateUrl: './filters.component.html',
     styleUrls: ['./filters.component.scss'],
-    encapsulation: ViewEncapsulation.None   // allows to change style of ng-multiselect-dropdown
+    encapsulation: ViewEncapsulation.None // allows to change style of ng-multiselect-dropdown
+    ,
+    standalone: false
 })
 export class FiltersComponent implements OnInit, OnDestroy {
 

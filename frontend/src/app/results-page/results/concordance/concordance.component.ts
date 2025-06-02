@@ -27,7 +27,8 @@ type Direction = 'left' | 'right';
 @Component({
     selector: 'spoco-concordance',
     templateUrl: './concordance.component.html',
-    styleUrl: './concordance.component.scss'
+    styleUrl: './concordance.component.scss',
+    standalone: false
 })
 export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> implements OnInit, OnDestroy {
 

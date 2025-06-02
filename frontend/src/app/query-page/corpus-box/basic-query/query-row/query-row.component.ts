@@ -15,7 +15,9 @@ import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
     selector: 'spoco-query-row',
     templateUrl: './query-row.component.html',
     styleUrls: ['./query-row.component.scss'],
-    encapsulation: ViewEncapsulation.None   // allows to change style of ng-multiselect-dropdown
+    encapsulation: ViewEncapsulation.None // allows to change style of ng-multiselect-dropdown
+    ,
+    standalone: false
 })
 export class QueryRowComponent implements OnInit, OnDestroy {
 
