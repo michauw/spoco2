@@ -176,7 +176,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             const side = (sides.length === 1) ? ` (${sides[0]})` : '';
                             const message = `No${more}context found${side}.`;
                             this.snack.open (message, 'x', {
-                                duration: 3000,
+                                duration: 4000,
                                 verticalPosition: 'top',
                             });
                         }
