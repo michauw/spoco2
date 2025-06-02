@@ -1,69 +1,75 @@
 <div class="container">
-    <div class="col-md-10 offset-md-1">    
-        <h1>SpoCo config creator</h1>
-        <hr>
-        <form [formGroup]="configForm">
-            <div class="mb-3">
-                <label for="projectName" class="form-label">Project name</label>
-                <input type="text" class="form-control" id="projectName" formControlName="projectName">
+  <div class="col-md-10 offset-md-1">
+    <h1>SpoCo config creator</h1>
+    <hr>
+      <form [formGroup]="configForm">
+        <div class="mb-3">
+          <label for="projectName" class="form-label">Project name</label>
+          <input type="text" class="form-control" id="projectName" formControlName="projectName">
+        </div>
+        <div class="mb-3" formGroupName="corpora">
+          <label class="form-label">Corpora</label>
+          @for (corpusForm of corpora.controls; track corpusForm; let i = $index) {
+            <div [formGroupName]="i" class="mb-1">
+              <div class="row">
+                <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
+                <div class="col-2"><input class="form-control" placeholder="id" formControlName="id"></div>
+                <div class="col-2"><input class="form-control" placeholder="cwb name" formControlName="cwb-corpus"></div>
+                <div class="col-2">
+                  <select class="form-control" formControlName="primary">
+                    <option value="primary">primary</option>
+                    <option value="secondary">secondary</option>
+                  </select>
+                </div>
+                <div class="col-1">@if (i == corpora.length - 1) {
+                  <button class="btn btn-secondary float-end" (click)="addCorpus()">+</button>
+                }</div>
+              </div>
             </div>
-            <div class="mb-3" formGroupName="corpora">
-                <label class="form-label">Corpora</label>
-                <ng-container *ngFor="let corpusForm of corpora.controls; let i = index;">
-                    <div [formGroupName]="i" class="mb-1">
-                        <div class="row">
-                            <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
-                            <div class="col-2"><input class="form-control" placeholder="id" formControlName="id"></div>
-                            <div class="col-2"><input class="form-control" placeholder="cwb name" formControlName="cwb-corpus"></div>
-                            <div class="col-2">
-                                <select class="form-control" formControlName="primary">
-                                    <option value="primary">primary</option>
-                                    <option value="secondary">secondary</option>
-                                </select>
-                            </div>
-                            <div class="col-1"><button class="btn btn-secondary float-end" (click)="addCorpus()" *ngIf="i == corpora.length - 1">+</button></div>
-                        </div>
-                    </div>
-                </ng-container>
+          }
+        </div>
+        <div class="mb-3" formGroupName="pattrs">
+          <label class="form-label">Positional attributes</label>
+          @for (pattrForm of pattrs.controls; track pattrForm; let i = $index) {
+            <div [formGroupName]="i" class="mb-1">
+              <div class="row">
+                <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
+                <div class="col-2"><input class="form-control" placeholder="type" formControlName="type"></div>
+                <div class="col-2"><input class="form-control" placeholder="init value" formControlName="initValue"></div>
+                <div class="col-2"><input class="form-control" placeholder="description" formControlName="description"></div>
+                <div class="col-2 form-check">
+                  <input type="checkbox" class="form-check-input" formControlName="inResults">
+                  <label class="form-check-label">in results</label>
+                </div>
+                <div class="col-1">@if (i == pattrs.length - 1) {
+                  <button class="btn btn-secondary float-end" (click)="addPattr()">+</button>
+                }</div>
+              </div>
             </div>
-            <div class="mb-3" formGroupName="pattrs">
-                <label class="form-label">Positional attributes</label>
-                <ng-container *ngFor="let pattrForm of pattrs.controls; let i = index;">
-                    <div [formGroupName]="i" class="mb-1">
-                        <div class="row">
-                            <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
-                            <div class="col-2"><input class="form-control" placeholder="type" formControlName="type"></div>
-                            <div class="col-2"><input class="form-control" placeholder="init value" formControlName="initValue"></div>
-                            <div class="col-2"><input class="form-control" placeholder="description" formControlName="description"></div>
-                            <div class="col-2 form-check">
-                                <input type="checkbox" class="form-check-input" formControlName="inResults">
-                                <label class="form-check-label">in results</label>
-                            </div>
-                            <div class="col-1"><button class="btn btn-secondary float-end" (click)="addPattr()" *ngIf="i == pattrs.length - 1">+</button></div>
-                        </div>
-                    </div>
-                </ng-container>
+          }
+        </div>
+        <div class="mb-3" formGroupName="sattrs">
+          <label class="form-label">Structural attributes</label>
+          @for (sattrForm of sattrs.controls; track sattrForm; let i = $index) {
+            <div [formGroupName]="i" class="mb-1">
+              <div class="row">
+                <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
+                <div class="col-2"><input class="form-control" placeholder="type" formControlName="type"></div>
+                <div class="col-2"><input class="form-control" placeholder="description" formControlName="description"></div>
+                <div class="col-2 form-check">
+                  <input type="checkbox" class="form-check-input" formControlName="inResults">
+                  <label class="form-check-label">in results</label>
+                </div>
+                <div class="col-1">@if (i == sattrs.length - 1) {
+                  <button class="btn btn-secondary float-end" (click)="addSattr()">+</button>
+                }</div>
+              </div>
             </div>
-            <div class="mb-3" formGroupName="sattrs">
-                <label class="form-label">Structural attributes</label>
-                <ng-container *ngFor="let sattrForm of sattrs.controls; let i = index;">
-                    <div [formGroupName]="i" class="mb-1">
-                        <div class="row">
-                            <div class="col-2"><input class="form-control" placeholder="name" formControlName="name"></div>
-                            <div class="col-2"><input class="form-control" placeholder="type" formControlName="type"></div>
-                            <div class="col-2"><input class="form-control" placeholder="description" formControlName="description"></div>
-                            <div class="col-2 form-check">
-                                <input type="checkbox" class="form-check-input" formControlName="inResults">
-                                <label class="form-check-label">in results</label>
-                            </div>
-                            <div class="col-1"><button class="btn btn-secondary float-end" (click)="addSattr()" *ngIf="i == sattrs.length - 1">+</button></div>
-                        </div>
-                    </div>
-                </ng-container>
-            </div>
-            <button class="btn btn-success" (click)="createFile()">Create file</button>
-        </form>
-        <div id="download"></div>
+          }
+        </div>
+        <button class="btn btn-success" (click)="createFile()">Create file</button>
+      </form>
+      <div id="download"></div>
     </div>
 
-</div>
+  </div>

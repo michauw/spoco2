@@ -1,13 +1,19 @@
 <div class="mt-1">&nbsp;</div>
 <div class="text-end" style="padding-right: 0; margin-top: 3.5rem;;">
-    <ul class="corpora-ribbon">
-        <li class="ribbon-arrow arrow-up" *ngIf="showArrow('up')" (click)="scrollRibbon('up')">&nbsp;&#8963;</li>
-        <li>
-            <div class="corpus-primary {{ corpora[0] === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpora[0])">{{ corpora[0].id }}</div>
-        </li>
-        <li *ngFor="let corpus of secondary()">
-            <div class="{{ corpus === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpus)">{{ corpus.id }}</div>
-        </li>
-        <li class="ribbon-arrow arrow-down" *ngIf="showArrow('down')" (click)="scrollRibbon('down')">&nbsp;&#8964;</li>
-    </ul>
+  <ul class="corpora-ribbon">
+    @if (showArrow('up')) {
+      <li class="ribbon-arrow arrow-up" (click)="scrollRibbon('up')">&nbsp;&#8963;</li>
+    }
+    <li>
+      <div class="corpus-primary {{ corpora[0] === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpora[0])">{{ corpora[0].id }}</div>
+    </li>
+    @for (corpus of secondary(); track corpus) {
+      <li>
+        <div class="{{ corpus === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpus)">{{ corpus.id }}</div>
+      </li>
+    }
+    @if (showArrow('down')) {
+      <li class="ribbon-arrow arrow-down" (click)="scrollRibbon('down')">&nbsp;&#8964;</li>
+    }
+  </ul>
 </div>

@@ -1,24 +1,40 @@
 <div mat-dialog-content class="dialog">
-    <form [formGroup]="settingsForm">
-        <div *ngFor="let group of key_list (data); index as gi" class="group row">
-            <div class="header">{{ data[group].header }}</div>
-            <div *ngFor="let field of key_list (data[group].fields); index as fi" class="field col-md-5">
-                <label *ngIf="data[group].fields[field].type !== 'multiselect'" for="field-{{ gi }}-{{ fi }}" class="form-label">{{ data[group].fields[field].description }}</label>
-                <input class="form-control" id="field-{{ gi }}-{{ fi }}" *ngIf="data[group].fields[field].type === 'number'" type="number" [formControlName]="group + '--' + field">
-                <select class="form-select" id="field-{{ gi }}-{{ fi }}" *ngIf="data[group].fields[field].type === 'select'" [formControlName]="group + '--' + field">
-                    <option *ngFor="let option of data[group].fields[field].options" [ngValue]="option.name">{{ option.label }}</option>
-                </select>
-                <div *ngIf="data[group].fields[field].type === 'multiselect'">
-                    <label class="form-label">{{ data[group].fields[field].description }}</label>
-                    <div class="form-check" *ngFor="let option of data[group].fields[field].options; index as chi">
-                        <input class="form-check-input" id="field-{{ gi }}-{{ fi }}={{ chi }}" type="checkbox" [formControlName]="group + '--' + field + '--' + option.name">
-                        <label class="form-check-label" for="field-{{ gi }}-{{ fi }}={{ chi }}">{{ option.label }}</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
+  <form [formGroup]="settingsForm">
+    @for (group of key_list (data); track group; let gi = $index) {
+      <div class="group row">
+        <div class="header">{{ data[group].header }}</div>
+        @for (field of key_list (data[group].fields); track field; let fi = $index) {
+          <div class="field col-md-5">
+            @if (data[group].fields[field].type !== 'multiselect') {
+              <label for="field-{{ gi }}-{{ fi }}" class="form-label">{{ data[group].fields[field].description }}</label>
+            }
+            @if (data[group].fields[field].type === 'number') {
+              <input class="form-control" id="field-{{ gi }}-{{ fi }}" type="number" [formControlName]="group + '--' + field">
+            }
+            @if (data[group].fields[field].type === 'select') {
+              <select class="form-select" id="field-{{ gi }}-{{ fi }}" [formControlName]="group + '--' + field">
+                @for (option of data[group].fields[field].options; track option) {
+                  <option [ngValue]="option.name">{{ option.label }}</option>
+                }
+              </select>
+            }
+            @if (data[group].fields[field].type === 'multiselect') {
+              <div>
+                <label class="form-label">{{ data[group].fields[field].description }}</label>
+                @for (option of data[group].fields[field].options; track option; let chi = $index) {
+                  <div class="form-check">
+                    <input class="form-check-input" id="field-{{ gi }}-{{ fi }}={{ chi }}" type="checkbox" [formControlName]="group + '--' + field + '--' + option.name">
+                    <label class="form-check-label" for="field-{{ gi }}-{{ fi }}={{ chi }}">{{ option.label }}</label>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </form>
 </div>
 <div mat-dialog-actions>
-    <button class="btn btn-secondary right" [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+  <button class="btn btn-secondary right" [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
 </div>

@@ -1,97 +1,115 @@
 <div class="action-box float-end text-end">
-    <fa-icon 
-        *ngIf="exchange.show" 
-        class="icon" 
-        [ngClass]="exchange.enabled ? 'plain clickable' : 'gray'" 
-        [icon]="exchange.icon" 
-        (click)="switchDisplayMode()"
-        [matTooltip]="exchange.help"
-        [matTooltipShowDelay]="tooltipDelay">
+  @if (exchange.show) {
+    <fa-icon
+      class="icon"
+      [ngClass]="exchange.enabled ? 'plain clickable' : 'gray'"
+      [icon]="exchange.icon"
+      (click)="switchDisplayMode()"
+      [matTooltip]="exchange.help"
+      [matTooltipShowDelay]="tooltipDelay">
     </fa-icon>
-    <fa-icon 
-        *ngIf="meta.show" 
-        class="icon plain clickable" 
-        [ngClass]="meta.enabled ? '' : 'gray'" 
-        [icon]="meta.icon" 
-        (click)="switchMeta()"
-        [matTooltip]="meta.help"
-        [matTooltipShowDelay]="tooltipDelay">
+  }
+  @if (meta.show) {
+    <fa-icon
+      class="icon plain clickable"
+      [ngClass]="meta.enabled ? '' : 'gray'"
+      [icon]="meta.icon"
+      (click)="switchMeta()"
+      [matTooltip]="meta.help"
+      [matTooltipShowDelay]="tooltipDelay">
     </fa-icon>
-    <div *ngIf="annotation.show" class="icon-wrapper">
-        <fa-icon 
-            class="icon" 
-            *ngIf="annotation.show" 
-            [ngClass]="annotation.enabled ? 'flavoured' : 'gray'" 
-            [icon]="annotation.icon" 
-            [matTooltip]="annotation.help"
-            [matTooltipPosition]="'above'"
-            [matTooltipShowDelay]="tooltipDelay">
+  }
+  @if (annotation.show) {
+    <div class="icon-wrapper">
+      @if (annotation.show) {
+        <fa-icon
+          class="icon"
+          [ngClass]="annotation.enabled ? 'flavoured' : 'gray'"
+          [icon]="annotation.icon"
+          [matTooltip]="annotation.help"
+          [matTooltipPosition]="'above'"
+          [matTooltipShowDelay]="tooltipDelay">
         </fa-icon>
-        <div *ngIf="annotation.enabled" class="icon-dropdown">
-            <fa-icon 
-                class="icon" 
-                *ngIf="annotation.flavours['tooltip'].show" 
-                [ngClass]="annotation.flavours['tooltip'].enabled ? 'option' : 'gray background'" 
-                [icon]="annotation.flavours['tooltip'].icon" 
-                (click)="setAnnotationDisplay('tooltip')"
-                [matTooltip]="annotation.flavours['tooltip'].help">
+      }
+      @if (annotation.enabled) {
+        <div class="icon-dropdown">
+          @if (annotation.flavours['tooltip'].show) {
+            <fa-icon
+              class="icon"
+              [ngClass]="annotation.flavours['tooltip'].enabled ? 'option' : 'gray background'"
+              [icon]="annotation.flavours['tooltip'].icon"
+              (click)="setAnnotationDisplay('tooltip')"
+              [matTooltip]="annotation.flavours['tooltip'].help">
             </fa-icon>
-            <fa-icon 
-                class="icon" 
-                *ngIf="annotation.flavours['mixed'].show" 
-                [ngClass]="annotation.flavours['mixed'].enabled ? 'option' : 'gray background'" 
-                [icon]="annotation.flavours['mixed'].icon" 
-                (click)="setAnnotationDisplay('mixed')"
-                [matTooltip]="annotation.flavours['mixed'].help">
+          }
+          @if (annotation.flavours['mixed'].show) {
+            <fa-icon
+              class="icon"
+              [ngClass]="annotation.flavours['mixed'].enabled ? 'option' : 'gray background'"
+              [icon]="annotation.flavours['mixed'].icon"
+              (click)="setAnnotationDisplay('mixed')"
+              [matTooltip]="annotation.flavours['mixed'].help">
             </fa-icon>
-            <fa-icon 
-                class="icon" 
-                *ngIf="annotation.flavours['inline'].show" 
-                [ngClass]="annotation.flavours['inline'].enabled ? 'option' : 'gray background'" 
-                [icon]="annotation.flavours['inline'].icon" 
-                (click)="setAnnotationDisplay('inline')"
-                [matTooltip]="annotation.flavours['inline'].help">
+          }
+          @if (annotation.flavours['inline'].show) {
+            <fa-icon
+              class="icon"
+              [ngClass]="annotation.flavours['inline'].enabled ? 'option' : 'gray background'"
+              [icon]="annotation.flavours['inline'].icon"
+              (click)="setAnnotationDisplay('inline')"
+              [matTooltip]="annotation.flavours['inline'].help">
             </fa-icon>
+          }
         </div>
+      }
     </div>
-    <fa-icon 
-        *ngIf="layers.show" 
-        class="icon" 
-        ngClass="eye.enabled ? 'clickable' : 'gray'" 
-        [icon]="layers.icon" 
-        (click)="switchDisplayLayer()"
-        [matTooltip]="layers.help"
-        [matTooltipShowDelay]="tooltipDelay">
+  }
+  @if (layers.show) {
+    <fa-icon
+      class="icon"
+      ngClass="eye.enabled ? 'clickable' : 'gray'"
+      [icon]="layers.icon"
+      (click)="switchDisplayLayer()"
+      [matTooltip]="layers.help"
+      [matTooltipShowDelay]="tooltipDelay">
     </fa-icon>
-    <div *ngIf="download.show" class="icon-wrapper">
-        <fa-icon 
-            *ngIf="download.show" 
-            class="icon" 
-            ngClass="download.enabled ? 'flavoured' : 'gray'" 
-            [icon]="download.icon" 
-            [matTooltip]="download.help"
-            [matTooltipPosition]="'above'"
-            [matTooltipShowDelay]="tooltipDelay">
+  }
+  @if (download.show) {
+    <div class="icon-wrapper">
+      @if (download.show) {
+        <fa-icon
+          class="icon"
+          ngClass="download.enabled ? 'flavoured' : 'gray'"
+          [icon]="download.icon"
+          [matTooltip]="download.help"
+          [matTooltipPosition]="'above'"
+          [matTooltipShowDelay]="tooltipDelay">
         </fa-icon>
-        <div *ngIf="download.enabled" class="icon-dropdown">
-            <fa-icon 
-                *ngIf="download.flavours['selected'].show" 
-                class="icon" 
-                [ngClass]="download.flavours['selected'].enabled ? 'option' : 'gray'" 
-                [icon]="download.flavours['selected'].icon" 
-                (click)="downloadResults('checked')"
-                [matTooltip]="download.flavours['selected'].help">
+      }
+      @if (download.enabled) {
+        <div class="icon-dropdown">
+          @if (download.flavours['selected'].show) {
+            <fa-icon
+              class="icon"
+              [ngClass]="download.flavours['selected'].enabled ? 'option' : 'gray'"
+              [icon]="download.flavours['selected'].icon"
+              (click)="downloadResults('checked')"
+              [matTooltip]="download.flavours['selected'].help">
             </fa-icon>
-            <fa-icon 
-                class="icon"
-                *ngIf="download.flavours['all'].show" 
-                [ngClass]="download.flavours['all'].enabled ? 'option' : 'gray'" 
-                [icon]="download.flavours['all'].icon" 
-                (click)="downloadResults('all')"
-                [matTooltip]="download.flavours['all'].help">
+          }
+          @if (download.flavours['all'].show) {
+            <fa-icon
+              class="icon"
+              [ngClass]="download.flavours['all'].enabled ? 'option' : 'gray'"
+              [icon]="download.flavours['all'].icon"
+              (click)="downloadResults('all')"
+              [matTooltip]="download.flavours['all'].help">
             </fa-icon>
+          }
         </div>
+      }
     </div>
-    
-    
+  }
+
+
 </div>

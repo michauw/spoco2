@@ -1,83 +1,101 @@
 <div class="card basic-box">
-    <div class="card-header corpus-info" *ngIf="corpora.length > 1">
-        Corpus: <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus === primaryCorpus ? 'primary' : 'secondary - only filtering'}}]</span>
-        <span class="corpus-controls">
-            <span class="corpus-controls-small">    <!-- for small displays -->
-                <form [formGroup]="corpusSelect">
-                    <label for="chooseCurrent">active:</label>
-                    <select name="chooseCurrent" formControlName="currentCorpus">
-                        <option *ngFor="let available_corpus of corpora" [ngValue]="corpus" selected="{{ corpus === available_corpus ? 'selected' : '' }}">{{ available_corpus.id }}</option>
-                    </select>
-                    <label for="choosePrimary">primary:</label>
-                    <select name="choosePrimary" formControlName="primaryCorpus">
-                        <option *ngFor="let corpus of corpora" [ngValue]="corpus" selected="{{ corpus === primaryCorpus ? 'selected' : '' }}">{{corpus.id}}</option>
-                    </select>
-                </form>
-            </span>
-            <span class="corpus-controls-normal"> <!-- medium+ displays -->
-                <i *ngIf="corpus === primaryCorpus" 
-                    class="bi bi-1-square" 
-                    matTooltip="Primary corpus" 
-                    matTooltipPosition="above"
-                    [matTooltipShowDelay]="tooltipShowDelay">
-                </i>
-                <i *ngIf="corpus !== primaryCorpus" 
-                    class="bi bi-2-square clickable"
-                    matTooltip="Set as primary corpus"
-                    matTooltipPosition="above"
-                    [matTooltipShowDelay]="tooltipShowDelay"
-                    (mouseenter)="switchIcon($event, 'bi-2-square', 'bi-1-square')"
-                    (mouseleave)="switchIcon($event, 'bi-1-square', 'bi-2-square')"
-                    (click)="setAsPrimary()">
-                </i>
-                <i *ngIf="corpus === primaryCorpus || displayMode === 'ribbon'" 
-                    class="bi bi-{{ displayMode === 'ribbon' ? 'layout-split' : 'list-stars' }} clickable"
-                    matTooltip="Switch to {{ displayMode === 'ribbon' ? '\"multiple boxes\"' : '\"one box\"'}} view"
-                    matTooltipPosition="above"
-                    [matTooltipShowDelay]="tooltipShowDelay"
-                    (mouseenter)="switchIcon($event, '', 'text-danger')"
-                    (mouseleave)="switchIcon($event, 'text-danger', '')"
-                    (click)="toggleView()">
-                </i>
-                <span *ngIf="corpora.length > 2 && corpus !== primaryCorpus">
-                    <i 
-                        class="bi bi-arrow-up {{ isArrowEnabled ('up') ? 'arrow-enabled' : 'arrow-disabled' }} clickable" 
-                        matTooltip="{{ isArrowEnabled('up') ?  'Move secondary corpus up' : 'Corpus already at the top position'}}"
-                        matTooltipPosition="above"
-                        [matTooltipShowDelay]="tooltipShowDelay"
-                        (click)="moveCorpus('up')">
-                    </i>
-                    <i 
-                        class="bi bi-arrow-down {{ isArrowEnabled ('down') ? 'arrow-enabled' : 'arrow-disabled' }} clickable" 
-                        matTooltip="{{ isArrowEnabled('down') ?  'Move secondary corpus down' : 'Corpus already at the bottom position'}}"
-                        matTooltipPosition="above"
-                        [matTooltipShowDelay]="tooltipShowDelay"
-                        (click)="moveCorpus('down')">
-                    </i>
-                </span>
-            </span>
+  @if (corpora.length > 1) {
+    <div class="card-header corpus-info">
+      Corpus: <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus === primaryCorpus ? 'primary' : 'secondary - only filtering'}}]</span>
+      <span class="corpus-controls">
+        <span class="corpus-controls-small">    <!-- for small displays -->
+          <form [formGroup]="corpusSelect">
+            <label for="chooseCurrent">active:</label>
+            <select name="chooseCurrent" formControlName="currentCorpus">
+              @for (available_corpus of corpora; track available_corpus) {
+                <option [ngValue]="corpus" selected="{{ corpus === available_corpus ? 'selected' : '' }}">{{ available_corpus.id }}</option>
+              }
+            </select>
+            <label for="choosePrimary">primary:</label>
+            <select name="choosePrimary" formControlName="primaryCorpus">
+              @for (corpus of corpora; track corpus) {
+                <option [ngValue]="corpus" selected="{{ corpus === primaryCorpus ? 'selected' : '' }}">{{corpus.id}}</option>
+              }
+            </select>
+          </form>
         </span>
+        <span class="corpus-controls-normal"> <!-- medium+ displays -->
+          @if (corpus === primaryCorpus) {
+            <i
+              class="bi bi-1-square"
+              matTooltip="Primary corpus"
+              matTooltipPosition="above"
+              [matTooltipShowDelay]="tooltipShowDelay">
+            </i>
+          }
+          @if (corpus !== primaryCorpus) {
+            <i
+              class="bi bi-2-square clickable"
+              matTooltip="Set as primary corpus"
+              matTooltipPosition="above"
+              [matTooltipShowDelay]="tooltipShowDelay"
+              (mouseenter)="switchIcon($event, 'bi-2-square', 'bi-1-square')"
+              (mouseleave)="switchIcon($event, 'bi-1-square', 'bi-2-square')"
+              (click)="setAsPrimary()">
+            </i>
+          }
+          @if (corpus === primaryCorpus || displayMode === 'ribbon') {
+            <i
+              class="bi bi-{{ displayMode === 'ribbon' ? 'layout-split' : 'list-stars' }} clickable"
+              matTooltip="Switch to {{ displayMode === 'ribbon' ? '\"multiple boxes\"' : '\"one box\"'}} view"
+              matTooltipPosition="above"
+              [matTooltipShowDelay]="tooltipShowDelay"
+              (mouseenter)="switchIcon($event, '', 'text-danger')"
+              (mouseleave)="switchIcon($event, 'text-danger', '')"
+              (click)="toggleView()">
+            </i>
+          }
+          @if (corpora.length > 2 && corpus !== primaryCorpus) {
+            <span>
+              <i
+                class="bi bi-arrow-up {{ isArrowEnabled ('up') ? 'arrow-enabled' : 'arrow-disabled' }} clickable"
+                matTooltip="{{ isArrowEnabled('up') ?  'Move secondary corpus up' : 'Corpus already at the top position'}}"
+                matTooltipPosition="above"
+                [matTooltipShowDelay]="tooltipShowDelay"
+                (click)="moveCorpus('up')">
+              </i>
+              <i
+                class="bi bi-arrow-down {{ isArrowEnabled ('down') ? 'arrow-enabled' : 'arrow-disabled' }} clickable"
+                matTooltip="{{ isArrowEnabled('down') ?  'Move secondary corpus down' : 'Corpus already at the bottom position'}}"
+                matTooltipPosition="above"
+                [matTooltipShowDelay]="tooltipShowDelay"
+                (click)="moveCorpus('down')">
+              </i>
+            </span>
+          }
+        </span>
+      </span>
     </div>
-    <div class="card-header text-center theme-dark">
-        <div class="row justify-content-center align-content-center">
-            <h5 class="card-title my-auto py-1">Basic search</h5>
-        </div>
+  }
+  <div class="card-header text-center theme-dark">
+    <div class="row justify-content-center align-content-center">
+      <h5 class="card-title my-auto py-1">Basic search</h5>
     </div>
-    <div class="card-body {{ corpus !== primaryCorpus ? 'secondary' : ''}}">
-        <spoco-query-row [corpus]="corpus" [queryRowIndex]="qr" *ngFor="let qr of qrRange()"></spoco-query-row>
-        <div class="plus-minus float-end">
-            <button class="btn row-button theme-dark" (click)="lessRows()" *ngIf="queryRowNumber > 1" matTooltip="Remove row" [matTooltipShowDelay]="tooltipShowDelay">
-                -
-            </button>
-            <button class="btn row-button theme-dark" (click)="moreRows()" matTooltip="Add row" [matTooltipShowDelay]="tooltipShowDelay">
-                +
-            </button>
-        </div>
-        <div class="row">
-            <div class="col-sm-12 col-md-6 offset-md-3">
-                <hr>
-            </div>
-        </div>
-        <spoco-filters [visible]="corpus === primaryCorpus || displayMode === 'ribbon'"></spoco-filters>
+  </div>
+  <div class="card-body {{ corpus !== primaryCorpus ? 'secondary' : ''}}">
+    @for (qr of qrRange(); track qr) {
+      <spoco-query-row [corpus]="corpus" [queryRowIndex]="qr"></spoco-query-row>
+    }
+    <div class="plus-minus float-end">
+      @if (queryRowNumber > 1) {
+        <button class="btn row-button theme-dark" (click)="lessRows()" matTooltip="Remove row" [matTooltipShowDelay]="tooltipShowDelay">
+          -
+        </button>
+      }
+      <button class="btn row-button theme-dark" (click)="moreRows()" matTooltip="Add row" [matTooltipShowDelay]="tooltipShowDelay">
+        +
+      </button>
     </div>
-</div>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 offset-md-3">
+        <hr>
+        </div>
+      </div>
+      <spoco-filters [visible]="corpus === primaryCorpus || displayMode === 'ribbon'"></spoco-filters>
+    </div>
+  </div>

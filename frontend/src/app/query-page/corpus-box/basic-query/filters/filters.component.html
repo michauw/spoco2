@@ -1,30 +1,42 @@
-<div [ngStyle]="{visibility: visible ? 'visible' : 'hidden'}" *ngIf="groups.length">
+@if (groups.length) {
+  <div [ngStyle]="{visibility: visible ? 'visible' : 'hidden'}">
     <div class="row">
-        <div class="col-4 ml-4 mb-2">
-            <span class="section-name">Filters</span>
-        </div>
+      <div class="col-4 ml-4 mb-2">
+        <span class="section-name">Filters</span>
+      </div>
     </div>
-    <div class="row mb-4" *ngIf="groups.length > 1">
+    @if (groups.length > 1) {
+      <div class="row mb-4">
         <div class="col-8 my-2 ml-4">
-            <span *ngFor="let group of groups; let ind=index"
-            class="filters-header {{ ind === active_group ? 'active' : ''}}"
-            (click)="chooseActive(group.name)"
-            >
-                {{ group.name }}
+          @for (group of groups; track group; let ind = $index) {
+            <span
+              class="filters-header {{ ind === active_group ? 'active' : ''}}"
+              (click)="chooseActive(group.name)"
+              >
+              {{ group.name }}
             </span>
+          }
         </div>
-    </div>
+      </div>
+    }
     <form [formGroup]="filtersForm">
-        <div class="row" formGroupName="{{ groups[active_group].name }}">
-            <div class="col-1 col-md-4 col-lg-3 col-xl-3" style="margin-bottom: 1rem" *ngFor="let field of groups[active_group].fields">
-                <input *ngIf="field.type === 'text'" type="text" placeholder="{{field.description}}" class="form-control" formControlName="{{field.name}}">
-                <spoco-select *ngIf="field.type === 'select' || field.type === 'multiselect'" 
-                    [data]="field" 
-                    [form]="filtersForm" 
-                    [group]="groups[active_group].name" 
-                    [name]="field.name"
-                ></spoco-select>
-            </div>
-        </div>
+      <div class="row" formGroupName="{{ groups[active_group].name }}">
+        @for (field of groups[active_group].fields; track field) {
+          <div class="col-1 col-md-4 col-lg-3 col-xl-3" style="margin-bottom: 1rem">
+            @if (field.type === 'text') {
+              <input type="text" placeholder="{{field.description}}" class="form-control" formControlName="{{field.name}}">
+            }
+            @if (field.type === 'select' || field.type === 'multiselect') {
+              <spoco-select
+                [data]="field"
+                [form]="filtersForm"
+                [group]="groups[active_group].name"
+                [name]="field.name"
+              ></spoco-select>
+            }
+          </div>
+        }
+      </div>
     </form>
-</div>
+  </div>
+}
