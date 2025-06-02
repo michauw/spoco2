@@ -14,7 +14,6 @@ export class AnnotatedWordComponent implements OnInit, OnChanges {
     @Input () role: 'broad context' | 'immediate context' | 'match' | 'aligned';
     @Input () toShow: string[];
     @Input () currentLayer: string;
-    @Input () highlightOriginal?: boolean;
     
     place: 'tooltip' | 'inline';
     annotation: string;

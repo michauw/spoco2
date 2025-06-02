@@ -64,3 +64,10 @@ div.transparent {
     font-weight: 500;
     color: rgb(83, 83, 83);
 }
+
+.highlight {
+    background-color:rgba(255, 0, 0, 0.1);
+    display: inline;
+    padding: .2rem 0 .2rem .2rem;
+    margin-right: .2rem;
+}

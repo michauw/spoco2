@@ -377,7 +377,7 @@ async def get_context (data: ContextData):
         number, content = primary.split (':', 1)
         audio_attrs = None
     if data.direction == 'left':
-        content = re.search (f'<{context}>(.*)</{context}>', content).group (1)
+        content = re.search (f'<{context}>(.*?)</{context}>', content).group (1)
     results['primary'] = {'id': str (number), 'content': content.strip ()}
     if audio_attrs:
         for attr in re.findall ('<(.*?)>', audio_attrs):

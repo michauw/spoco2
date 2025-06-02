@@ -1,5 +1,5 @@
 <span 
-    [ngClass]="{'match': role === 'match', 'original': highlightOriginal, 'sticky': word._sticky }"
+    [ngClass]="{'match': role === 'match', 'sticky': word._sticky }"
     (click)="toggleDisplay()"
     [matTooltip]="place === 'tooltip' ? annotation : ''" 
     [matTooltipPosition]="'above'"
