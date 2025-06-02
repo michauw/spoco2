@@ -8,7 +8,7 @@
     @if (groups.length > 1) {
       <div class="row mb-4">
         <div class="col-8 my-2 ml-4">
-          @for (group of groups; track group; let ind = $index) {
+          @for (group of groups; track $index; let ind = $index) {
             <span
               class="filters-header {{ ind === active_group ? 'active' : ''}}"
               (click)="chooseActive(group.name)"
@@ -21,7 +21,7 @@
     }
     <form [formGroup]="filtersForm">
       <div class="row" formGroupName="{{ groups[active_group].name }}">
-        @for (field of groups[active_group].fields; track field) {
+        @for (field of groups[active_group].fields; track $index) {
           <div class="col-1 col-md-4 col-lg-3 col-xl-3" style="margin-bottom: 1rem">
             @if (field.type === 'text') {
               <input type="text" placeholder="{{field.description}}" class="form-control" formControlName="{{field.name}}">

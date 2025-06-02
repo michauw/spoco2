@@ -3,7 +3,7 @@
     @if (data.type === 'select') {
       <select class="form-select pattr-input select" [formControlName]="name">
         <option [ngValue]="null">{{ data.description }}</option>         <-- TODO: doesn't work after clearing -->
-        @for (option of data.options; track option) {
+        @for (option of data.options; track option.value) {
           <option [ngValue]="option.value">{{ option.label }}</option>
         }
       </select>

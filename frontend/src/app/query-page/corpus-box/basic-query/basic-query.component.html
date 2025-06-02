@@ -7,13 +7,13 @@
           <form [formGroup]="corpusSelect">
             <label for="chooseCurrent">active:</label>
             <select name="chooseCurrent" formControlName="currentCorpus">
-              @for (available_corpus of corpora; track available_corpus) {
+              @for (available_corpus of corpora; track available_corpus.id) {
                 <option [ngValue]="corpus" selected="{{ corpus === available_corpus ? 'selected' : '' }}">{{ available_corpus.id }}</option>
               }
             </select>
             <label for="choosePrimary">primary:</label>
             <select name="choosePrimary" formControlName="primaryCorpus">
-              @for (corpus of corpora; track corpus) {
+              @for (corpus of corpora; track corpus.id) {
                 <option [ngValue]="corpus" selected="{{ corpus === primaryCorpus ? 'selected' : '' }}">{{corpus.id}}</option>
               }
             </select>

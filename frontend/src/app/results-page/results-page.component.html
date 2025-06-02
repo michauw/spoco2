@@ -12,7 +12,7 @@
   </div>
   <div class="col-md-10 offset-md-1">
     <mat-tab-group (selectedTabChange)="tabChanged($event)" [selectedIndex]="current_tab" class="tabs">
-      @for (tab of tabs; track tab; let i = $index) {
+      @for (tab of tabs; track tab.id; let i = $index) {
         <mat-tab>
           <ng-template mat-tab-label>
             <span class="tab-label">

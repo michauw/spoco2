@@ -13,7 +13,7 @@
             }
             @if (data[group].fields[field].type === 'select') {
               <select class="form-select" id="field-{{ gi }}-{{ fi }}" [formControlName]="group + '--' + field">
-                @for (option of data[group].fields[field].options; track option) {
+                @for (option of data[group].fields[field].options; track option.name) {
                   <option [ngValue]="option.name">{{ option.label }}</option>
                 }
               </select>
@@ -21,7 +21,7 @@
             @if (data[group].fields[field].type === 'multiselect') {
               <div>
                 <label class="form-label">{{ data[group].fields[field].description }}</label>
-                @for (option of data[group].fields[field].options; track option; let chi = $index) {
+                @for (option of data[group].fields[field].options; track option.name; let chi = $index) {
                   <div class="form-check">
                     <input class="form-check-input" id="field-{{ gi }}-{{ fi }}={{ chi }}" type="checkbox" [formControlName]="group + '--' + field + '--' + option.name">
                     <label class="form-check-label" for="field-{{ gi }}-{{ fi }}={{ chi }}">{{ option.label }}</label>

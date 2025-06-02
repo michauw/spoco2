@@ -14,11 +14,12 @@ export type modules = 'concordance' | 'collocations' | 'frequency';
 })
 export class ResultsPageComponent implements OnInit, AfterViewInit {
 
-    tabs: {name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
+    tabs: {id: number, name: string, number_of_results: number, module: modules, query: string, error: string, results_fetched: boolean}[] = [];
     tab_module_names: {[key: string]: string} = {concordance: 'concordance', collocations: 'collocations', frequency: 'frequency list'}
     current_tab: number = 0;
     wp_scale: {label: 'B' | 'M' | 'T', scale: number};
     close = {'icon': faClose};
+    tab_ids: number[] = [];
     
     constructor(private route: ActivatedRoute, private config: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
@@ -51,7 +52,8 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     }
 
     add_tab (module: modules) {
-        this.tabs.push ({name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...', error: '', results_fetched: false});
+        const next_id = Math.max.apply (Math.max, this.tab_ids) + 1;
+        this.tabs.push ({id: next_id, name: this.tab_module_names[module], number_of_results: -1, module: module, query: '...', error: '', results_fetched: false});
         this.current_tab = this.tabs.length - 1;
         this.header_visibility ();
     }

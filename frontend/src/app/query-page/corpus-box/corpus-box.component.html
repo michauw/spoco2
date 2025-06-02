@@ -1,36 +1,32 @@
 <div class="col-12">
   @if (displayMode === 'ribbon') {
-    <div>
-      <div class="row">
+    <div class="row">
         <div class="col-1">
-          <spoco-corpora-ribbon></spoco-corpora-ribbon>
+            <spoco-corpora-ribbon></spoco-corpora-ribbon>
         </div>
         <div class="col-md-10">
-          @for (corpus of corpora; track corpus) {
+            @for (corpus of corpora; track corpus) {
             <span>
-              @if (corpus === currentCorpus) {
+                @if (corpus === currentCorpus) {
                 <spoco-basic-query
-                  [corpus]="corpus"
-                  [displayMode]="displayMode"
-                  (toggleViewClicked)="toggleView()">
+                    [corpus]="corpus"
+                    [displayMode]="displayMode"
+                    (toggleViewClicked)="toggleView()">
                 </spoco-basic-query>
-              }
+                }
             </span>
-          }
+            }
         </div>
-      </div>
     </div>
   }
   @if (displayMode !== 'ribbon') {
-    <div>
-      <div class="row">
-        @for (corpus of corpora; track corpus) {
-          <div class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }} {{ spacing_basic['offset']}}" >
-            <spoco-basic-query [corpus]="corpus" [displayMode]="displayMode" (toggleViewClicked)="toggleView ()"></spoco-basic-query>
-            <div class="my-3"></div>
-          </div>
-        }
-      </div>
+    <div class="row">
+    @for (corpus of corpora; track corpus.id) {
+        <div class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }} {{ spacing_basic['offset']}}" >
+        <spoco-basic-query [corpus]="corpus" [displayMode]="displayMode" (toggleViewClicked)="toggleView ()"></spoco-basic-query>
+        <div class="my-3"></div>
+        </div>
+    }
     </div>
   }
   <div class="my-3"></div>

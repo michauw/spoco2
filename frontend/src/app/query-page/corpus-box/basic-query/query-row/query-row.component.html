@@ -4,7 +4,7 @@
     <!-- single row of input fields (for each poistional attribute of type 'text') -->
 
     <div class="row">
-      @for (pattr of filterByType ('text'); track pattr) {
+      @for (pattr of filterByType ('text'); track pattr.name) {
         <div
           class="col-12 col-md-6 col-lg-{{pattrClasses.lg}} col-xl-{{pattrClasses.xl}} my-1"
           [ngClass]="pattrClasses"
@@ -22,11 +22,11 @@
     -->
 
     <div class="modifiers">
-      @for (pattr of filterByType ('text'); track pattr) {
+      @for (pattr of filterByType ('text'); track pattr.name) {
         <span formGroupName="{{ pattr.name }}">
           @if (pattr.name == currentGroup) {
             <span formGroupName="modifiers">    <!-- TODO: is there a way to avoid second span (currently needed because groups in formGroupName cannot be nested (?)) -->
-              @for (modifier of modifiers; track modifier) {
+              @for (modifier of modifiers; track modifier.name) {
                 <label class="modifier">
                   <input type="checkbox" class="form-check-input" formControlName="{{ modifier.name }}">
                   <span class="description">
@@ -40,7 +40,7 @@
       }
       @if (filterByType('checkbox')) {
         <span class="pattr-checkboxes">
-          @for (pattr of filterByType ('checkbox'); track pattr) {
+          @for (pattr of filterByType ('checkbox'); track pattr.name) {
             <span formGroupName="{{ pattr.name }}">
               <input type="checkbox" class="form-check-input pattr-input" formControlName="value">
               <span class="description">
@@ -53,7 +53,7 @@
     </div>
     @if (filterByType('selection')) {
       <div class="row selection">
-        @for (pattr of filterByType('selection'); track pattr) {
+        @for (pattr of filterByType('selection'); track pattr.name) {
           <div class="col-12 col-md-4 col-lg-2 mt-3" formGroupName="{{ pattr.name }}">
             <spoco-select class="pattr-input" [data]="pattr" [form]="queryRowForm" [group]="pattr.name" [name]="'value'"></spoco-select>
           </div>

@@ -354,7 +354,7 @@ async def get_frequency_list (data: FrequencyData):
     response = prepare_response (data, category = 'frequency', grouping_attr = data.grouping_attribute)
     frequency_filter = data.frequency_filter
     results = stats.get_frequency (response, frequency_filter = frequency_filter)
-        
+    
     return results
 
 @backend.post ('/api/context')

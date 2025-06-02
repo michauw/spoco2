@@ -7,7 +7,7 @@
     <li>
       <div class="corpus-primary {{ corpora[0] === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpora[0])">{{ corpora[0].id }}</div>
     </li>
-    @for (corpus of secondary(); track corpus) {
+    @for (corpus of secondary(); track corpus.id) {
       <li>
         <div class="{{ corpus === currentCorpus ? 'corpus-active' : '' }}" (click)="setCurrent (corpus)">{{ corpus.id }}</div>
       </li>

@@ -10,12 +10,12 @@
         [matTooltipShowDelay]="600">
       </fa-icon>
     }
-    @for (bcontext of row.broader_context.left; track bcontext; let ind = $index) {
+    @for (bcontext of row.broader_context.left; track $index; let ind = $index) {
       <span class="broad-context">
         @if (corpusType === 'spoken' && differentSpeaker (ind, 'left', -1)) {
           <span class="speaker">{{ bcontext.speaker }}</span>
         }
-        @for (word of bcontext.content; track word) {
+        @for (word of bcontext.content; track $index) {
           <spoco-annotated-word
             [word]="word"
             [role]="'broad context'"
@@ -40,7 +40,7 @@
       <span class="speaker">{{ row.meta[speaker!].value! }}</span>
     }
     <div [ngClass]="mode === 'kwic' ? 'col-sm-5 text-end' : 'transparent'"> <!-- IMMEDIATE CONTEXT: LEFT, abbreviated in the 'kwic' mode -->
-      @for (word of immediate_context.left; track word) {
+      @for (word of immediate_context.left; track $index) {
         <spoco-annotated-word
           [word]="word"
           [role]="'immediate context'"
@@ -52,7 +52,7 @@
       }
     </div>
     <div [ngClass]="mode === 'kwic' ? 'col-sm-2 text-center' : 'transparent'"> <!-- MATCH -->
-      @for (word of row.match; track word) {
+      @for (word of row.match; track $index) {
         <spoco-annotated-word
           [word]="word"
           [role]="'match'"
@@ -64,7 +64,7 @@
       }
     </div>
     <div [ngClass]="mode === 'kwic' ? 'col-sm-5' : 'transparent'"> <!-- IMMEDIATE CONTEXT: RIGHT, abbreviated in the 'kwic' mode -->
-      @for (word of immediate_context.right; track word) {
+      @for (word of immediate_context.right; track $index) {
         <spoco-annotated-word
           [word]="word"
           [role]="'immediate context'"
@@ -86,12 +86,12 @@
     <!-- END OF MAIN SECTION -->
     @if (mode !== 'kwic') {
       <!-- BROAD CONTEXT: RIGHT, not displayed in the 'kwic' mode -->
-      @for (bcontext of row.broader_context.right; track bcontext; let ind = $index) {
+      @for (bcontext of row.broader_context.right; track $index; let ind = $index) {
         <div class="broad-context" [ngClass]="differentSpeaker (ind, 'right', 1) ? 'break' : 'inline'">
           @if (corpusType === 'spoken' && differentSpeaker (ind, 'right', -1)) {
             <span class="speaker">{{ bcontext.speaker }}</span>
           }
-          @for (word of bcontext.content; track word) {
+          @for (word of bcontext.content; track $index) {
             <spoco-annotated-word
               [word]="word"
               [role]="'broad context'"
@@ -127,7 +127,7 @@
       }
       @if (mode === 'extended') {
         <!-- ALIGNED CORPORA ('extended' mode)-->
-        @for (corpus of row.aligned; track corpus; let aind = $index) {
+        @for (corpus of row.aligned; track corpus.corpus_name; let aind = $index) {
           <div class="col-12 aligned-extended {{aind ? '' : 'gap'}}">
             <span class="aligned-corpus-name">[{{ corpus.corpus_name| uppercase }}]</span>
             @for (word of corpus.content; track word) {
@@ -150,7 +150,7 @@
 
     @if (mode === 'aligned') {
       <!-- ALIGNED CORPORA ('plain' mode)-->
-      @for (word of words; track word) {
+      @for (word of words; track $index) {
         <spoco-annotated-word
           [word]="word"
           [role]="'aligned'"

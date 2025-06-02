@@ -13,7 +13,7 @@
             <th class="audio">Recording</th>
             <th class="clickable" (click)="sort_results('left_context')">Transcription</th>
           }
-          @for (corpus of parallelCorpora; track corpus; let ind = $index) {
+          @for (corpus of parallelCorpora; track corpus.id; let ind = $index) {
             @if (visible_columns.includes (ind)) {
               <th class="lang-header" [ngStyle]="{width: get_column_width ()}">
                 @if (ind === visible_columns[0] && shift_possible ('left')) {
@@ -34,7 +34,7 @@
       }
     </thead>
     @if (results_fetched) {
-      @for (row of currentSlice; track row; let ind = $index) {
+      @for (row of currentSlice; track row.id; let ind = $index) {
         <tr>
           @if (corpusType == 'spoken') {
             <td>
@@ -64,7 +64,7 @@
               </spoco-concordance-row>
             </td>
           }
-          @for (corpus of row.aligned; track corpus; let ong = $index) {
+          @for (corpus of row.aligned; track corpus.corpus_name; let ong = $index) {
             @if (visible_columns!.includes (ong + 1)) {
               <td>
                 <spoco-concordance-row
@@ -111,7 +111,7 @@
       </tr>
     </thead>
     @if (results_fetched) {
-      @for (row of currentSlice; track row; let ind = $index) {
+      @for (row of currentSlice; track row.id; let ind = $index) {
         <tr>
           @if (corpusType === 'spoken') {
             <td>
