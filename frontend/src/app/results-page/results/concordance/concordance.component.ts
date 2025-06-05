@@ -36,6 +36,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     showMeta: boolean;
     parallelCorpora: Corpus[];
     max_visible: number;
+    token_count: number = 0;
     maxContextSize: number;
     locked: number[];
     visible_columns: number[];
@@ -337,7 +338,10 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                                     batch.push (line);
                                 if (batch.length === this.corpora.length) {
                                     this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
+                                    this.token_count += this.count_tokens (this.results[this.results_position - 1]);
                                     batch = [];
+                                    console.log ('res:', this.results.length, this.results.filter (el => el !== undefined).length, this.token_count);
+                                    // console.log ('res:', count);
                                 }
                                 // else if (this.module !== 'concordance') {
                                 //     const parsed = this.parse_stats_line (batch[0]);
@@ -379,6 +383,13 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                 this.error.emit (error);
             }
         });
+    }
+
+    private count_tokens (r: ConcordanceEntry) {
+        let count = r.left_context.length + r.match.length + r.right_context.length;
+        for (let alg of r.aligned)
+            count += alg.content.length;
+        return count;
     }
 
     private parse_primary_line (line: string): ConcordanceEntry {

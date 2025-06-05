@@ -46,9 +46,13 @@ class CorpusData:
         freq = {pattr: {'cs': defaultdict (int), 'ci': defaultdict (int)} for pattr in pattrs}
         for pattr in pattrs:
             command = [os.path.join (self.cwb, 'cwb-lexdecode'), '-fb', '-r', self.registry, '-P', pattr, self.id]
+            print (sb.list2cmdline (command))
             pr = sb.Popen (command, stdout = sb.PIPE, encoding = 'utf8')
             for line in pr.communicate ()[0].splitlines ():
-                fr, form = line.strip ().split ('\t')
+                try:
+                    fr, form = line.strip ().split ('\t')
+                except ValueError:
+                    continue
                 freq[pattr]['cs'][form] = int (fr)
                 freq[pattr]['ci'][form.lower ()] += int (fr)
         return freq

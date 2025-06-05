@@ -79,7 +79,7 @@
       @if (download.show) {
         <fa-icon
           class="icon"
-          ngClass="download.enabled ? 'flavoured' : 'gray'"
+          [ngClass]="download.enabled ? 'flavoured' : 'gray'"
           [icon]="download.icon"
           [matTooltip]="download.help"
           [matTooltipPosition]="'above'"

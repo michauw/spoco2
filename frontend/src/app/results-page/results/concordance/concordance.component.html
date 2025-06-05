@@ -17,14 +17,14 @@
             @if (visible_columns.includes (ind)) {
               <th class="lang-header" [ngStyle]="{width: get_column_width ()}">
                 @if (ind === visible_columns[0] && shift_possible ('left')) {
-                  <fa-icon class="icon shift-langs-left" [icon]="arrow_left" (click)="shift ('left')"></fa-icon>
+                  <fa-icon class="icon shift-langs-left enlarge clickable" [icon]="arrow_left" (click)="shift ('left')"></fa-icon>
                 }
                 @if (corpora.length > max_visible) {
                   <input type="checkbox" [checked]="locked.includes (ind)" (change)="control_locked (ind)" matTooltip="Lock" matTooltipPosition="left">
                 }
                 {{ corpus.name }}
                 @if ((ind === visible_columns[visible_columns.length - 1]) && shift_possible ('right')) {
-                  <fa-icon class="icon shift-langs-right" [icon]="arrow_right" (click)="shift ('right')"></fa-icon>
+                  <fa-icon class="icon shift-langs-right enlarge clickable" [icon]="arrow_right" (click)="shift ('right')"></fa-icon>
                 }
               </th>
             }

@@ -50,11 +50,12 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     results_history: number[] = [];
     sort_ascending: boolean;
 
-    SIZE_LIMIT: number = 10000;
-    CHUNK_SIZE: number = 10000;
-    END_CHUNK_SIZE: number = 1000;
+    SIZE_LIMIT: number = 1000;
+    CHUNK_SIZE: number = 1000;
+    END_CHUNK_SIZE: number = 500;
     STREAM_SEPARATOR_TEXT = '==STREAM SEPARATOR==';
     MAX_RESULTS_SIZE: number = 40000;
+    TOKEN_LIMIT: number = 500000;
 
     constructor(
         protected queryKeeper: QueryKeeperService, 

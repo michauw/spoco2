@@ -264,7 +264,7 @@ def prepare_response (data: Data, category, grouping_attr = None):
 def prepare_response_stream (data: Data, category = 'concordance'):
 
     command = get_command (data, category = category)
-    langs_number = len (data.query['secondary']) + 1
+    langs_number = len (data.corpora)
     pr = sbp.Popen (command, stdout = sbp.PIPE, stderr = sbp.PIPE, encoding = 'utf8')
     error = check_error (pr)
     if error:

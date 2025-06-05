@@ -49,7 +49,6 @@ ypings
 Thumbs.db
 
 # Project specific
-config.json
 environments.ts
 assets/
 
