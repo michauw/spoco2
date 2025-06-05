@@ -3,11 +3,16 @@ import re
 import subprocess as sb
 import json
 from collections import defaultdict
+from pathlib import Path
 
 class CorpusData:
 
     def __init__ (self, corpus_name, registry_path, cwb_bin_path = '', svalues = False, frequency = False):
 
+        if type (registry_path) == str:
+            registry_path = Path (registry_path)
+        if type (cwb_bin_path) == str:
+            cwb_bin_path = Path (cwb_bin_path)
         self.registry = registry_path
         self.cwb = cwb_bin_path
         self.name = corpus_name.lower ()
@@ -25,7 +30,7 @@ class CorpusData:
 
     def analyze_corpus_structure (self):
         patterns = [r'^ATTRIBUTE ([\w-]+$)', r'^STRUCTURE ([\w-]+).*# \[annotations\]', r'^Tokens:\s*(\d+)']
-        with open (os.path.join (self.registry, self.name), encoding = 'utf8') as fin:
+        with open (self.registry / self.name, encoding = 'utf8') as fin:
             for line in fin:
                 pattr = re.search (patterns[0], line)
                 if pattr:
@@ -34,7 +39,7 @@ class CorpusData:
                     sattr = re.search (patterns[1], line)
                     if sattr:
                         self.sattrs.append (sattr.group (1))
-        command = [os.path.join (self.cwb, 'cwb-lexdecode'), '-S', '-r', self.registry, self.id]
+        command = [self.cwb / 'cwb-lexdecode', '-S', '-r', self.registry, self.id]
         pr = sb.Popen (command, stdout = sb.PIPE, encoding = 'utf8')
         output = pr.communicate ()[0]
         self.size = int (re.search (patterns[2], output, re.MULTILINE).group (1))
@@ -45,7 +50,7 @@ class CorpusData:
             pattrs = self.pattrs
         freq = {pattr: {'cs': defaultdict (int), 'ci': defaultdict (int)} for pattr in pattrs}
         for pattr in pattrs:
-            command = [os.path.join (self.cwb, 'cwb-lexdecode'), '-fb', '-r', self.registry, '-P', pattr, self.id]
+            command = [self.cwb / 'cwb-lexdecode', '-fb', '-r', self.registry, '-P', pattr, self.id]
             print (sb.list2cmdline (command))
             pr = sb.Popen (command, stdout = sb.PIPE, encoding = 'utf8')
             for line in pr.communicate ()[0].splitlines ():
@@ -65,7 +70,7 @@ class CorpusData:
 
         for sattr in sattrs:
             res[sattr] = set ()
-            command = [os.path.join (self.cwb, 'cwb-s-decode'), '-r', self.registry, '-n', self.id, '-S', sattr]
+            command = [self.cwb / 'cwb-s-decode', '-r', self.registry, '-n', self.id, '-S', sattr]
             pr = sb.Popen (command, stdout = sb.PIPE, encoding = 'utf8')
             for line in pr.communicate ()[0].splitlines ():
                 val = line.strip ()
