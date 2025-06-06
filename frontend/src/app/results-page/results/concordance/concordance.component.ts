@@ -340,7 +340,6 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                                     this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
                                     this.token_count += this.count_tokens (this.results[this.results_position - 1]);
                                     batch = [];
-                                    console.log ('res:', this.results.length, this.results.filter (el => el !== undefined).length, this.token_count);
                                     // console.log ('res:', count);
                                 }
                                 // else if (this.module !== 'concordance') {

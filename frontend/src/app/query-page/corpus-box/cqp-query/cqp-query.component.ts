@@ -19,6 +19,9 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
     constructor(private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
+        this.cqpQueryForm = new UntypedFormGroup ({
+            'cqp': new UntypedFormControl (this.queryKeeper.getFinalQuery ())
+        });
         this.valueChanged = this.queryKeeper.valueChanged.subscribe (_changeType => {
             const cqpQuery: string = this.queryKeeper.getFinalQuery ();
             this.autoChange = true;
@@ -42,9 +45,7 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
         // this.corpusChanged.unsubscribe ();
     }
 
-    cqpQueryForm: UntypedFormGroup = new UntypedFormGroup ({
-        'cqp': new UntypedFormControl (null)
-    });
+    cqpQueryForm: UntypedFormGroup;
     corpus: Corpus;
     corpusChanged: Subscription;
 
