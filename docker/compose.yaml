@@ -19,8 +19,6 @@ services:
     volumes:
       - ../settings:/settings
       - ../Corpus:/Corpus:ro
-    ports:
-      - "8000:8000"
     environment:
       - DOCKER=True
     networks:
