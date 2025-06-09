@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit, Output, inject } from '@angular/co
 import { ActionService } from '../../action.service';
 import { ConfigService } from '../../config.service';
 import { CorporaKeeperService } from '../../corpora-keeper.service';
-import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word, metaObj, Corpus, Query, GenericEntry, TableEntry } from '../../dataTypes';
+import { corpusType, ConcordanceEntry, PAttribute, SAttribute, Word, metaObj, Corpus, Query, GenericEntry, TableEntry, resultsDisplayMode } from '../../dataTypes';
 import { QueryKeeperService } from '../../query-keeper.service';
 import { Observable, Subscription } from 'rxjs';
 import { utils, writeFile, writeFileXLSX } from 'xlsx';
@@ -76,13 +76,18 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
 
     ngOnInit(): void {
         this.corpusType = this.config.fetch ('corpusType');
-        if (this.corpusType == 'mono')
-            this.actions.setDisplayMode ('kwic');
-        else
-            this.actions.setDisplayMode ('plain');
+        // const storedDisplay = this.config.fetch ('resDisplayMode', true);
+        // if (storedDisplay)
+        //     this.actions.setDisplayMode (storedDisplay as resultsDisplayMode);
+        // else {
+        //     if (this.corpusType == 'mono')
+        //         this.actions.setDisplayMode ('kwic');
+        //     else
+        //         this.actions.setDisplayMode ('plain');
+        // }
         if (!this.corpusType.length)
             this.corpusType = 'parallel';
-        this.sliceSize = this.config.fetch ('preferences')['results_per_page'];
+        this.sliceSize = this.config.fetch ('preferences', true)['results_per_page'];
         this.corpora = this.corporaKeeper.getCorpora ();
         this.currentSlice = [];
         this.results_fetched = false;

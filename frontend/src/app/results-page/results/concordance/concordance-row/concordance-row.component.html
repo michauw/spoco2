@@ -36,7 +36,7 @@
       }
     }
     <!-- MAIN SECTION -->
-    <div [class]="{'highlight': mode !== 'kwic' && broadContextLoaded ()}">
+    <div [class]="{'highlight': mode !== 'kwic' && broadContextLoaded (), 'row': mode === 'kwic'}">
       @if (corpusType === 'spoken' && mode !== 'kwic' && broadContextLoaded () && differentSpeaker (0, 'central', -1)) {
         <span class="speaker">{{ row.meta[speaker!].value! }}</span>
       }
@@ -142,22 +142,23 @@
         }
       }
     }
-    @if (showMeta) {
-      <spoco-meta-show [meta]="toList (row.meta)"></spoco-meta-show>
-      } <!-- METADATA BOX -->
-    }
+}
 
-    @if (mode === 'aligned') {
-      <!-- ALIGNED CORPORA ('plain' mode)-->
-      @for (word of words; track $index) {
-        <spoco-annotated-word
-          [word]="word"
-          [role]="'aligned'"
-          [displayMode]="annotationDisplay"
-          [currentLayer]="currentLayer"
-          [toShow]="pattrs_to_show">
-        </spoco-annotated-word>
-      }
-    }
+@else {
+  <!-- ALIGNED CORPORA ('plain' mode)-->
+  @for (word of words; track $index) {
+    <spoco-annotated-word
+      [word]="word"
+      [role]="'aligned'"
+      [displayMode]="annotationDisplay"
+      [currentLayer]="currentLayer"
+      [toShow]="pattrs_to_show">
+    </spoco-annotated-word>
+  }
+}
+
+@if (mode === 'kwic' && meta.length) {
+  <spoco-meta-show [meta]="meta"></spoco-meta-show>
+} <!-- METADATA BOX -->
 
 

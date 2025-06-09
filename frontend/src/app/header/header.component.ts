@@ -27,7 +27,7 @@ export class HeaderComponent implements OnInit {
                 this.preferences = this.config.fetch ('preferences');
                 if (!this.property_set (this.preferences)) {
                     this.preferences = data['preferences'];
-                    this.config.store ('preferences', this.preferences);
+                    this.config.store ('preferences', this.preferences, true);
                 }
             });
     }

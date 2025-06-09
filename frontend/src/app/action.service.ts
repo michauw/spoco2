@@ -1,33 +1,23 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AnnotationDisplay, resultsDisplayMode } from './dataTypes';
+import { ConfigService } from './config.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ActionService {
 
-    constructor() { }
-
-    displayMode: resultsDisplayMode;
-    showMeta: boolean = false;
-    displayModeChanged = new Subject<resultsDisplayMode> ();
+    displayModeChanged = new Subject<void> ();
     displayLayerChanged = new Subject<void> ();
-    showMetaChanged = new Subject<boolean> ();
+    showMetaChanged = new Subject<void> ();
     downloadResults = new Subject< 'all' | 'checked' > ();
     annotationDisplayChanged = new Subject<AnnotationDisplay> ();
 
-    setDisplayMode (dm: resultsDisplayMode) {
-        this.displayMode = dm;
-        this.displayModeChanged.next (this.displayMode);
-    }
+    constructor(private config: ConfigService) { }
 
-    switchDisplayMode () {
-        if (this.displayMode == 'plain')
-            this.displayMode = 'kwic';
-        else
-            this.displayMode = 'plain';
-        this.displayModeChanged.next (this.displayMode);
+    toggleDisplayMode () {
+        this.displayModeChanged.next ();
     }
 
     switchDisplayLayer () {
@@ -35,8 +25,7 @@ export class ActionService {
     }
 
     switchShowMeta () {
-        this.showMeta = !this.showMeta;
-        this.showMetaChanged.next (this.showMeta);
+        this.showMetaChanged.next ();
     }
 
     download (mode: 'all' | 'checked') {

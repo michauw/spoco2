@@ -1,11 +1,11 @@
 <div class="action-box float-end text-end">
-  @if (exchange.show) {
+  @if (mode.show) {
     <fa-icon
       class="icon"
-      [ngClass]="exchange.enabled ? 'plain clickable' : 'gray'"
-      [icon]="exchange.icon"
-      (click)="switchDisplayMode()"
-      [matTooltip]="exchange.help"
+      [ngClass]="mode.enabled ? 'plain clickable' : 'gray'"
+      [icon]="mode.icon"
+      (click)="toggleDisplayMode()"
+      [matTooltip]="mode.help"
       [matTooltipShowDelay]="tooltipDelay">
     </fa-icon>
   }

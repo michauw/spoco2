@@ -1,5 +1,5 @@
 <!-- PLAIN MODE -->
-@if (mode == 'plain') {
+@if (displayMode == 'plain') {
   <table class="table results plain">
     <thead>
       @if (corpusType === 'mono') {
@@ -47,41 +47,50 @@
             </td>
           }
           @if (corpusType !== 'parallel' || visible_columns!.includes (0)) {
-            <td>
-              <spoco-concordance-row
-                [row] = row
-                [mode]="'plain'"
-                [corpusType]="corpusType"
-                [annotationDisplay]="currentDisplay"
-                [currentLayer]="currentLayer"
-                [pattrs_to_show]="pattrs_to_show"
-                [showMeta]="showMeta"
-                [speaker]="audio_speaker"
-                [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
-                [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
-                (broaderContextRequest)="getContext(ind, $event)"
-                (audioEvent)="onChildAudioEvent (row, ind, $event)">
-              </spoco-concordance-row>
+            <td [attr.colspan]="corpusType === 'parallel' ? visible_columns.length : 1">
+              <div class="language-cells">
+                <div class="lang" [ngStyle]="{ width: 100 / (corpusType === 'parallel' ? visible_columns.length : 1) + '%' }">
+                    <spoco-concordance-row
+                      [row] = row
+                      [mode]="'plain'"
+                      [corpusType]="corpusType"
+                      [annotationDisplay]="currentAnnotationDisplay"
+                      [currentLayer]="currentLayer"
+                      [pattrs_to_show]="pattrs_to_show"
+                      [meta]="getMeta (row.meta)"
+                      [speaker]="audio_speaker"
+                      [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                      [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
+                      (broaderContextRequest)="getContext(ind, $event)"
+                      (audioEvent)="onChildAudioEvent (row, ind, $event)">
+                    </spoco-concordance-row>
+                </div>
+                @for (corpus of row.aligned; track corpus.corpus_name; let ong = $index) {
+                    @if (visible_columns!.includes (ong + 1)) {
+                        <div class="lang" [ngStyle]="{ width: 100 / visible_columns.length + '%' }">
+                            <spoco-concordance-row
+                            [row] = row
+                            [words] = corpus.content
+                            [mode]="'aligned'"
+                            [corpusType]="corpusType"
+                            [annotationDisplay]="currentAnnotationDisplay"
+                            [currentLayer]="currentLayer"
+                            [pattrs_to_show]="pattrs_to_show"
+                            [meta]="[]"
+                            [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
+                            (broaderContextRequest)="getContext(ind, $event)">
+                            </spoco-concordance-row>
+                        </div>
+                    }
+                }
+              </div>
+              @if (showMeta) {
+                <div class="metadata-overlay">
+                    <spoco-meta-show [meta]="getMeta(row.meta)"></spoco-meta-show>
+                </div>
+              }
             </td>
-          }
-          @for (corpus of row.aligned; track corpus.corpus_name; let ong = $index) {
-            @if (visible_columns!.includes (ong + 1)) {
-              <td>
-                <spoco-concordance-row
-                  [row] = row
-                  [words] = corpus.content
-                  [mode]="'aligned'"
-                  [corpusType]="corpusType"
-                  [annotationDisplay]="currentDisplay"
-                  [currentLayer]="currentLayer"
-                  [pattrs_to_show]="pattrs_to_show"
-                  [showMeta]="showMeta"
-                  [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
-                  (broaderContextRequest)="getContext(ind, $event)">
-                </spoco-concordance-row>
-              </td>
-            }
-          }
+          }       
           <td>
             <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
           </td>
@@ -92,7 +101,7 @@
 }
 
 <!-- KWIC MODE -->
-@if (mode == 'kwic') {
+@if (displayMode == 'kwic') {
   <table class="table results">
     <thead>
       <tr class="text-center header">
@@ -131,10 +140,10 @@
                 [row] = row
                 [mode]="'kwic'"
                 [corpusType]="corpusType"
-                [annotationDisplay]="currentDisplay"
+                [annotationDisplay]="currentAnnotationDisplay"
                 [currentLayer]="currentLayer"
                 [pattrs_to_show]="pattrs_to_show"
-                [showMeta]="showMeta"
+                [meta]="getMeta (row.meta)"
                 [speaker]="audio_speaker"
                 [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
                 [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
@@ -148,10 +157,10 @@
                   [row] = row
                   [mode]="'extended'"
                   [corpusType]="corpusType"
-                  [annotationDisplay]="currentDisplay"
+                  [annotationDisplay]="currentAnnotationDisplay"
                   [currentLayer]="currentLayer"
                   [pattrs_to_show]="pattrs_to_show"
-                  [showMeta]="showMeta"
+                  [meta]="getMeta (row.meta)"
                   [speaker]="audio_speaker"
                   [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
                   [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"

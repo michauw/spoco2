@@ -24,20 +24,22 @@ interface FlavouredIconControl extends IconControl {
 })
 export class ActionBoxComponent implements OnInit {
 
-    exchange: IconControl;
+    mode: IconControl;
     meta: IconControl;
     layers: IconControl;
     download: FlavouredIconControl;
     annotation: FlavouredIconControl;
-    annotationSetting: AnnotationDisplay = 'tooltip';
+    annotationSetting: AnnotationDisplay;
     tooltipDelay = 500;
 
     constructor(private actions: ActionService, private config: ConfigService) { }
 
     ngOnInit(): void {
-        const layers = this.config.fetch ('layers');
-        this.exchange = {icon: faExchangeAlt, enabled: true, show: true, help: 'Toggle display mode'};
-        this.meta = {icon: faInfoCircle, enabled: false, show: true, help: 'Show/hide metadata'};
+        const layers = this.config.fetch ('layers') ?? [];
+        const meta_enabled = this.config.fetch ('showMeta', true) ?? false;
+        this.annotationSetting = this.config.fetch ('annotationDisplay', true) ?? 'tooltip';
+        this.mode = {icon: faExchangeAlt, enabled: true, show: true, help: 'Toggle display mode'};
+        this.meta = {icon: faInfoCircle, enabled: meta_enabled, show: true, help: 'Show/hide metadata'};
         this.layers = {icon: faEye, enabled: true, show: layers.length > 1, help: 'Switch display layers'};
         this.download = {
             icon: faDownload, 
@@ -54,15 +56,15 @@ export class ActionBoxComponent implements OnInit {
             show: true, 
             help: 'Additional annotation display',
             flavours: {
-                tooltip: {icon: faComment, enabled: false, show: true, help: 'tooltip'},
-                mixed: {icon: faShuffle, enabled: true, show: true, help: 'context: tooltip, match: inline'},
-                inline: {icon: faLeftRight, enabled: true, show: true, help: 'inline'},
+                tooltip: {icon: faComment, enabled: this.annotationSetting !== 'tooltip', show: true, help: 'tooltip'},
+                mixed: {icon: faShuffle, enabled: this.annotationSetting !== 'mixed', show: true, help: 'context: tooltip, match: inline'},
+                inline: {icon: faLeftRight, enabled: this.annotationSetting !== 'inline', show: true, help: 'inline'},
             }
         }
     }
 
-    switchDisplayMode () {
-        this.actions.switchDisplayMode ();
+    toggleDisplayMode () {
+        this.actions.toggleDisplayMode ();
     }
 
     switchDisplayLayer () {
@@ -72,6 +74,7 @@ export class ActionBoxComponent implements OnInit {
     switchMeta () {
         this.actions.switchShowMeta ();
         this.meta.enabled = !this.meta.enabled;
+        this.config.store ('showMeta', this.meta.enabled, true);
     }
 
     downloadResults (mode: 'all' | 'checked') {
@@ -83,6 +86,7 @@ export class ActionBoxComponent implements OnInit {
         for (let key in this.annotation.flavours) {
             this.annotation.flavours[key].enabled = !(key === setting);
         }
+        this.config.store ('annotationDisplay', setting, true);
     }
 
 }

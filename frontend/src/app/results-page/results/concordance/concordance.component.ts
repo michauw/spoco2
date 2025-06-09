@@ -32,7 +32,7 @@ type Direction = 'left' | 'right';
 })
 export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> implements OnInit, OnDestroy {
 
-    mode: string;
+    displayMode: string;
     showMeta: boolean;
     parallelCorpora: Corpus[];
     max_visible: number;
@@ -42,7 +42,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     visible_columns: number[];
     displayLayers: string[];
     annotationDisplay: AnnotationDisplay[] = ['tooltip', 'mixed', 'inline'];
-    currentDisplay: AnnotationDisplay = 'tooltip';
+    currentAnnotationDisplay: AnnotationDisplay;
     currentLayer: string;
     row_icon_states: {playing: boolean, extended: boolean, no_context: {left: boolean, right: boolean}, child: boolean[]}[] = [];
     playing: string = '';
@@ -71,8 +71,12 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         let post_data = this.get_post_data ('full');
         let url = `${BASE_URL}/concordance`;
         this.original_query = post_data.query.primary.query;
-        this.displayLayers = this.config.fetch ('layers');
-        this.currentLayer = this.displayLayers[0];
+        this.displayLayers = this.config.fetch ('layers') ?? [];
+        this.currentLayer = this.config.fetch ('displayLayer', true);
+        if (this.displayLayers.length && !this.currentLayer) {
+            this.currentLayer = this.displayLayers[0];
+            this.config.store ('displayLayer', this.currentLayer, true);
+        }
         if (this.corpusType === 'spoken') {
             const config_audio = this.config.fetch ('audio');
             this.audio_speaker = config_audio.speaker;
@@ -80,33 +84,52 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
             this.audio_path = config_audio['data-dir'];
         }
         this.make_request (url, post_data, 'full');
-        this.mode = this.actions.displayMode;
-        this.showMeta = false;
+        this.displayMode = this.config.fetch ('resDisplayMode', true);
+        if (!this.displayMode) {
+            this.displayMode = this.corpusType === 'mono' ? 'kwic' : 'plain';
+            this.config.store ('resDisplayMode', this.displayMode, true);
+        }
+        const storedShowMeta = localStorage.getItem ('showMeta');
+        if (storedShowMeta && storedShowMeta === 'true')
+            this.showMeta = true;
+        else
+            this.showMeta = false;
+        this.currentAnnotationDisplay = this.config.fetch ('annotationDisplay', true);
+        if (!this.currentAnnotationDisplay) {
+            this.currentAnnotationDisplay = 'tooltip';
+            this.config.store ('annotationDisplay', this.currentAnnotationDisplay, true);
+        }
         this.max_visible = 3;
         this.maxContextSize = 8;
         this.parallelCorpora = this.corpusType === 'parallel' ? this.corporaKeeper.getCorpora () : [];
         this.locked = [0];
         this.visible_columns = this.get_visible_columns ();
         
-        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (mode => {
-            this.mode = mode;
+        this.displayModeChangedSub = this.actions.displayModeChanged.subscribe (() => {
+            this.displayMode = this.displayMode === 'kwic' ? 'plain' : 'kwic';
+            this.config.store ('resDisplayMode', this.displayMode, true);
             if (this.corpusType === 'spoken')
                 this.pauseAudio ();
         });
-        this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (show => this.showMeta = show);
+        this.showMetaChangedSub = this.actions.showMetaChanged.subscribe (() => {
+            this.showMeta = !this.showMeta;
+        });
         this.displayLayerChangedSub = this.actions.displayLayerChanged.subscribe (() => {
+            if (!this.displayLayers.length)
+                return;
             for (let i = 0; i < this.displayLayers.length; ++i) {
                 if (this.displayLayers[i] === this.currentLayer) {
                     if (i === this.displayLayers.length - 1)
                         this.currentLayer = this.displayLayers[0];
                     else
                         this.currentLayer = this.displayLayers[i + 1];
+                    this.config.store ('displayLayer', this.currentLayer, true);
                     break;
                 }
             }
         });
         this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe ((setting) => {
-            this.currentDisplay = setting;
+            this.currentAnnotationDisplay = setting;
         });
     }
 
@@ -196,6 +219,21 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     onChildAudioEvent (row: ConcordanceEntry, ind: number, child_ind: number) {
         this.audio?.pause ();       
         this.playStop (row, ind, child_ind);
+    }
+
+    getMeta (meta: metaObj) {
+        if (this.showMeta)
+            return this.toList (meta);
+        return [];
+    }
+
+    private toList (meta: metaObj) {
+        let lst = [];
+        for (let name in meta)
+            if (meta[name].show)
+                lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
+
+        return lst;
     }
 
     override ngOnDestroy(): void {
@@ -587,7 +625,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                 parsed_entry.push (this.words_to_string (aligned.content));
             }
             for (let meta in entry.meta) {
-                parsed_entry.push (entry.meta[meta]);
+                parsed_entry.push (entry.meta[meta].value);
             }
             data.push (parsed_entry);
         }

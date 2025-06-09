@@ -47,7 +47,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
         let base_post_data = super.get_post_data (mode, size);
         let additional_post_data: any = {};
         if (this.module === 'collocations') {
-            const settings = this.config.fetch ('collocations_settings');
+            const settings = this.config.fetch ('collocation_settings', true);
             const pattrs_to_show = this.pattrs.filter ((el: PAttribute) => el.inResults).map ((el: PAttribute) => el.name);
             additional_post_data['ams'] = settings['ams'];
             additional_post_data['window_size'] = settings['window_size'];
@@ -58,7 +58,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
             additional_post_data['case'] = this.get_case_sensitivity (settings['case'], base_post_data.query.primary.query);
         }
         else if (this.module === 'frequency') {
-            const settings = this.config.fetch ('frequency_settings');
+            const settings = this.config.fetch ('frequency_settings', true);
             additional_post_data['grouping_attribute'] = this.get_grouping_attribute (settings['pattr'], base_post_data.query.primary.query);
             additional_post_data['frequency_filter'] = settings['frequency_filter'];
             additional_post_data['case'] = this.get_case_sensitivity ('match', base_post_data.query.primary.query);
@@ -118,7 +118,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
 
     get_concordance (token: string) {
         if (this.module === 'frequency') {
-            const settings = this.config.fetch ('frequency_settings');
+            const settings = this.config.fetch ('frequency_settings', true);
             let pattr = this.get_grouping_attribute (settings.pattr, this.original_query);
             let cs = this.original_query.indexOf ('%c') === -1 ? '' : '%c';
             let fr_query = `[${pattr}="${token}"${cs}]`;
@@ -131,7 +131,7 @@ export class ResultsTableComponent extends ResultsComponent<TableEntry> {
             this.results_added_event.emit ('concordance');
         }
         else if (this.module === 'collocations') {
-            const settings = this.config.fetch ('collocations_settings');
+            const settings = this.config.fetch ('collocation_settings', true);
             const gap = settings.window_size ? `[]{0,${settings.window_size}}` : '';
             const orig_query_parts = this.original_query.split ('::');
             let meta = '';

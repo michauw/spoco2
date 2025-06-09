@@ -13,7 +13,7 @@ export class InfoBoxComponent implements OnInit, OnChanges {
 
     ngOnInit(): void {
         if (this.module === 'collocations') {
-            const cs = this.config.fetch ('collocations_settings');
+            const cs = this.config.fetch ('collocation_settings', true);
             this.window_size = cs.window_size;
             this.frequency_filter = cs.frequency_filter;
         }

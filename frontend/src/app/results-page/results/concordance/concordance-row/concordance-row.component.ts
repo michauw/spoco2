@@ -22,7 +22,7 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
     @Input () annotationDisplay: AnnotationDisplay;
     @Input () currentLayer: string;
     @Input () pattrs_to_show: string[];
-    @Input () showMeta: boolean;
+    @Input () meta: { name: string; value: string; }[];
     @Input () currentlyPlaying: number;
     @Input () contextExhausted: {left: boolean, right: boolean};
     @Input () words?: Word[]
@@ -146,15 +146,5 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
     playStop (side: Sides, ind?: number) {
         this.audioEvent.emit (this.getControl (side, ind));
     }
-
-    toList (meta: metaObj) {
-        let lst = [];
-        for (let name in meta)
-            if (meta[name].show)
-                lst.push ({name: meta[name].description !== '' ? meta[name].description : name, value: meta[name].value});
-
-        return lst;
-    }
-
 }
 

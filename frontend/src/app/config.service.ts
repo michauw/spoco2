@@ -9,9 +9,12 @@ export class ConfigService {
 
     configSettings: any = {};   // TODO: type
 
-    fetch (name: string) {
-        if (!this.configSettings.hasOwnProperty (name))
-            return [];
+    fetch (name: string, from_local_storage = false) {
+        if (from_local_storage) {
+            const stored = localStorage.getItem (name);
+            if (stored)
+                return JSON.parse (stored);
+        }
         return this.configSettings[name];
     }
 
@@ -19,7 +22,9 @@ export class ConfigService {
         return this.configSettings.hasOwnProperty (name);
     }
 
-    store (name: string, data: any) {
+    store (name: string, data: any, local_storage = false) {
         this.configSettings[name] = data;
+        if (local_storage)
+            localStorage.setItem (name, JSON.stringify (data));
     }
 }

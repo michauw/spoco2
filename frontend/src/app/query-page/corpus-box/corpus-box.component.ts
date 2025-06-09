@@ -30,25 +30,28 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
     sub_corporaChanged: Subscription;
     sub_currentCorpora: Subscription;
 
-    constructor (private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
+    constructor (private config: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit (): void {
-        // this.corpora = this.configService.fetch ('corpora'); 
         this.primaryCorpus = this.corporaKeeper.getPrimary ()
         this.secondaryCorpora = this.corporaKeeper.getSecondary ();
         this.corpora = this.corporaKeeper.getCorpora ();
         this.currentCorpus = this.corporaKeeper.getCurrent ();
 
         // this.currentCorpus = this.corporaKeeper.getCurrent ();
-        switch (this.corpora.length) {    // default query page display mode depends on the number of corpora
-            case 1: 
-                this.displayMode = 'mono';  // one corpus
-                break;
-            case 2:
-                this.displayMode = 'boxes';   // two corpora: two corpus boxes
-                break;
-            default:
-                this.displayMode = 'ribbon';    // three or more corpora: corpora ribbon
+        this.displayMode = this.config.fetch ('qpDisplayMode', true);
+        if (!this.displayMode) {
+            switch (this.corpora.length) {    // default query page display mode depends on the number of corpora
+                case 1: 
+                    this.displayMode = 'mono';  // one corpus
+                    break;
+                case 2:
+                    this.displayMode = 'boxes';   // two corpora: two corpus boxes
+                    break;
+                default:
+                    this.displayMode = 'ribbon';    // three or more corpora: corpora ribbon
+            }
+            this.config.store ('qpDisplayMode', this.displayMode, true);
         }
         this.displayModeSet.emit (this.displayMode);
         this.setSpacing ();
@@ -87,7 +90,8 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
             this.displayMode = 'boxes';
         else if (this.displayMode === 'boxes')
             this.displayMode = 'ribbon';
-        this.setSpacing ()
+        this.setSpacing ();
+        this.config.store ('qpDisplayMode', this.displayMode, true);
         this.displayModeSet.emit (this.displayMode);
     }
 }

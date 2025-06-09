@@ -59,7 +59,7 @@ export class ResultsPageComponent implements OnInit, AfterViewInit {
     }
 
     get_collocation_columns () {
-        const ams: string[] = this.config.fetch ('collocations_settings').ams;
+        const ams: string[] = this.config.fetch ('collocation_settings', true).ams;
         const names = {'pmi': 'PMI', 't_score': 'T-score', 'log_likelihood_ratio': 'LLR', 'dice': 'Dice', 'chi_square': 'Chi-square'};
         const am_columns = ams.map ((am) => ({name: names[am as keyof typeof names], format: '1.2-2'}));
         let columns = [{name: 'Collocate', format: ''}].concat (am_columns).concat ([{name: 'Frequency', format: '1.0-0'}]);

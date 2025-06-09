@@ -29,3 +29,14 @@ fa-icon.right {
 .shift-langs-right {
     float: right;
 }
+
+.language-cells {
+    display: flex;
+    gap: 1rem;
+}
+
+.metadata-overlay {
+    width: 100%;
+    // background: #f0f0f0;
+    // color: #555;
+}
