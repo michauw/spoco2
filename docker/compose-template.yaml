@@ -4,6 +4,8 @@ services:
     build: 
       context: ../frontend
       dockerfile: docker/Dockerfile
+      args:
+        SUBPATH: /
     volumes:
       - node_modules_data:/app/node_modules
     ports:

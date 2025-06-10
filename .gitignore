@@ -50,6 +50,7 @@ Thumbs.db
 
 # Project specific
 config.json
+compose.yaml
 environments.ts
 assets/
 
