@@ -8,16 +8,11 @@ from typing import List, Dict
 from pathlib import Path
 import subprocess as sbp
 import stats
-import corpus_data
 import json
-import pickle
-import shutil
 import re
 import os
 import logging
-
-class ResourceNotFound (Exception):
-    pass
+import utils
 
 class Data (BaseModel):
     query: Dict
@@ -49,50 +44,7 @@ class FrequencyData (Data):
     frequency_filter: int
     case: str
 
-def get_corpora ():
-    corpora = {}
-    for rfile in os.listdir (REGISTRY_PATH):
-        corpora[rfile] = corpus_data.CorpusData (rfile, Path (REGISTRY_PATH), CWB_BIN_PATH)
-    return corpora
 
-def load_freq_from_file (path, name = 'freq'):
-    for ending in ['json', 'pkl']:
-        freq_path = os.path.join (path, f'{name}.{ending}')
-        if os.path.exists (freq_path):
-            break
-    else:
-        raise ResourceNotFound ('Frequency data could not be find')
-    if freq_path.endswith ('.json'):
-        with open (freq_path, encoding = 'utf8') as fjson:
-            freq = json.load (fjson)
-    elif freq_path.endswith ('.pkl'):
-        with open (freq_path, 'rb') as fpkl:
-            freq = pickle.load (fpkl)
-    
-    return freq
-    
-def get_frequency (corpora, save_format = 'pickle'):
-    freq_file_name = 'freq'
-    freq = {}
-    for name, corpus in corpora.items ():
-        path = Path ('.').absolute ().parent / 'resources' / corpus.name
-        if path.exists ():
-            try:
-                freq[corpus.name] = load_freq_from_file (path, freq_file_name)
-                continue
-            except:
-                logging.warning (f"Couldn't load frequency data for corpus {corpus.name}, (re)creating")
-                shutil.rmtree (path)
-        os.makedirs (path)
-        freq[corpus.name] = corpus.get_frequency ()
-        if save_format == 'pickle':
-            with open (path / f'{freq_file_name}.pkl', 'wb') as fpickle:
-                pickle.dump (freq[corpus.name], fpickle)
-        elif save_format == 'json':
-            with open (path / f'{freq_file_name.json}', 'w', encoding = 'utf8') as fjson:
-                json.dump (freq[corpus.name], ensure_ascii = False)
-    
-    return freq
 
 CONFIG_PATH = Path (__file__).parent.parent / 'settings' / 'config.json'
 PREF_PATH = Path (__file__).parent.parent / 'settings' / 'preferences.json'
@@ -116,8 +68,9 @@ if DOCKER:
     if AUDIO_DIR:
         AUDIO_DIR = '/Corpus/Audio'
 
-corpora = get_corpora ()
-freq = get_frequency (corpora)
+corpora = utils.get_corpora (REGISTRY_PATH, CWB_BIN_PATH)
+print ('gr: get_frequency, corpora:', type (corpora))
+freq = utils.get_frequency (corpora)
 
 backend = FastAPI()
 # origins = [origin]

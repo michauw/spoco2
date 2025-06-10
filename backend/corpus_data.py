@@ -51,7 +51,6 @@ class CorpusData:
         freq = {pattr: {'cs': defaultdict (int), 'ci': defaultdict (int)} for pattr in pattrs}
         for pattr in pattrs:
             command = [self.cwb / 'cwb-lexdecode', '-fb', '-r', self.registry, '-P', pattr, self.id]
-            print (sb.list2cmdline (command))
             pr = sb.Popen (command, stdout = sb.PIPE, encoding = 'utf8')
             for line in pr.communicate ()[0].splitlines ():
                 try:

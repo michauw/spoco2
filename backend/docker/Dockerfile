@@ -25,10 +25,11 @@ RUN pip install -r requirements.txt
 
 # Copy the rest of the application code
 COPY backend .
+COPY backend/docker/prepare_docker_structure.py .
 
 # Expose the application port
 EXPOSE 8000
 
 # Command to run the application
 # CMD ["uvicorn", "get_results:backend", "--host", "0.0.0.0", "--port", "8000"]
-CMD [ "bash", "-c", "python docker/update_registry.py && gunicorn get_results:backend --bind 0.0.0.0:8000 -w 4 -k uvicorn.workers.UvicornWorker" ]
+CMD [ "bash", "-c", "python docker/prepare_docker_structure.py && gunicorn get_results:backend --bind 0.0.0.0:8000 -w 4 -k uvicorn.workers.UvicornWorker" ]
