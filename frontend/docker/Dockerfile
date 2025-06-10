@@ -5,6 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 COPY docker/environment-docker.ts /app/src/environments/environment.prod.ts
+ARG SUBPATH
 RUN npm run build -- --base-href=${SUBPATH}
 
 # Production Stage
