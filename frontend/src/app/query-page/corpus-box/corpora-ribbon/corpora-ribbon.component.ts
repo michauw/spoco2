@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Corpus } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
@@ -9,34 +9,38 @@ import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
     styleUrls: ['./corpora-ribbon.component.scss'],
     standalone: false
 })
-export class CorporaRibbonComponent implements OnInit, OnDestroy {
-
-    constructor (private corporaKeeper: CorporaKeeperService) { }
-
-    ngOnInit(): void {
-        this.corpora = this.corporaKeeper.getCorpora ();
-        this.primaryCorpus = this.corporaKeeper.getPrimary ();
-        this.currentCorpus = this.corporaKeeper.getCurrent ();
-        this.ribbonSpan = [1, Math.min (this.ribbonMaxCorpora + 1, this.corpora.length)];
-
-        const sub_corpus: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => this.corpora = corpora);
-        const sub_primary: Subscription = this.corporaKeeper.primaryChange.subscribe (primary => this.primaryCorpus = primary);
-        const sub_current: Subscription = this.corporaKeeper.currentChange.subscribe (current => this.currentCorpus = current);
-        this.subscriptions = [sub_corpus, sub_primary, sub_current];
-    }
-
-    ngOnDestroy(): void {
-        for (let sub of this.subscriptions)
-            sub.unsubscribe ();
-    }
-
-    corpora: Corpus[];
+export class CorporaRibbonComponent implements OnInit, OnChanges, OnDestroy {
+    
+    @Input () corpora: Corpus[];
     currentCorpus: Corpus;
     primaryCorpus: Corpus;
     private subscriptions: Subscription[];
 
     ribbonMaxCorpora: number = 8;
     ribbonSpan: number[] = [];
+
+    constructor (private corporaKeeper: CorporaKeeperService) { }
+
+    ngOnInit(): void {
+        // this.corpora = this.corporaKeeper.getCorpora ();
+        this.primaryCorpus = this.corporaKeeper.getPrimary ();
+        this.currentCorpus = this.corporaKeeper.getCurrent ();
+        this.ribbonSpan = [1, Math.min (this.ribbonMaxCorpora + 1, this.corpora.length)];
+
+        // const sub_corpus: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => this.corpora = corpora);
+        const sub_primary: Subscription = this.corporaKeeper.primaryChange.subscribe (primary => this.primaryCorpus = primary);
+        const sub_current: Subscription = this.corporaKeeper.currentChange.subscribe (current => this.currentCorpus = current);
+        this.subscriptions = [sub_primary, sub_current];
+    }
+
+    ngOnChanges (changes: SimpleChanges) {
+        this.ribbonSpan = [1, Math.min (this.ribbonMaxCorpora + 1, this.corpora.length)];
+    }
+
+    ngOnDestroy(): void {
+        for (let sub of this.subscriptions)
+            sub.unsubscribe ();
+    }
 
     scrollRibbon (mode: string) {
         if (mode === 'up' && this.ribbonSpan[0] > 1) {

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Corpus, queryPageDisplayMode } from 'src/app/dataTypes';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
@@ -19,9 +19,11 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
 
     @Input() corpus: Corpus;
     @Input() primaryCorpus: Corpus;
-    @Input() corpora: Corpus[];
     @Input() displayMode: queryPageDisplayMode;
     @Output () toggleViewClicked = new EventEmitter<void> ();
+
+    chosenCorpora: Corpus[];
+    availableCorporaNumber: number;
 
     corpusSelect: UntypedFormGroup;
     tooltipShowDelay: number = 400;
@@ -39,12 +41,14 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
             this.corporaKeeper.setPrimary (data.primaryCorpus);
         });
 
-        this.corpora = this.corporaKeeper.getCorpora ();
+        this.availableCorporaNumber = this.corporaKeeper.getCorporaNumber ();
+        this.chosenCorpora = this.corporaKeeper.getCorpora (true);
+
         this.primaryCorpus = this.corporaKeeper.getPrimary ();
 
         let sub_primary = this.corporaKeeper.primaryChange.subscribe (corpus => {
             this.primaryCorpus = corpus;
-            this.corpora = this.corporaKeeper.getCorpora ();
+            this.chosenCorpora = this.corporaKeeper.getCorpora (true);
         });
 
         let sub_queryChanged = this.queryKeeper.valueChanged.subscribe (type => {
@@ -83,7 +87,7 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
 
         if (direction === 'up' && pos > 1)
             return true;
-        if (direction === 'down' && pos < this.corpora.length - 1)
+        if (direction === 'down' && pos < this.chosenCorpora.length - 1)
             return true;
 
         return false;

@@ -88,7 +88,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         if (!this.corpusType.length)
             this.corpusType = 'parallel';
         this.sliceSize = this.config.fetch ('preferences', true)['results_per_page'];
-        this.corpora = this.corporaKeeper.getCorpora ();
+        this.corpora = this.corporaKeeper.getCorpora (true);
         this.currentSlice = [];
         this.results_fetched = false;
         this.pattrs = this.config.fetch ('positionalAttributes');

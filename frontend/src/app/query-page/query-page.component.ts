@@ -87,6 +87,12 @@ export class QueryPageComponent implements OnInit {
                         corpusType = 'parallel';
                 }
                 this.config.store ('corpusType', corpusType);
+                const storedProjectName = localStorage.getItem ('projectName');
+                if (storedProjectName && storedProjectName !== data['config']['projectName']) {
+                    console.log ('project changed, local storage cleared');
+                    localStorage.clear ();
+                }
+                localStorage.setItem ('projectName', data['config']['projectName']);
             }
         );
         this.collocation_settings = this.config.fetch ('collocation_settings', true);

@@ -36,8 +36,13 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CorpusDataResolver } from './corpus-data-resolver.service';
+import { MatFormField } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { IconMultiselectComponent } from './icon-multiselect/icon-multiselect.component';
+import { SharedModule } from './shared/shared.module';
 
-@NgModule({ declarations: [
+@NgModule({ 
+    declarations: [
         SpocoComponent,
         QueryRowComponent,
         CqpQueryComponent,
@@ -60,7 +65,11 @@ import { CorpusDataResolver } from './corpus-data-resolver.service';
         SettingsBoxComponent,
         ResultsTableComponent
     ],
-    bootstrap: [SpocoComponent], imports: [BrowserModule,
+    bootstrap: [SpocoComponent], 
+    imports: [
+        IconMultiselectComponent,
+        SharedModule,
+        BrowserModule,
         SpocoRoutingModule,
         ReactiveFormsModule,
         NgMultiSelectDropDownModule.forRoot(),
@@ -68,5 +77,16 @@ import { CorpusDataResolver } from './corpus-data-resolver.service';
         BrowserAnimationsModule,
         MatTooltipModule,
         MatDialogModule,
-        MatTabsModule], providers: [ConfigResolver, PreferencesResolver, CorpusDataResolver, provideHttpClient(withFetch()), provideHttpClient(withInterceptorsFromDi())] })
+        MatFormField,
+        MatSelectModule,
+        MatTabsModule
+    ], 
+    providers: [
+        ConfigResolver, 
+        PreferencesResolver, 
+        CorpusDataResolver, 
+        provideHttpClient(withFetch()), 
+        provideHttpClient(withInterceptorsFromDi())
+    ] 
+})
 export class SpocoModule { }

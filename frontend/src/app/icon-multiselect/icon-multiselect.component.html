@@ -1,0 +1,21 @@
+<div 
+    class="dropdown-container" 
+    [class.open]="isOpen" 
+    (discardElement)="isOpen = false" 
+    [matTooltip]="tooltip!.value"
+    [matTooltipPosition]="tooltip!.position!"
+    [matTooltipShowDelay]="tooltip!.delay">
+    <button class="trigger-btn" (click)="isOpen = !isOpen" type="button">
+        <i class="bi bi-list-ul"></i>
+    </button>
+    <div class="dropdown" *ngIf="isOpen">
+        <div *ngFor="let option of options" class="dropdown-option">
+            <label>
+                <input type="checkbox" class="input-check" [checked]="option.value" (change)="toggleOption (option)" [disabled]="option.disabled">
+                {{ option.prefix || '' }}
+                {{ option.name }}
+                {{ option.suffix || '' }}
+            </label>
+        </div>
+    </div>
+</div>

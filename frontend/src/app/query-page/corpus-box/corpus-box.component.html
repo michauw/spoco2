@@ -1,8 +1,20 @@
 <div class="col-12">
+  @if (corpora.length > 1) {
+    <div class="corpus-header d-flex align-items-center justify-content-between flex-wrap mb-2">
+      <div class="corpora-choice">
+      <spoco-icon-multiselect
+        [options]="chosenCorporaOptions"
+        [tooltip]="{value: 'Choose visible corpora', position: 'left', delay: '500'}"
+        (selectionChange)="chosenCorporaChanged($event)"
+      >
+      </spoco-icon-multiselect>
+      </div>
+    </div>
+  }
   @if (displayMode === 'ribbon') {
     <div class="row">
         <div class="col-1">
-            <spoco-corpora-ribbon></spoco-corpora-ribbon>
+            <spoco-corpora-ribbon [corpora]="chosenCorpora"></spoco-corpora-ribbon>
         </div>
         <div class="col-md-10">
             @for (corpus of corpora; track corpus) {
@@ -19,9 +31,9 @@
         </div>
     </div>
   }
-  @if (displayMode !== 'ribbon') {
+  @else {
     <div class="row">
-    @for (corpus of corpora; track corpus.id) {
+    @for (corpus of chosenCorpora; track corpus.id) {
         <div class="col-md-{{ spacing_basic['md'] }} col-lg-{{ spacing_basic['lg'] }} col-lg-{{ spacing_basic['xl'] }} {{ spacing_basic['offset']}}" >
         <spoco-basic-query [corpus]="corpus" [displayMode]="displayMode" (toggleViewClicked)="toggleView ()"></spoco-basic-query>
         <div class="my-3"></div>

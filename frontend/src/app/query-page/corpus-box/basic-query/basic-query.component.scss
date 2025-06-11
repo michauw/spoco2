@@ -20,7 +20,7 @@ $slide: .5rem;
 }
 
 .card-body.secondary {
-    background-color: #fafafa;
+    background-color: #f8f8f8;
 }
 
 div.corpus-info {
@@ -101,10 +101,12 @@ button.row-button {
     }
 }
 
-.arrow-enabled {
-    cursor: pointer;
-}
-
-.arrow-disabled {
-    color: darkgray;
+.arrow {
+    font-size: 18px;
+    &.enabled {
+        cursor: pointer;
+    }
+    &.disabled {
+        color: darkgray;
+    }
 }

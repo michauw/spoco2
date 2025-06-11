@@ -182,7 +182,7 @@
 <!-- PAGINATOR -->
 
 <div class="col-md-12 mt-4 paginator">
-  @if (results.length > sliceSize) {
+  @if (results_fetched && results.length > sliceSize) {
     <spoco-paginator [resLen]="results.length" [perPage]="sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
   }
 </div>

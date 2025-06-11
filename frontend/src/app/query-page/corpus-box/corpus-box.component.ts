@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Injectable, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Injectable, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Data } from '@angular/router';
 import { ConfigService } from 'src/app/config.service';
 import { Corpus, SAttribute, corpusType, queryPageDisplayMode } from 'src/app/dataTypes';
@@ -20,6 +20,8 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
     primaryCorpus: Corpus;
     secondaryCorpora: Corpus[];
     corpora: Corpus[];
+    chosenCorpora: Corpus[];
+    chosenCorporaOptions: any[];
     currentCorpus: Corpus;
     displayMode: queryPageDisplayMode;
     corpusType: corpusType;
@@ -36,6 +38,9 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
         this.primaryCorpus = this.corporaKeeper.getPrimary ()
         this.secondaryCorpora = this.corporaKeeper.getSecondary ();
         this.corpora = this.corporaKeeper.getCorpora ();
+        this.chosenCorpora = this.config.fetch ('chosenCorpora', true) ?? this.corpora;
+        this.corporaKeeper.setChosenCorpora (this.chosenCorpora);
+        this.chosenCorporaOptions = this.getChosenCorporaOptions ();
         this.currentCorpus = this.corporaKeeper.getCurrent ();
 
         // this.currentCorpus = this.corporaKeeper.getCurrent ();
@@ -60,6 +65,8 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
             this.secondaryCorpora = this.corporaKeeper.getSecondary ();
             this.currentCorpus = this.corporaKeeper.getCurrent ();
             this.corpora = corpora;
+            this.chosenCorpora = this.corporaKeeper.getCorpora (true);
+            this.chosenCorporaOptions = this.getChosenCorporaOptions ();
         });
         this.sub_currentCorpora = this.corporaKeeper.currentChange.subscribe ((corpus) => this.currentCorpus = corpus);
     }
@@ -67,6 +74,12 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.sub_corporaChanged.unsubscribe ();
         this.sub_currentCorpora.unsubscribe ();
+    }
+
+    chosenCorporaChanged (chosen: string[]) {
+        this.chosenCorpora = this.corpora.filter (c => chosen.includes (c.name));
+        this.corporaKeeper.setChosenCorpora (this.chosenCorpora);
+        this.config.store ('chosenCorpora', this.chosenCorpora, true);
     }
 
     setSpacing () {
@@ -93,5 +106,15 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
         this.setSpacing ();
         this.config.store ('qpDisplayMode', this.displayMode, true);
         this.displayModeSet.emit (this.displayMode);
+    }
+
+    private getChosenCorporaOptions () {
+        return this.corpora.map (c => (
+            {
+                name: c.name, 
+                value: this.chosenCorpora.map (cc => cc.id).includes (c.id), 
+                disabled: c === this.primaryCorpus,
+                suffix: c === this.primaryCorpus ? ' (primary)' : '' 
+            }));
     }
 }

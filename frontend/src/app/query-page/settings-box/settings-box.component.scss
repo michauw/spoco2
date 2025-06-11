@@ -7,6 +7,13 @@
     }
 }
 
+.group {
+    background-color: white;
+    // border: 1px solid #f0f0f0;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
 .right {
     margin-left: auto;
 }
@@ -21,11 +28,11 @@
 
 .header {
     padding-bottom: 1rem;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 500;
-    background-color: #f0f0f0;
+    // background-color: #f0f0f0;
     opacity: .85;
     padding-top: 5px;
-    padding-bottom: 5px;
+    padding-bottom: 10px;
     border-radius: 6px;
 }

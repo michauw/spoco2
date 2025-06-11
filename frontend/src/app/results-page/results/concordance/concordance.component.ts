@@ -101,7 +101,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         }
         this.max_visible = 3;
         this.maxContextSize = 8;
-        this.parallelCorpora = this.corpusType === 'parallel' ? this.corporaKeeper.getCorpora () : [];
+        this.parallelCorpora = this.corpusType === 'parallel' ? this.corporaKeeper.getCorpora (true) : [];
         this.locked = [0];
         this.visible_columns = this.get_visible_columns ();
         
@@ -732,7 +732,8 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     get_visible_columns () {
         let visible = this.locked.slice ();
         const usedIndexes = new Set (visible);
-        for (let i = 0; visible.length < this.max_visible; ++i)
+        const colNumber = Math.min (this.max_visible, this.corpora.length);
+        for (let i = 0; visible.length < colNumber; ++i)
             if (!usedIndexes.has (i))
                 visible.push (i);
         return visible;

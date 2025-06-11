@@ -10,6 +10,7 @@ export class CorporaKeeperService {
     constructor() { }
 
     corpora: Corpus[];
+    chosenCorpora: string[] = [];
     primary: Corpus;
     current: Corpus;
     currentChange: Subject<Corpus> = new Subject<Corpus> ();
@@ -19,7 +20,7 @@ export class CorporaKeeperService {
     findCorpusPosition (corpus: Corpus) {
         let pos: number = 0;
         for (let i = 0; i < this.corpora.length; ++i)
-          if (this.corpora[i] === corpus) {
+          if (this.corpora[i].id === corpus.id) {
             pos = i;
             break;
           }
@@ -44,8 +45,14 @@ export class CorporaKeeperService {
         return this.current;
     }
 
-    getCorpora () {
+    getCorpora (only_chosen: boolean = false) {
+        if (only_chosen)
+            return this.corpora.filter (c => this.chosenCorpora.includes (c.id))
         return this.corpora;
+    }
+
+    getCorporaNumber (only_chosen: boolean = false) {
+        return only_chosen ? this.chosenCorpora.length : this.corpora.length;
     }
 
     getPrimary () {
@@ -54,6 +61,12 @@ export class CorporaKeeperService {
 
     getSecondary () {
         return this.corpora.slice (1);
+    }
+
+    setChosenCorpora (corpora: Corpus[]) {
+        this.chosenCorpora = corpora.map (c => c.id);
+        this.corpora.filter (c => this.chosenCorpora.includes (c.id))
+        this.chosenCorpora.filter (s => s === 'id')
     }
 
     setCurrent (corpus: Corpus) {

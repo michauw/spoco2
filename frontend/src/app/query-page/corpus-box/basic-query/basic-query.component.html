@@ -1,26 +1,26 @@
 <div class="card basic-box">
-  @if (corpora.length > 1) {
+  @if (availableCorporaNumber > 1) {
     <div class="card-header corpus-info">
-      Corpus: <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus === primaryCorpus ? 'primary' : 'secondary - only filtering'}}]</span>
+      <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus.id === primaryCorpus.id ? 'primary' : 'secondary - only filtering'}}]</span>
       <span class="corpus-controls">
         <span class="corpus-controls-small">    <!-- for small displays -->
           <form [formGroup]="corpusSelect">
             <label for="chooseCurrent">active:</label>
             <select name="chooseCurrent" formControlName="currentCorpus">
-              @for (available_corpus of corpora; track available_corpus.id) {
+              @for (available_corpus of chosenCorpora; track available_corpus.id) {
                 <option [ngValue]="corpus" selected="{{ corpus === available_corpus ? 'selected' : '' }}">{{ available_corpus.id }}</option>
               }
             </select>
             <label for="choosePrimary">primary:</label>
             <select name="choosePrimary" formControlName="primaryCorpus">
-              @for (corpus of corpora; track corpus.id) {
-                <option [ngValue]="corpus" selected="{{ corpus === primaryCorpus ? 'selected' : '' }}">{{corpus.id}}</option>
+              @for (corpus of chosenCorpora; track corpus.id) {
+                <option [ngValue]="corpus" selected="{{ corpus.id === primaryCorpus.id ? 'selected' : '' }}">{{corpus.id}}</option>
               }
             </select>
           </form>
         </span>
         <span class="corpus-controls-normal"> <!-- medium+ displays -->
-          @if (corpus === primaryCorpus) {
+          @if (corpus.id === primaryCorpus.id) {
             <i
               class="bi bi-1-square"
               matTooltip="Primary corpus"
@@ -28,7 +28,7 @@
               [matTooltipShowDelay]="tooltipShowDelay">
             </i>
           }
-          @if (corpus !== primaryCorpus) {
+          @if (corpus.id !== primaryCorpus.id) {
             <i
               class="bi bi-2-square clickable"
               matTooltip="Set as primary corpus"
@@ -39,9 +39,9 @@
               (click)="setAsPrimary()">
             </i>
           }
-          @if (corpus === primaryCorpus || displayMode === 'ribbon') {
+          @if (corpus.id === primaryCorpus.id || displayMode === 'ribbon') {
             <i
-              class="bi bi-{{ displayMode === 'ribbon' ? 'layout-split' : 'list-stars' }} clickable"
+              class="bi bi-{{ displayMode === 'ribbon' ? 'layout-split' : 'card-list' }} clickable"
               matTooltip="Switch to {{ displayMode === 'ribbon' ? '\"multiple boxes\"' : '\"one box\"'}} view"
               matTooltipPosition="above"
               [matTooltipShowDelay]="tooltipShowDelay"
@@ -50,17 +50,17 @@
               (click)="toggleView()">
             </i>
           }
-          @if (corpora.length > 2 && corpus !== primaryCorpus) {
+          @if (chosenCorpora.length > 2 && corpus.id !== primaryCorpus.id) {
             <span>
               <i
-                class="bi bi-arrow-up {{ isArrowEnabled ('up') ? 'arrow-enabled' : 'arrow-disabled' }} clickable"
+                class="bi bi-arrow-up arrow {{ isArrowEnabled ('up') ? 'enabled' : 'disabled' }}"
                 matTooltip="{{ isArrowEnabled('up') ?  'Move secondary corpus up' : 'Corpus already at the top position'}}"
                 matTooltipPosition="above"
                 [matTooltipShowDelay]="tooltipShowDelay"
                 (click)="moveCorpus('up')">
               </i>
               <i
-                class="bi bi-arrow-down {{ isArrowEnabled ('down') ? 'arrow-enabled' : 'arrow-disabled' }} clickable"
+                class="bi bi-arrow-down arrow {{ isArrowEnabled ('down') ? 'enabled' : 'disabled' }}"
                 matTooltip="{{ isArrowEnabled('down') ?  'Move secondary corpus down' : 'Corpus already at the bottom position'}}"
                 matTooltipPosition="above"
                 [matTooltipShowDelay]="tooltipShowDelay"
@@ -77,7 +77,7 @@
       <h5 class="card-title my-auto py-1">Basic search</h5>
     </div>
   </div>
-  <div class="card-body {{ corpus !== primaryCorpus ? 'secondary' : ''}}">
+  <div class="card-body {{ corpus.id !== primaryCorpus.id ? 'secondary' : ''}}">
     @for (qr of qrRange(); track qr) {
       <spoco-query-row [corpus]="corpus" [queryRowIndex]="qr"></spoco-query-row>
     }
@@ -96,6 +96,6 @@
         <hr>
         </div>
       </div>
-      <spoco-filters [visible]="corpus === primaryCorpus || displayMode === 'ribbon'"></spoco-filters>
+      <spoco-filters [visible]="corpus.id === primaryCorpus.id || displayMode === 'ribbon'"></spoco-filters>
     </div>
   </div>
