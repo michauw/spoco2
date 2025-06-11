@@ -35,9 +35,20 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
     constructor (private config: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit (): void {
-        this.primaryCorpus = this.corporaKeeper.getPrimary ()
-        this.secondaryCorpora = this.corporaKeeper.getSecondary ();
+        this.primaryCorpus = this.corporaKeeper.getPrimary ();
         this.corpora = this.corporaKeeper.getCorpora ();
+        const storedPrimary = localStorage.getItem ('primaryCorpus');
+        if (storedPrimary && storedPrimary !== this.primaryCorpus.id) {
+            for (let corpus of this.corpora) {
+                if (corpus.id === storedPrimary) {
+                    this.corporaKeeper.setPrimary (corpus);
+                    this.corpora = this.corporaKeeper.getCorpora ();
+                    this.corporaKeeper.setCurrent (corpus);
+                    break;
+                }         
+            }
+        }
+        this.secondaryCorpora = this.corporaKeeper.getSecondary ();
         this.chosenCorpora = this.config.fetch ('chosenCorpora', true) ?? this.corpora;
         this.corporaKeeper.setChosenCorpora (this.chosenCorpora);
         this.chosenCorporaOptions = this.getChosenCorporaOptions ();

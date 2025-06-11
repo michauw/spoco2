@@ -39,6 +39,7 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
         this.corpusSelect.valueChanges.subscribe(data => {
             this.corporaKeeper.setCurrent (data.currentCorpus);
             this.corporaKeeper.setPrimary (data.primaryCorpus);
+            localStorage.setItem ('primaryCorpus', data.primaryChange.id);
         });
 
         this.availableCorporaNumber = this.corporaKeeper.getCorporaNumber ();
@@ -96,6 +97,7 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
     setAsPrimary() {
         this.corporaKeeper.setPrimary (this.corpus);
         this.corporaKeeper.setCurrent (this.corpus);
+        localStorage.setItem ('primaryCorpus', this.corpus.id);
     }
 
     switchIcon (event: any, toRemove: string, toAdd: string) {
