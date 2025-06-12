@@ -33,4 +33,13 @@ mat-tab-header1 {
     button-color: #dbdbdb,
     container-color: #656565,
   ));
+  @include mat.checkbox-overrides((
+    selected-icon-color: rgb(173, 216, 230),
+    selected-hover-icon-color: rgb(173, 216, 230), // kolor przy najechaniu
+    selected-hover-state-layer-color: rgb(173, 216, 230), // kolor otoczki przy najechaniu
+    selected-focus-icon-color: rgb(173, 216, 230), // kolor przy focus
+    selected-focus-state-layer-color: rgb(173, 216, 230), // otoczka przy focus
+    selected-pressed-state-layer-color: rgb(173, 216, 230),
+    unselected-hover-state-layer-color: rgb(173, 216, 230), // kolor otoczki przy najechaniu
+  ));
 }

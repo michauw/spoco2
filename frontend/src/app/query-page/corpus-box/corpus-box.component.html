@@ -1,14 +1,29 @@
 <div class="col-12">
   @if (corpora.length > 1) {
-    <div class="corpus-header d-flex align-items-center justify-content-between flex-wrap mb-2">
-      <div class="corpora-choice">
-      <spoco-icon-multiselect
-        [options]="chosenCorporaOptions"
-        [tooltip]="{value: 'Choose visible corpora', position: 'left', delay: '500'}"
-        (selectionChange)="chosenCorporaChanged($event)"
-      >
-      </spoco-icon-multiselect>
+    <div class="corpus-header mb-1 {{ displayMode === 'ribbon' ? 'row' : '' }}">
+      @if (displayMode === 'ribbon') {
+        <div class="col-md-1"></div>
+        <div class="col-md-10 text-end">
+          <div class="corpora-choice">
+            <spoco-icon-multiselect
+              [options]="chosenCorporaOptions"
+              [tooltip]="{value: 'Choose visible corpora', position: 'left', delay: '500'}"
+              (selectionChange)="chosenCorporaChanged($event)"
+            >
+            </spoco-icon-multiselect>
+        </div>
       </div>
+    }
+    @else {
+        <div class="corpora-choice text-end">
+          <spoco-icon-multiselect
+            [options]="chosenCorporaOptions"
+            [tooltip]="{value: 'Choose visible corpora', position: 'left', delay: '500'}"
+            (selectionChange)="chosenCorporaChanged($event)"
+          >
+          </spoco-icon-multiselect>
+      </div>
+    }
     </div>
   }
   @if (displayMode === 'ribbon') {

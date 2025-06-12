@@ -28,8 +28,10 @@ export class CqpQueryComponent implements OnInit, OnDestroy {
             this.cqpQueryForm.setValue ({cqp: cqpQuery});
         });
         this.cqpQueryForm.valueChanges.subscribe (data => {
-            if (!this.autoChange)
+            if (!this.autoChange) {
                 this.queryKeeper.setFinalQuery (data.cqp);
+                this.queryKeeper.setCQPQueryChanged (true);
+            }
             this.autoChange = false;
         });  
         // this.corpus = this.corporaKeeper.getCurrent ();

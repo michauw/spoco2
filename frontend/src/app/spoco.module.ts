@@ -32,14 +32,17 @@ import { ConfigCreatorComponent } from './config-creator/config-creator.componen
 import { PaginatorComponent } from './results-page/results/paginator/paginator.component';
 import { PreferencesResolver } from './preferences-resolver.service';
 import { SettingsBoxComponent } from './query-page/settings-box/settings-box.component';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CorpusDataResolver } from './corpus-data-resolver.service';
 import { MatFormField } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { IconMultiselectComponent } from './icon-multiselect/icon-multiselect.component';
 import { SharedModule } from './shared/shared.module';
+import { WarningDialogComponent } from './query-page/corpus-box/basic-query/query-row/warning-dialog/warning-dialog.component';
 
 @NgModule({ 
     declarations: [
@@ -63,7 +66,8 @@ import { SharedModule } from './shared/shared.module';
         ConfigCreatorComponent,
         PaginatorComponent,
         SettingsBoxComponent,
-        ResultsTableComponent
+        ResultsTableComponent,
+        WarningDialogComponent
     ],
     bootstrap: [SpocoComponent], 
     imports: [
@@ -75,8 +79,10 @@ import { SharedModule } from './shared/shared.module';
         NgMultiSelectDropDownModule.forRoot(),
         FontAwesomeModule,
         BrowserAnimationsModule,
+        MatButtonModule,
         MatTooltipModule,
         MatDialogModule,
+        MatCheckboxModule,
         MatFormField,
         MatSelectModule,
         MatTabsModule

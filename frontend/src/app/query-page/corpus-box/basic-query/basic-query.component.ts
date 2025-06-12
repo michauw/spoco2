@@ -13,14 +13,12 @@ import { QueryKeeperService } from '../../../query-keeper.service';
 })
 export class BasicQueryComponent implements OnInit, OnDestroy {
 
-    constructor(private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
-
-    queryRowNumber: number = 0;
-
     @Input() corpus: Corpus;
     @Input() primaryCorpus: Corpus;
     @Input() displayMode: queryPageDisplayMode;
     @Output () toggleViewClicked = new EventEmitter<void> ();
+
+    queryRowNumber: number = 0;
 
     chosenCorpora: Corpus[];
     availableCorporaNumber: number;
@@ -28,6 +26,8 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
     corpusSelect: UntypedFormGroup;
     tooltipShowDelay: number = 400;
     private subscriptions: Subscription[];
+
+    constructor(private queryKeeper: QueryKeeperService, private corporaKeeper: CorporaKeeperService) { }
 
     ngOnInit(): void {
         this.queryRowNumber = this.queryKeeper.getNumberOfRows (this.corpus.id);
@@ -47,17 +47,17 @@ export class BasicQueryComponent implements OnInit, OnDestroy {
 
         this.primaryCorpus = this.corporaKeeper.getPrimary ();
 
-        let sub_primary = this.corporaKeeper.primaryChange.subscribe (corpus => {
+        const subPrimary = this.corporaKeeper.primaryChange.subscribe (corpus => {
             this.primaryCorpus = corpus;
             this.chosenCorpora = this.corporaKeeper.getCorpora (true);
         });
 
-        let sub_queryChanged = this.queryKeeper.valueChanged.subscribe (type => {
+        const subQueryChanged = this.queryKeeper.valueChanged.subscribe (type => {
             if (type === 'clear')
                 this.queryRowNumber = 1;
         });
 
-        this.subscriptions = [sub_primary, sub_queryChanged]; // [sub_current, sub_primary];
+        this.subscriptions = [subPrimary, subQueryChanged]; // [sub_current, sub_primary];
     }
 
     ngOnDestroy(): void {

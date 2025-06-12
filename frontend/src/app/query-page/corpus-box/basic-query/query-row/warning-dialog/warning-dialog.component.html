@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>Warning</h2>
+<mat-dialog-content>
+    <p>{{ data.message }}</p>
+    <mat-checkbox [formControl]="dontShowAgain">Don't show this warning again</mat-checkbox>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button matButton (click)="onClick(false)">Cancel</button>
+    <button matButton (click)="onClick(true)">OK</button>
+</mat-dialog-actions>

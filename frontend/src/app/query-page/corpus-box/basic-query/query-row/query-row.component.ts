@@ -10,6 +10,8 @@ import { Corpus, PAttribute } from '../../../../dataTypes';
 import { ConfigService } from 'src/app/config.service';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { CorporaKeeperService } from 'src/app/corpora-keeper.service';
+import { MatDialog } from '@angular/material/dialog';
+import { WarningDialogComponent } from './warning-dialog/warning-dialog.component';
 
 @Component({
     selector: 'spoco-query-row',
@@ -35,10 +37,13 @@ export class QueryRowComponent implements OnInit, OnDestroy {
     };
 
     queryRowForm: UntypedFormGroup;   // stores the form
+    previousValue: UntypedFormGroup;     // for reverting the changes
     currentGroup: string;      // tracks latest focused-on group (needed for displaying the correct set of modifier checkboxes)
-    valueChanged: Subscription;   // needed for clearing the form
-    currentCorpusChanged: Subscription;    // watches for current corpus
-    corporaChanged: Subscription; 
+    subscriptions: Subscription[];  // stores the manually set subscription 
+    // valueChanged: Subscription;   // needed for clearing the form
+    // cqpQueryChanged: Subscription;
+    cqpQueryChanged: boolean = false;   // if this is set, and cqpWarningIgnore is not, change in the queryRow input will trigger a warning
+    cqpWarningIgnore: boolean;
     multiselectOptions: any = {};   // TODO: fix type
     multiselectSettings: IDropdownSettings = {
         singleSelection: false,
@@ -49,7 +54,12 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         enableCheckAll: false
     };
 
-    constructor(private queryKeeper: QueryKeeperService, private configService: ConfigService, private corporaKeeper: CorporaKeeperService) { }
+    constructor(
+        private queryKeeper: QueryKeeperService, 
+        private configService: ConfigService, 
+        private corporaKeeper: CorporaKeeperService,
+        public dialog: MatDialog
+    ) { }
 
     ngOnInit(): void {
         this.positionalAttributes = this.configService.fetch ('positionalAttributes');
@@ -62,24 +72,50 @@ export class QueryRowComponent implements OnInit, OnDestroy {
         };
         
         this.queryRowForm = this.createForm ();
+        this.previousValue = this.queryRowForm;
         this.currentGroup = this.positionalAttributes[0].name;    // at the beginning the current group is the first one
         if (this.corpus === undefined)  // 'one box' parallel view doesn't pass the corpus down to the queryRow component, it uses the corporaKeeper mechanism instead
             this.corpus = this.corporaKeeper.getCurrent ();
-
+        this.cqpWarningIgnore = !!localStorage.getItem ('ignoreCQPQueryChange');
         this.queryRowForm.valueChanges.subscribe (data => {
-            let updatedData = this.updatedToQueryRow (data);
-            if (Object.keys (updatedData).length !== 0 || this.queryRowIndex === 0) {
-                this.queryKeeper.setQueryRow (updatedData, this.queryRowIndex, this.corpus.id);
+            if (this.cqpQueryChanged && !this.cqpWarningIgnore) {
+                this.queryRowForm.disable ({ emitEvent: false });
+                const dialogRef = this.dialog.open (WarningDialogComponent, {
+                    data: { message: 'You manually edited the CQP field. This action will erase all entered changes. Do you want to proceed?' },
+                    autoFocus: false
+                });
+                dialogRef.afterClosed ().subscribe ((warningData) => {
+                    if (warningData.decision && warningData.remember) {
+                        localStorage.setItem ('ignoreCQPQueryChange', 'true');
+                    }
+                    if (warningData.decision) {
+                        this.applyFormChanges (data);
+                        this.cqpWarningIgnore = true;
+                        this.cqpQueryChanged = false;
+                    }
+                    else {
+                        this.queryRowForm.setValue (this.previousValue, { emitEvent: false });
+                    }
+                    this.queryRowForm.enable ({ emitEvent: false })
+                });
+
+            }
+            else {
+                this.applyFormChanges (data);
             }
         });
-        this.valueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
+        const subValueChanged = this.queryKeeper.valueChanged.subscribe ((changeType) => {
             if (changeType == 'clear')
                 this.queryRowForm.reset ();
         });
+        const subCQPQueryChanged = this.queryKeeper.cqpQueryChanged.subscribe (change => this.cqpQueryChanged = change);
+        this.subscriptions = [subValueChanged, subCQPQueryChanged];
+
     }
 
     ngOnDestroy(): void {
-        this.valueChanged.unsubscribe ();
+        for (let sub of this.subscriptions)
+            sub.unsubscribe ();
     }
 
     filterByType (attrType: string): PAttribute[] { 
@@ -161,6 +197,14 @@ export class QueryRowComponent implements OnInit, OnDestroy {
             }
         }
         return new UntypedFormGroup (fields);
+    }
+
+    private applyFormChanges (data: any): void {
+        this.previousValue = data;
+        let updatedData = this.updatedToQueryRow (data);
+        if (Object.keys (updatedData).length !== 0 || this.queryRowIndex === 0) {
+            this.queryKeeper.setQueryRow (updatedData, this.queryRowIndex, this.corpus.id);
+        }
     }
 
     private updateForm () { // not used right now

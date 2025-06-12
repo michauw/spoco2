@@ -8,16 +8,18 @@ import { CorporaKeeperService } from './corpora-keeper.service';
 })
 export class QueryKeeperService {
 
-    constructor (private corporaKeeper: CorporaKeeperService) { }
     filters: Filters;
     corpusQueryRows: {[corpus: string]: QueryRow[]} = {};   // stores the query row data for each corpus box
     corpusQuery: {[corpus: string]: string} = {};   // stores the cqp query for each corpus
     finalQuery: string;
-    valueChanged = new Subject<string> ();  
+    valueChanged = new Subject<string> (); 
+    cqpQueryChanged = new Subject<boolean> (); 
     corporaChanged: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => {
         this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('order');
     });
+
+    constructor (private corporaKeeper: CorporaKeeperService) { }
 
     // constructs CQP query for one query-row
 
@@ -109,6 +111,7 @@ export class QueryKeeperService {
         }
         this.filters = {};
         // this.finalQuery = '';
+        this.cqpQueryChanged.next (false);
         this.valueChanged.next ('clear');
     }
 
@@ -167,6 +170,10 @@ export class QueryKeeperService {
         };
     }
 
+    getCQPQueryChanged () {
+        return this.cqpQueryChanged;
+    }
+
     getQuery (corpus: string) {
         return this.corpusQuery[corpus];
     }
@@ -187,6 +194,10 @@ export class QueryKeeperService {
 
     queryEmpty () {
         return Object.keys (this.corpusQuery).length === 0;
+    }
+
+    setCQPQueryChanged (value: boolean) {
+        this.cqpQueryChanged.next (value);
     }
 
     setQueryRow (data: QueryRow, index: number, corpus: string) {
