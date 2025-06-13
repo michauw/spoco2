@@ -41,7 +41,10 @@ interface ConfigObj {
 }
 
 interface PreferencesObj {
+    font_size: number;
     results_per_page: number;
+    results_format: 'tsv' | 'xlsx';
+    filename: 'default' | 'choose';
 }
 
 interface QueryRow {        // TODO: should be in its own file?

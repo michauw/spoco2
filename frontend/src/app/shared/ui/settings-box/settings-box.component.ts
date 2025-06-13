@@ -1,13 +1,16 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { ConfirmationBoxComponent } from '../confirmation-box/confirmation-box.component';
+import { MatButtonModule } from '@angular/material/button';
 
 type fieldData = {
-    type: 'select' | 'number' | 'multiselect',
+    type: 'select' | 'number' | 'multiselect' | 'action',
     value?: string | number | string[],
     value_obj?: {[key: string]: boolean},
     description: string,
-    options?: {name: string, label: string, initial_check?: boolean}[]
+    options?: {name: string, label: string, initial_check?: boolean}[],
+    action?: {handler: () => void, confirm?: string}
 }
 
 export interface DialogData {
@@ -21,7 +24,7 @@ export interface DialogData {
     selector: 'spoco-settings-box',
     templateUrl: './settings-box.component.html',
     styleUrls: ['./settings-box.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule]
 })
 export class SettingsBoxComponent implements OnInit {
 
@@ -29,11 +32,11 @@ export class SettingsBoxComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<SettingsBoxComponent>,
-            @Inject(MAT_DIALOG_DATA) public data: DialogData
+            @Inject(MAT_DIALOG_DATA) public data: DialogData,
+            public dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
-        console.log ('data', this.data['collocations']);
         let controls: {[key: string]: UntypedFormControl} = {};
         for (let group_name in this.data) {
             for (let field_name in this.data[group_name].fields) {
@@ -75,5 +78,17 @@ export class SettingsBoxComponent implements OnInit {
 
     onNoClick(): void {
         this.dialogRef.close();
+    }
+
+    performAction (group: string, field: string) {
+        const action = this.data[group].fields[field].action!;
+        if (action.confirm) {
+            const dialogRef = this.dialog.open (ConfirmationBoxComponent, {data: action.confirm});
+            dialogRef.afterClosed ().subscribe (answer => {
+                if (answer)
+                    action.handler ();
+            })
+        }
+        else action.handler ();
     }
 }

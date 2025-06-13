@@ -26,3 +26,11 @@ a.navbar-brand {
     margin-right: .4rem;
     letter-spacing: 1.2px;
 }
+
+.preferences {
+    margin-right: 1rem;
+    font-size: 1.3rem;
+    & i {
+        cursor: pointer;
+    }
+}

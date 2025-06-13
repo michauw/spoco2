@@ -1,0 +1,9 @@
+<mat-dialog-content>
+  <mat-form-field>
+    <mat-label>{{ data.field_name }}</mat-label>
+    <input matInput [formControl]="valueControl" />
+  </mat-form-field>
+</mat-dialog-content>
+<div mat-dialog-actions class="confirm">
+  <button matButton [mat-dialog-close]="valueControl.value" [disabled]="valueControl.invalid" cdkFocusInitial>Ok</button>
+</div>

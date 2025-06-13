@@ -4,7 +4,7 @@ import { ConfigService } from '../config.service';
 import { QueryKeeperService } from '../query-keeper.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Corpus, PAttribute, corpusType, queryPageDisplayMode } from '../dataTypes';
-import { SettingsBoxComponent } from './settings-box/settings-box.component';
+import { SettingsBoxComponent } from '../shared/ui/settings-box/settings-box.component';
 import { CorporaKeeperService } from '../corpora-keeper.service';
 import { faSliders } from '@fortawesome/free-solid-svg-icons';
 

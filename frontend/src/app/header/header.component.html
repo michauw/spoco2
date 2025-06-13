@@ -3,5 +3,8 @@
         <a [routerLink]="['/']" class="navbar-brand">
             {{ name }} <span class="spoco">[SpoCo]</span>
         </a>
+        <div class="preferences text-end">
+            <i class="bi bi-gear" (click)="openPreferences ()"></i>
+        </div>
     </div>
 </nav>

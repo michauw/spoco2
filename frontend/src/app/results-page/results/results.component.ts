@@ -8,6 +8,8 @@ import { Observable, Subscription } from 'rxjs';
 import { utils, writeFile, writeFileXLSX } from 'xlsx';
 import { EventEmitter } from '@angular/core';
 import { modules } from '../results-page.component';
+import { MatDialog } from '@angular/material/dialog';
+import { InputTextBoxComponent } from 'src/app/shared/ui/input-text-box/input-text-box.component';
 
 export interface postData {
     query: Query;
@@ -18,7 +20,7 @@ export interface postData {
 type genericResultsType = (ConcordanceEntry | TableEntry)[];
 type results_data = {'query': string, 'number_of_results': number}
 
-export type ResultsDependencies = [QueryKeeperService, ConfigService, CorporaKeeperService, ActionService];
+export type ResultsDependencies = [QueryKeeperService, ConfigService, CorporaKeeperService, ActionService, MatDialog];
 
 @Component({
     selector: 'spoco-results',
@@ -62,6 +64,7 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         protected config: ConfigService,
         protected corporaKeeper: CorporaKeeperService, 
         protected actions: ActionService,
+        public dialog: MatDialog
     ) { }
 
     static inject_dependencies (): ResultsDependencies {
@@ -70,8 +73,9 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         const cs = inject (ConfigService);
         const cks = inject (CorporaKeeperService);
         const as = inject (ActionService);
+        const dg = inject (MatDialog)
 
-        return [qks, cs, cks, as];
+        return [qks, cs, cks, as, dg];
     }
 
     ngOnInit(): void {
@@ -101,6 +105,34 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
     }
 
     downloadResults (mode: 'all' | 'checked', format: 'tsv' | 'xlsx' = 'xlsx') {
+        const preferences = this.config.fetch ('preferences', true);
+        let filename = 'results';
+        if (preferences) {
+            format = preferences.results_format;
+            if (preferences.filename !== 'default') {
+                const dialogRef = this.dialog.open (InputTextBoxComponent, {data: {field_name: 'File name', initial_value: 'results'}});
+                dialogRef.afterClosed ().subscribe (data => {
+                    filename = data.replace(/\.(tsv|xlsx)$/i, '');
+                    this.downloadWithFilename (mode, format, filename);
+                });
+            }
+            else {
+                this.downloadWithFilename (mode, format, filename);
+            }
+        }
+    }
+
+    get_pattr_position (pattr_name: string) {
+        for (let pattr of this.pattrs)
+            if (pattr.name === pattr_name)
+                return pattr.position;
+        return -1;
+    }
+
+    get_results_number () {
+    }
+
+    private downloadWithFilename (mode: 'all' | 'checked', format: 'tsv' | 'xlsx', filename: string) {
         let toSave = [];
         let file_data: any;
         if (mode === 'all') {
@@ -118,23 +150,13 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
             a.setAttribute ('style', 'display: none'); 
             const url= window.URL.createObjectURL (blob);
             a.href = url;
-            a.download = 'results.tsv';
+            a.download = `${filename}.tsv`;
             a.click ();
             document.body.removeChild (a);
         }
         else {
-            this.aoa_to_xlsx (aoa_data);
+            this.aoa_to_xlsx (aoa_data, filename);
         }
-    }
-
-    get_pattr_position (pattr_name: string) {
-        for (let pattr of this.pattrs)
-            if (pattr.name === pattr_name)
-                return pattr.position;
-        return -1;
-    }
-
-    get_results_number () {
     }
 
     protected pageChanged (pageNumber: number) {
@@ -189,11 +211,11 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
         return rows.join ('\n');
     }
 
-    private aoa_to_xlsx (aoa_data: any) {
+    private aoa_to_xlsx (aoa_data: any, filename: string) {
         const data = utils.aoa_to_sheet (aoa_data);
         const workbook = utils.book_new ();
         utils.book_append_sheet (workbook, data);
-        writeFileXLSX (workbook, 'results.xlsx');
+        writeFileXLSX (workbook, `${filename}.xlsx`);
     }
 
     private parse_stats_line (line: string, separator: string = '\t') {

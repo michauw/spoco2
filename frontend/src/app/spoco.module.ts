@@ -31,7 +31,7 @@ import { HeaderComponent } from './header/header.component';
 import { ConfigCreatorComponent } from './config-creator/config-creator.component';
 import { PaginatorComponent } from './results-page/results/paginator/paginator.component';
 import { PreferencesResolver } from './preferences-resolver.service';
-import { SettingsBoxComponent } from './query-page/settings-box/settings-box.component';
+import { SettingsBoxComponent } from './shared/ui/settings-box/settings-box.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -65,9 +65,8 @@ import { WarningDialogComponent } from './query-page/corpus-box/basic-query/quer
         HeaderComponent,
         ConfigCreatorComponent,
         PaginatorComponent,
-        SettingsBoxComponent,
         ResultsTableComponent,
-        WarningDialogComponent
+        WarningDialogComponent,
     ],
     bootstrap: [SpocoComponent], 
     imports: [
@@ -85,7 +84,8 @@ import { WarningDialogComponent } from './query-page/corpus-box/basic-query/quer
         MatCheckboxModule,
         MatFormField,
         MatSelectModule,
-        MatTabsModule
+        MatTabsModule,
+        SettingsBoxComponent
     ], 
     providers: [
         ConfigResolver, 

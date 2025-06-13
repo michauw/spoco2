@@ -2,11 +2,13 @@
   <form [formGroup]="settingsForm">
     @for (group of key_list (data); track group; let gi = $index) {
       <div class="group row">
-        <div class="header">{{ data[group].header }}</div>
+        @if (data[group].header) {
+          <div class="header">{{ data[group].header }}</div>
+        }
         <hr>
         @for (field of key_list (data[group].fields); track field; let fi = $index) {
           <div class="field col-md-5">
-            @if (data[group].fields[field].type !== 'multiselect') {
+            @if (!['multiselect', 'action'].includes (data[group].fields[field].type)) {
               <label for="field-{{ gi }}-{{ fi }}" class="form-label">{{ data[group].fields[field].description }}</label>
             }
             @if (data[group].fields[field].type === 'number') {
@@ -31,11 +33,18 @@
               </div>
             }
           </div>
+          @if (data[group].fields[field].type === 'action') {
+            <div>
+              <button matButton (click)="performAction (group, field)">
+                {{ data[group].fields[field].description }}
+              </button>
+            </div>
+          }
         }
       </div>
     }
   </form>
 </div>
 <div mat-dialog-actions>
-  <button class="btn btn-secondary right" [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+  <button class="btn btn-secondary confirm" [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
 </div>

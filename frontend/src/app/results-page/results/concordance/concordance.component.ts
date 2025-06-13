@@ -292,8 +292,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         this.handle_big_results (chunk_start);
     }
 
-    protected override make_request (url: string, post_data: postDataConcordance, mode: 'full' | 'partial'
-    ) {
+    protected override make_request (url: string, post_data: postDataConcordance, mode: 'full' | 'partial') {
         const request: Observable<any> = this.http.post (url, post_data, {observe: 'events', responseType: 'text', reportProgress: true});
         this.handle_streaming_response (request, post_data, mode);
     }

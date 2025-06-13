@@ -42,4 +42,7 @@ mat-tab-header1 {
     selected-pressed-state-layer-color: rgb(173, 216, 230),
     unselected-hover-state-layer-color: rgb(173, 216, 230), // kolor otoczki przy najechaniu
   ));
+  @include mat.dialog-overrides ((
+    actions-alignment: right
+  ))
 }
