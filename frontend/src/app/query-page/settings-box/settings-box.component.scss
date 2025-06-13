@@ -2,9 +2,18 @@
     background-color: white;
     font-size: .85rem !important;
     padding: 3rem;
+    padding-top: 2rem;
+    border: 7px solid #ddd;
+    border-bottom: none;
     & select {
         font-size: .85rem !important;
     }
+}
+
+div.mdc-dialog__actions {
+    border: 7px solid #888;
+    border-top: none;
+    padding: 10px;
 }
 
 .group {

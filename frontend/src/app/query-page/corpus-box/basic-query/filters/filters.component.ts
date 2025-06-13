@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { Subscription } from 'rxjs';
@@ -20,9 +20,9 @@ interface Group {
     ,
     standalone: false
 })
-export class FiltersComponent implements OnInit, OnDestroy {
+export class FiltersComponent implements OnInit, OnChanges, OnDestroy {
 
-    @Input () visible: boolean;
+    @Input () disabled: boolean;
 
     currentCorpus: Corpus;
     currentCorpusChanged: Subscription;
@@ -46,9 +46,11 @@ constructor(private configService: ConfigService, private queryKeeper: QueryKeep
         this.groups = this.configService.fetch ('filters');
         this.active_group = 0;
         this.filtersForm = this.createForm (this.groups);
+        if (this.disabled)
+            this.filtersForm.disable ()
         this.currentCorpus = this.corporaKeeper.getCurrent ();
 
-        this.filtersForm.valueChanges.subscribe(data => {
+        this.filtersForm.valueChanges.subscribe (data => {
             let filters: Filters = {};
             for (let group in data) {
                 for (let field in data[group]) {
@@ -70,6 +72,11 @@ constructor(private configService: ConfigService, private queryKeeper: QueryKeep
                 this.filtersForm.reset ();
         });
         this.currentCorpusChanged = this.corporaKeeper.currentChange.subscribe (corpus => this.currentCorpus = corpus);
+    }
+
+    ngOnChanges (changes: SimpleChanges) {
+        if (this.filtersForm !== undefined)
+            this.disabled ? this.filtersForm.disable () : this.filtersForm.enable ();
     }
 
     ngOnDestroy(): void {

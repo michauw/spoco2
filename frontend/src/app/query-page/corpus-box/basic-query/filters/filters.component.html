@@ -1,5 +1,5 @@
 @if (groups.length) {
-  <div [ngStyle]="{visibility: visible ? 'visible' : 'hidden'}">
+  <div class="filters {{ disabled ? 'disabled': '' }}">
     <div class="row">
       <div class="col-4 ml-4 mb-2">
         <span class="section-name">Filters</span>
@@ -22,7 +22,7 @@
     <form [formGroup]="filtersForm">
       <div class="row" formGroupName="{{ groups[active_group].name }}">
         @for (field of groups[active_group].fields; track $index) {
-          <div class="col-1 col-md-4 col-lg-3 col-xl-3" style="margin-bottom: 1rem">
+          <div class="col-1 col-md-3 col-lg-3 col-xl-4" style="margin-bottom: 1rem">
             @if (field.type === 'text') {
               <input type="text" placeholder="{{field.description}}" class="form-control" formControlName="{{field.name}}">
             }
@@ -32,6 +32,7 @@
                 [form]="filtersForm"
                 [group]="groups[active_group].name"
                 [name]="field.name"
+                [disabled]="disabled"
               ></spoco-select>
             }
           </div>

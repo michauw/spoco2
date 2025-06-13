@@ -1,7 +1,7 @@
 <div class="card basic-box">
   @if (availableCorporaNumber > 1) {
     <div class="card-header corpus-info">
-      <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">[{{ corpus.id === primaryCorpus.id ? 'primary' : 'secondary - only filtering'}}]</span>
+      <span class="corpus-name">{{ corpus.name }}</span>&nbsp;<span class="corpus-type-info">{{ corpus.id === primaryCorpus.id ? 'primary' : 'secondary - only filtering'}}</span>
       <span class="corpus-controls">
         <span class="corpus-controls-small">    <!-- for small displays -->
           <form [formGroup]="corpusSelect">
@@ -96,6 +96,6 @@
         <hr>
         </div>
       </div>
-      <spoco-filters [visible]="corpus.id === primaryCorpus.id || displayMode === 'ribbon'"></spoco-filters>
+      <spoco-filters [disabled]="corpus.id !== primaryCorpus.id"></spoco-filters>
     </div>
   </div>

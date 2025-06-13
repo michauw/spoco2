@@ -112,15 +112,18 @@ export class QueryPageComponent implements OnInit {
       }
     
     search () {
-        this.router.navigate (['/', 'results', 'concordance']);
+        if (this.queryKeeper.getFinalQuery ())
+            this.router.navigate (['/', 'results', 'concordance']);
     }
 
     collocations () {
-        this.router.navigate (['/', 'results', 'collocations']);
+        if (this.queryKeeper.getFinalQuery ())
+            this.router.navigate (['/', 'results', 'collocations']);
     }
 
     frequency_list () {
-        this.router.navigate (['/', 'results', 'frequency']);
+        if (this.queryKeeper.getFinalQuery ())
+            this.router.navigate (['/', 'results', 'frequency']);
     }
 
     @HostListener ('window:keyup.enter')
@@ -187,15 +190,17 @@ export class QueryPageComponent implements OnInit {
                 width: '700px'
         });
         dialogRef.afterClosed ().subscribe (data => {
-            this.collocation_settings.pattr = data['collocations'].fields.pattr.value;
-            this.collocation_settings.ams = data['collocations'].fields.ams.value;
-            this.collocation_settings.window_size = data['collocations'].fields.window_size.value;
-            this.collocation_settings.frequency_filter = data['collocations'].fields.frequency_filter.value;
-            this.collocation_settings.case = data['collocations'].fields.case.value;
-            this.config.store ('collocation_settings', this.collocation_settings, true);
-            this.frequency_settings.pattr = data['frequency'].fields.pattr.value;
-            this.frequency_settings.frequency_filter = data['frequency'].fields.frequency_filter.value;
-            this.config.store ('frequency_settings', this.frequency_settings, true);
+            if (data !== undefined) {
+                this.collocation_settings.pattr = data['collocations'].fields.pattr.value;
+                this.collocation_settings.ams = data['collocations'].fields.ams.value;
+                this.collocation_settings.window_size = data['collocations'].fields.window_size.value;
+                this.collocation_settings.frequency_filter = data['collocations'].fields.frequency_filter.value;
+                this.collocation_settings.case = data['collocations'].fields.case.value;
+                this.config.store ('collocation_settings', this.collocation_settings, true);
+                this.frequency_settings.pattr = data['frequency'].fields.pattr.value;
+                this.frequency_settings.frequency_filter = data['frequency'].fields.frequency_filter.value;
+                this.config.store ('frequency_settings', this.frequency_settings, true);
+            }
         });
     }
 }

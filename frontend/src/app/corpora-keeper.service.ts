@@ -14,7 +14,7 @@ export class CorporaKeeperService {
     primary: Corpus;
     current: Corpus;
     currentChange: Subject<Corpus> = new Subject<Corpus> ();
-    corporaChange: Subject<Corpus[]> = new Subject<Corpus[]> ();
+    corporaChange: Subject<{corpora: Corpus[], changes: number[]}> = new Subject<{corpora: Corpus[], changes: number[]}> ();
     primaryChange: Subject<Corpus> = new Subject<Corpus> ();
 
     findCorpusPosition (corpus: Corpus) {
@@ -30,13 +30,12 @@ export class CorporaKeeperService {
 
     moveCorpus (direction: string, corpus: Corpus) {
         let position: number = this.findCorpusPosition (corpus);
-        this.corpora.splice(0, 0, )
         if (direction === 'down')
             position += 1;
         if ((direction === 'up' && position <= 1) || (direction === 'down' && position >= this.corpora.length))
             return 0;
         this.corpora.splice (position - 1, 0, this.corpora.splice (position, 1)[0]);
-        this.corporaChange.next (this.corpora);
+        this.corporaChange.next ({corpora: this.corpora, changes: [position - 1, position]});
 
         return position;
     }
@@ -83,7 +82,7 @@ export class CorporaKeeperService {
             }
         }
         this.corpora = [primary].concat (corpora);
-        this.corporaChange.next (this.corpora);
+        this.corporaChange.next ({corpora: this.corpora, changes: []});
         this.current = primary;
 
         return this.corpora;
@@ -96,7 +95,7 @@ export class CorporaKeeperService {
         this.corpora = [corpus].concat (this.corpora);
         for (let i = 1; i < this.corpora.length; ++i)
             this.corpora[i].primary = false;
-        this.corporaChange.next (this.corpora);
+        this.corporaChange.next ({corpora: this.corpora, changes: [pos]});
         this.primaryChange.next (corpus);
     }
   }

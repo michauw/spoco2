@@ -10,15 +10,12 @@ import { IDropdownSettings } from 'ng-multiselect-dropdown';
 })
 export class SelectComponent implements OnInit {
 
-    constructor() { }
-
-    ngOnInit(): void {
-    }
-
     @Input() form: UntypedFormGroup;
     @Input() name: string;
     @Input() group: string;
     @Input() data: any;
+    @Input() disabled: boolean;
+
     multiSettings: IDropdownSettings = {
         singleSelection: false,
         idField: 'value',
@@ -27,5 +24,13 @@ export class SelectComponent implements OnInit {
         allowSearchFilter: false,
         enableCheckAll: false
       };
+
+    constructor() { }
+
+    ngOnInit(): void {
+        if (this.disabled)
+            this.form.disable ();
+    }
+
 
 }

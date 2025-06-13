@@ -1,22 +1,19 @@
 <div [formGroup]="form">
-  <div [formGroupName]="group">
-    @if (data.type === 'select') {
-      <select class="form-select pattr-input select" [formControlName]="name">
-        <option [ngValue]="null">{{ data.description }}</option>         <-- TODO: doesn't work after clearing -->
-        @for (option of data.options; track option.value) {
-          <option [ngValue]="option.value">{{ option.label }}</option>
+    <div [formGroupName]="group">
+        @if (data.type === 'select') {
+        <select class="form-select pattr-input select" [formControlName]="name">
+            <option [ngValue]="null">{{ data.description }}</option> <-- TODO: doesn't work after clearing -->
+                @for (option of data.options; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+        </select>
         }
-      </select>
-    }
-    @if (data.type === 'multiselect') {
-      <ng-multiselect-dropdown
-        class="pattr-input"
-        [placeholder]="data.description"
-        [settings]="multiSettings"
-        [data]="data.options"
-        [formControlName]="name"
-        >
-      </ng-multiselect-dropdown>
-    }
-  </div>
+        @if (data.type === 'multiselect') {
+        <div class="{{ disabled ? 'disabled-wrapper' : '' }}">
+            <ng-multiselect-dropdown class="pattr-input" [placeholder]="data.description" [settings]="multiSettings"
+                [data]="data.options" [formControlName]="name" [disabled]="disabled">
+            </ng-multiselect-dropdown>
+        </div>
+        }
+    </div>
 </div>

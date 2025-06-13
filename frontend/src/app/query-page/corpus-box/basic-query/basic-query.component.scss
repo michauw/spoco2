@@ -35,7 +35,13 @@ span.corpus-name {
 }
 
 span.corpus-type-info {
-    font-size: 1rem;
+    font-size: .7rem;
+    text-transform: uppercase;
+    margin-left: .25rem;
+    vertical-align: middle;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
 }
 
 span.corpus-controls {

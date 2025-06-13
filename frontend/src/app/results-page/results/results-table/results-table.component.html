@@ -11,12 +11,12 @@
           <td>
             @if (ind === 0) {
               <span class="clickable-underline" (click)="get_concordance(element.value)">
-                {{ element.format ? (element.value) : element.value }}
+                {{ element.format ? (element.value | number: element.format) : element.value }}
               </span>
             }
             @else {
               <span>
-                {{ element.format ? (element.value) : element.value }}
+                {{ element.format ? (element.value | number: element.format) : element.value }}
               </span>
             }
           }
@@ -29,7 +29,7 @@
   <!-- PAGINATOR -->
 
   <div class="col-md-12 mt-4 paginator">
-    @if (results.length > sliceSize) {
+    @if (results_fetched && results.length > sliceSize) {
       <spoco-paginator [resLen]="results.length" [perPage]="sliceSize" (pageChanged)="pageChanged($event)"></spoco-paginator>
     }
   </div>

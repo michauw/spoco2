@@ -45,6 +45,8 @@ export class SettingsBoxComponent implements OnInit {
                     for (let option_checkbox of field.options!) {
                         controls[`${group_name}--${field_name}--${option_checkbox.name}`] = new UntypedFormControl (field.value_obj!.hasOwnProperty (option_checkbox.name));
                     }
+                    const obj = this.data[group_name].fields[field_name].value_obj;
+                    this.data[group_name].fields[field_name].value = Object.keys (obj!).filter (key => obj![key]);
                 }
             }
         }

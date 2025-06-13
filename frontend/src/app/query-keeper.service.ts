@@ -14,14 +14,12 @@ export class QueryKeeperService {
     finalQuery: string;
     valueChanged = new Subject<string> (); 
     cqpQueryChanged = new Subject<boolean> (); 
-    corporaChanged: Subscription = this.corporaKeeper.corporaChange.subscribe (corpora => {
+    corporaChanged: Subscription = this.corporaKeeper.corporaChange.subscribe (change => {
         this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('order');
     });
 
     constructor (private corporaKeeper: CorporaKeeperService) { }
-
-    // constructs CQP query for one query-row
 
     private getRowQuery (queryRow: QueryRow): string {
 
@@ -117,7 +115,7 @@ export class QueryKeeperService {
 
     getBasicQuery (corpus: string) {
 
-        // constructs final CQP query
+        // construct a final CQP query
 
         let corpusQueryRows = this.corpusQueryRows[corpus];
         let query: string = '';
@@ -188,6 +186,7 @@ export class QueryKeeperService {
 
     pop (corpus: string) {
         this.corpusQueryRows[corpus].pop ();
+        this.corpusQuery[corpus] = this.getBasicQuery (corpus);
         this.finalQuery = this.getFinalQuery ();
         this.valueChanged.next ('pop');
     }

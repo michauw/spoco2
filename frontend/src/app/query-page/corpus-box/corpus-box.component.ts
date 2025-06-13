@@ -28,9 +28,9 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
     spacing_basic: {'md': number, 'lg': number, 'xl': number, 'offset': string};
     spacing_advanced: {'col': string, 'offset': string};
     
-    sub_primaryChanged: Subscription;
-    sub_corporaChanged: Subscription;
-    sub_currentCorpora: Subscription;
+    subPrimaryChanged: Subscription;
+    subCorporaChanged: Subscription;
+    subCurrentCorpora: Subscription;
 
     constructor (private config: ConfigService, private corporaKeeper: CorporaKeeperService) { }
 
@@ -42,6 +42,7 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
             for (let corpus of this.corpora) {
                 if (corpus.id === storedPrimary) {
                     this.corporaKeeper.setPrimary (corpus);
+                    this.primaryCorpus = corpus;
                     this.corpora = this.corporaKeeper.getCorpora ();
                     this.corporaKeeper.setCurrent (corpus);
                     break;
@@ -71,20 +72,50 @@ export class CorpusBoxComponent implements OnInit, OnDestroy {
         }
         this.displayModeSet.emit (this.displayMode);
         this.setSpacing ();
-        this.sub_corporaChanged = this.corporaKeeper.corporaChange.subscribe ((corpora) => {
+        this.subCorporaChanged = this.corporaKeeper.corporaChange.subscribe ((change) => {
             this.primaryCorpus = this.corporaKeeper.getPrimary ();
             this.secondaryCorpora = this.corporaKeeper.getSecondary ();
             this.currentCorpus = this.corporaKeeper.getCurrent ();
-            this.corpora = corpora;
-            this.chosenCorpora = this.corporaKeeper.getCorpora (true);
             this.chosenCorporaOptions = this.getChosenCorporaOptions ();
+            if (change.changes.length > 0 && this.displayMode === 'boxes') {
+                const all_boxes = Array.from (document.getElementsByTagName ('spoco-basic-query'));
+                let to_animate = all_boxes.filter ((_, index) => change.changes.includes (index));
+                if (to_animate.length === 1) {
+                    to_animate.splice (0, 0, all_boxes[0]);
+                }
+
+                for (let box of to_animate) {
+                    box.classList.add ('fade-out');
+                }
+
+                setTimeout (() => {
+                    this.corpora = change.corpora;
+                    this.chosenCorpora = this.corporaKeeper.getCorpora (true);
+
+                    for (let box of to_animate) {
+                        box.classList.remove ('fade-out');
+                        box.classList.add ('fade-in');
+                    }
+
+                    setTimeout (() => {
+                        for (let box of to_animate)
+                            box.classList.remove ('fade-in');
+                    }, 300);
+
+                }, 300);
+            }
+            else {
+                this.corpora = change.corpora;
+                this.chosenCorpora = this.corporaKeeper.getCorpora (true);
+            }
+
         });
-        this.sub_currentCorpora = this.corporaKeeper.currentChange.subscribe ((corpus) => this.currentCorpus = corpus);
+        this.subCurrentCorpora = this.corporaKeeper.currentChange.subscribe ((corpus) => this.currentCorpus = corpus);
     }
 
     ngOnDestroy(): void {
-        this.sub_corporaChanged.unsubscribe ();
-        this.sub_currentCorpora.unsubscribe ();
+        this.subCorporaChanged.unsubscribe ();
+        this.subCurrentCorpora.unsubscribe ();
     }
 
     chosenCorporaChanged (chosen: string[]) {

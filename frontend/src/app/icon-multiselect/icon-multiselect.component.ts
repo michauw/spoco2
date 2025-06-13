@@ -29,7 +29,6 @@ export class IconMultiselectComponent implements OnInit {
         this.tooltip = this.tooltip ?? {value: '', position: 'above', delay: '0'};
         this.tooltip.position = this.tooltip.position ?? 'above';
         this.tooltip.delay = this.tooltip.delay ?? '0';
-        console.log (this.tooltip);
     }
 
     toggleOption (option: Option): void {
