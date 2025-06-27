@@ -3,9 +3,11 @@ nav.custom {
 }
 
 div.header {
-    padding: .5rem;
-    box-shadow: 1px 1px 4px 1px rgb(0 0 0 / 12%);
-    margin-bottom: 1rem;
+    padding: .8rem;
+    margin: 5px 6px 2rem;
+    box-shadow: 0 1px 4px 1px rgb(0 0 0 / 12%);
+    margin-bottom: 2rem;
+    border-radius: 10px;
 }
 
 a.navbar-brand {
@@ -17,8 +19,15 @@ a.navbar-brand {
 .spoco {
     color: rgb(134, 11, 58);
     // border-bottom: 1px solid rgb(134, 11, 58);
-    font-size: 1.3rem;
-    margin-bottom: 5px;
+    font-size: 1.05rem;
+    display: inline-block;
+    border: 1px solid rgba(116, 14, 53, 0.1);
+    padding: 3px 6px;
+    border-radius: 10px;
+    position: relative;
+    top: -3px;
+    margin-left: .5rem;
+    background-color: rgba(116, 14, 53, 0.02);
 }
 
 .sep {
@@ -29,7 +38,7 @@ a.navbar-brand {
 
 .preferences {
     margin-right: 1rem;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     & i {
         cursor: pointer;
     }
