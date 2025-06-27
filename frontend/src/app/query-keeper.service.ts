@@ -43,6 +43,7 @@ export class QueryKeeperService {
             const values = queryRow[pattrs[pattr_i]]['value'].trimEnd ().split (' ');
             const modifiers = queryRow[pattrs[pattr_i]].modifiers;
             let flags: string = '';
+            let exclude: boolean = false;
             if (!(modifiers.hasOwnProperty ('caseSensitive') && modifiers['caseSensitive']))
                     flags += 'c';
             if (modifiers.hasOwnProperty ('ignoreDiacritics') && modifiers['ignoreDiacritics'])
@@ -57,9 +58,11 @@ export class QueryKeeperService {
                     value += '.*';
                 if (modifiers.hasOwnProperty ('ending') && modifiers['ending'])
                     value =  '.*' + value;
+                if (modifiers.hasOwnProperty ('exclude') && modifiers['exclude'])
+                    exclude = true;
                 if (queryRowMatrix.length <= val_i)
                     queryRowMatrix.push (Array (pattrs.length));
-                queryRowMatrix[val_i][pattr_i] = [value, flags];
+                queryRowMatrix[val_i][pattr_i] = [value, flags, exclude];
             }
         }
 
@@ -77,8 +80,10 @@ export class QueryKeeperService {
         for (let row of queryRowMatrix) {
             let query_elements = [];
             for (let pattr_i = 0; pattr_i < pattrs.length; ++pattr_i) {
-                if (row[pattr_i] !== undefined)
-                    query_elements.push (`${pattrs[pattr_i]}="${row[pattr_i][0]}"${row[pattr_i][1]}`)
+                if (row[pattr_i] !== undefined) {
+                    const eq = row[pattr_i][2] === false ? '=' : '!=';
+                    query_elements.push (`${pattrs[pattr_i]}${eq}"${row[pattr_i][0]}"${row[pattr_i][1]}`);
+                }
             }
             if (query_elements.length) {
                 query += '[' + query_elements.join (' & ') + ']';
