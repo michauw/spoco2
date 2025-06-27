@@ -163,11 +163,27 @@ export abstract class ResultsComponent<T extends GenericEntry> implements OnInit
             this.currentSliceBegin = (pageNumber - 1) * this.sliceSize;
             this.pageChangedChild (pageNumber);
             this.currentSlice = this.results.slice (this.currentSliceBegin, this.currentSliceBegin + this.sliceSize);
-        window.scroll({ 
-            top: 0, 
-            left: 0, 
-            behavior: 'auto' 
-          });
+        this.scrollToTopSmooth (document.documentElement);
+
+    }
+
+    scrollToTopSmooth (element: HTMLElement, duration = 500) {
+      const start = element.scrollTop;
+      const startTime = performance.now();
+
+      function step (currentTime: number) {
+        console.log ('scroll');
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        element.scrollTop = start * (1 - eased);
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      }
+
+      requestAnimationFrame(step);
     }
 
     protected sort_results (by: number | 'left_context' | 'match' | 'right_context', in_context?: boolean) {
