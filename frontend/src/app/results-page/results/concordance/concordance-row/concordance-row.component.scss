@@ -42,6 +42,7 @@ div.transparent {
     color: gray;
     padding-left: .2rem;
     padding-right: .4rem;
+    transition: color .3s ease-out;
     &:hover {
         color: black;
     }
@@ -70,4 +71,20 @@ div.transparent {
     display: inline;
     padding: .2rem 0 .2rem .2rem;
     margin-right: .2rem;
+}
+
+.showAll {
+    opacity: .6;
+    margin-left: 3px;
+    vertical-align: text-top;
+    border: 1px solid #ddd;
+    padding: 0 3px;
+    border-radius: 20%;
+    cursor: pointer;
+    transition: all .2s;
+    &:hover {
+        border-color: #bbb;
+        // background-color: #eee;
+        opacity: .9;
+    }
 }

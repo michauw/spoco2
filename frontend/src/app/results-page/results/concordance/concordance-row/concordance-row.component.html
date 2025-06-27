@@ -1,5 +1,5 @@
 @if (mode !== 'aligned') {
-  @if (mode !== 'kwic') {
+  @if (mode !== 'kwic' && !rowTruncated) {
     <!-- BROAD CONTEXT: LEFT, not displayed in the 'kwic' mode -->
     @if (row.broader_context.left.length) {
       <fa-icon
@@ -41,7 +41,7 @@
         <span class="speaker">{{ row.meta[speaker!].value! }}</span>
       }
       <div [ngClass]="{'col-sm-5 text-end': mode === 'kwic', 'transparent': mode !== 'kwic', }"> <!-- IMMEDIATE CONTEXT: LEFT, abbreviated in the 'kwic' mode -->
-        @for (word of immediate_context.left; track $index) {
+        @for (word of truncate (immediate_context.left, 'left'); track $index) {
           <spoco-annotated-word
             [word]="word"
             [role]="'immediate context'"
@@ -51,7 +51,7 @@
           </spoco-annotated-word>
         }
       </div>
-      <div [ngClass]="{'col-sm-2 text-end': mode === 'kwic', 'transparent': mode !== 'kwic'}"> <!-- MATCH -->
+      <div [ngClass]="{'col-sm-2 text-center': mode === 'kwic', 'transparent': mode !== 'kwic'}"> <!-- MATCH -->
         @for (word of row.match; track $index) {
           <spoco-annotated-word
             [word]="word"
@@ -62,8 +62,8 @@
           </spoco-annotated-word>
         }
       </div>
-      <div [ngClass]="{'col-sm-5 text-end': mode === 'kwic', 'transparent': mode !== 'kwic'}"> <!-- IMMEDIATE CONTEXT: RIGHT, abbreviated in the 'kwic' mode -->
-        @for (word of immediate_context.right; track $index) {
+      <div [ngClass]="{'col-sm-5': mode === 'kwic', 'transparent': mode !== 'kwic'}"> <!-- IMMEDIATE CONTEXT: RIGHT, abbreviated in the 'kwic' mode -->
+        @for (word of truncate (immediate_context.right, 'right'); track $index) {
           <spoco-annotated-word
             [word]="word"
             [role]="'immediate context'"
@@ -79,14 +79,17 @@
         }
       </div>
       @if (broadContextLoaded () && differentSpeaker (0, 'central', 1)) {
-        <div></div>
+        <br/>
+      }
+      @if (rowTruncated) {
+        <fa-icon [icon]="icons.showAll" (click)="rowExpanded()" class="showAll"></fa-icon>
       }
     </div>
     <!-- END OF MAIN SECTION -->
-    @if (mode !== 'kwic') {
+    @if (mode !== 'kwic' && !rowTruncated) {
       <!-- BROAD CONTEXT: RIGHT, not displayed in the 'kwic' mode -->
       @for (bcontext of row.broader_context.right; track $index; let ind = $index) {
-        <div class="broad-context" [ngClass]="differentSpeaker (ind, 'right', 1) ? 'break' : 'inline'">
+        <div class="broad-context" class="inline">
           @if (corpusType === 'spoken' && differentSpeaker (ind, 'right', -1)) {
             <span class="speaker">{{ bcontext.speaker }}</span>
           }
@@ -105,8 +108,11 @@
             </span>
           }
         </div>
+        @if (differentSpeaker (ind, 'right', 1)) {
+          <br/>
+        }
       }
-      @if (row.broader_context.right.length) {
+      @if (row.broader_context.right.length && !rowTruncated) {
         <fa-icon
           class="context-icon {{ (corpusType === 'spoken' && broadContextLoaded ()) ? 'break' : 'rightside' }} {{ contextExhausted.right ? 'disabled' : '' }}"
           [icon]="icons['context_right']"
@@ -116,13 +122,15 @@
         </fa-icon>
       }
       @if (!(row.broader_context.left.length + row.broader_context.right.length)) {
-        <fa-icon
-          class="context-icon both-sides"
-          [icon]="icons['context_both']"
-          (click)="getBroaderContext('both')"
-          [matTooltip]="'Show broader context'"
-          [matTooltipShowDelay]="600">
-        </fa-icon>
+        <div class="d-flex justify-content-end mb-2">
+          <fa-icon
+            class="context-icon both-sides"
+            [icon]="icons['context_both']"
+            (click)="getBroaderContext('both')"
+            [matTooltip]="'Show broader context'"
+            [matTooltipShowDelay]="600">
+          </fa-icon>
+        </div>
       }
       @if (mode === 'extended') {
         <!-- ALIGNED CORPORA ('extended' mode)-->
@@ -146,7 +154,7 @@
 
 @else {
   <!-- ALIGNED CORPORA ('plain' mode)-->
-  @for (word of words; track $index) {
+  @for (word of truncate (words!, 'central'); track $index) {
     <spoco-annotated-word
       [word]="word"
       [role]="'aligned'"
@@ -158,7 +166,7 @@
 }
 
 @if (mode === 'kwic' && meta.length) {
-  <spoco-meta-show [meta]="meta"></spoco-meta-show>
+  <spoco-meta-show [meta]="meta" @fadeInOut></spoco-meta-show>
 } <!-- METADATA BOX -->
 
 

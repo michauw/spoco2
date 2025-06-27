@@ -1,5 +1,6 @@
 $theme-dark-back-1: #5A6268;
-$theme-dark-back-2: #70777c;
+$theme-dark-back-2: hsl(205, 5%, 46%);
+$theme-dark-back-3: #2f5a7c;
 
 $slide: .5rem;
 
@@ -13,9 +14,12 @@ $slide: .5rem;
 
 .card-header {
     &.theme-dark {
-    background-color: $theme-dark-back-1;
-    color: white;
-    opacity: .8;
+        color: white;
+        opacity: .8;
+        background-color: $theme-dark-back-1;
+        &.basic-header {
+            background-color: $theme-dark-back-3;
+        }
     }
 }
 

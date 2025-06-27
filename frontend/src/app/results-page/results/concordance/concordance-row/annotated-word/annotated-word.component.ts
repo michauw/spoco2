@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { AnnotationDisplay, Word } from 'src/app/dataTypes';
 
 @Component({
@@ -7,7 +7,7 @@ import { AnnotationDisplay, Word } from 'src/app/dataTypes';
     styleUrl: './annotated-word.component.scss',
     standalone: false
 })
-export class AnnotatedWordComponent implements OnInit, OnChanges {
+export class AnnotatedWordComponent implements OnChanges {
   
     @Input () word: Word;
     @Input () displayMode: AnnotationDisplay;
@@ -18,13 +18,9 @@ export class AnnotatedWordComponent implements OnInit, OnChanges {
     place: 'tooltip' | 'inline';
     annotation: string;
 
-    ngOnInit(): void {
-        this.place = this.getPlace ();
-        this.annotation = this.getAnnotation ();
-    }
-
     ngOnChanges (): void {
         this.place = this.getPlace ();
+        this.annotation = this.getAnnotation ();
     }
 
     private getPlace () {

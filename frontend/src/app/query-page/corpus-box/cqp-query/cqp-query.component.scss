@@ -1,10 +1,14 @@
 $theme-dark-back-1: #5A6268;
 $theme-dark-back-2: #70777c;
+$theme-dark-back-3: #2f5a7c;
 
 .card-header {
     &.theme-dark {
-    background-color: $theme-dark-back-1;
-    color: white;
-    opacity: .8;
+        color: white;
+        opacity: .8;
+        background-color: $theme-dark-back-1;
+        &.advanced-header {
+            background-color: $theme-dark-back-3;
+        }
     }
 }

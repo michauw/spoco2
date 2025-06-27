@@ -14,20 +14,28 @@ fa-icon.right {
 }
 
 .enlarge {
-    transition: transform 0.2s ease;
+    transition: all 0.2s 0.1s ease;
     display: inline-block;
     padding: 0;
     &:hover {
-        transform: scale(1.2);
+        transform: scale(1.3);
     }
 }
 
-.shift-langs-left {
-    margin-right: 1rem;
-}
-
-.shift-langs-right {
-    float: right;
+.shift-langs {
+    color: #555;
+    font-size: 1.2rem;
+    margin-top: 5px;
+    &.shift-langs-left {
+        margin-right: 1rem;
+    }
+    &.shift-langs-right {
+        float: right;
+    }
+    &:hover {
+        color: #111;
+    }
+    
 }
 
 .language-cells {
@@ -39,4 +47,31 @@ fa-icon.right {
     width: 100%;
     // background: #f0f0f0;
     // color: #555;
+}
+
+.viewWrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+td.valign-top {
+    vertical-align: top;
+}
+
+.expand-icon {
+    color: #666;
+    &:hover {
+       color: #111;
+    }
+}
+
+th.expand {
+    width: 60px;
 }

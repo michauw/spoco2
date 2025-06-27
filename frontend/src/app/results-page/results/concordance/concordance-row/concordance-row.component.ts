@@ -1,17 +1,29 @@
 import { Component, Input, Output, OnInit, OnChanges, SimpleChanges, HostBinding } from '@angular/core';
-import { AnnotationDisplay, ConcordanceEntry, corpusType, metaObj, Word } from 'src/app/dataTypes';
-import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faArrowLeftLong, faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
+import { AnnotationDisplay, ConcordanceEntry, corpusType, Word } from 'src/app/dataTypes';
+import { faPlus, faPlay, faStop, faArrowLeftLong, faArrowRightLong, faEllipsis } from '@fortawesome/free-solid-svg-icons';
 import { EventEmitter } from '@angular/core';
 import { ActionService } from 'src/app/action.service';
-import { BASE_URL } from 'src/environments/environment';
-import { Subject } from 'rxjs';
+import { AnnotatedWordComponent } from './annotated-word/annotated-word.component';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 type Sides = 'left' | 'central' | 'right';
+(window as any).AnnotatedWordComponent = AnnotatedWordComponent;
 
 @Component({
     selector: 'spoco-concordance-row',
     templateUrl: './concordance-row.component.html',
     styleUrl: './concordance-row.component.scss',
+    animations: [
+        trigger ('fadeInOut', [
+            transition (':enter', [ // when element is added
+                style ({ opacity: 0, height: '0' }),
+                animate ('300ms ease-out', style ({ opacity: 1, height: '*' }))
+            ]),
+            transition (':leave', [ // when element is removed
+                animate ('300ms ease-in', style ({ opacity: 0, height: '0' }))
+            ])
+        ])
+    ],
     standalone: false
 })
 export class ConcordanceRowComponent implements OnInit, OnChanges {
@@ -27,16 +39,20 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
     @Input () contextExhausted: {left: boolean, right: boolean};
     @Input () words?: Word[]
     @Input () speaker?: string;
+    @Input () truncateActive?: boolean;
     @Output () broaderContextRequest: EventEmitter<'left' | 'right' | 'both'> = new EventEmitter<'left' | 'right' | 'both'> ();
     @Output () audioEvent: EventEmitter<number> = new EventEmitter<number> ();
+    @Output () expanded: EventEmitter<void> = new EventEmitter<void> ();
 
-    @HostBinding ('class.row') // needed for proper rendering Bootstrap grid classes ('kwic' mode)
+    // @HostBinding ('class.row') // needed for proper rendering Bootstrap grid classes ('kwic' mode)
     get isKwicMode (): boolean {
         return this.mode === 'kwic';
     }
 
     maxContextSize: number = 8;
     immediate_context: {left: Word[], right: Word[]};
+    rowTruncated = false;
+    TRUNC_THRESHOLD = 40;
 
     icons = {
       'play': faPlay, 
@@ -44,6 +60,7 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
       'context_both': faPlus, 
       'context_left': faArrowLeftLong,
       'context_right': faArrowRightLong,
+      'showAll': faEllipsis
     }
 
     constructor (private actions: ActionService) {}
@@ -52,6 +69,10 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
         if (this.speaker === undefined)
             this.speaker = '';
         this.getContext ();
+        if (this.truncateActive === undefined)
+            this.truncateActive = false;
+        const rowLength = (this.mode !== 'aligned') ? (this.row.left_context.length + this.row.match.length + this.row.right_context.length) : this.words!.length;
+        this.rowTruncated = this.truncateActive && rowLength  > this.TRUNC_THRESHOLD;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -145,6 +166,30 @@ export class ConcordanceRowComponent implements OnInit, OnChanges {
 
     playStop (side: Sides, ind?: number) {
         this.audioEvent.emit (this.getControl (side, ind));
+    }
+
+    rowExpanded () {
+        this.rowTruncated = false;
+        this.expanded.emit ();
+    }
+
+    truncate (words: Word[], side: 'left' | 'right' | 'central') {
+        if (!(this.truncateActive && this.rowTruncated))
+            return words;
+        let start: number;
+        switch (side) {
+            case 'left':
+                start = words.length - this.TRUNC_THRESHOLD;
+                break;
+            case 'right':
+                start = 0;
+                break;
+            case 'central':
+                start = Math.floor (words.length / 2);
+        }
+        const end = start + this.TRUNC_THRESHOLD;
+
+        return words.slice (start, end);
     }
 }
 

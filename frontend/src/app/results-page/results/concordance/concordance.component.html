@@ -1,58 +1,176 @@
+<div class="viewWrapper" #wrapper>
 <!-- PLAIN MODE -->
-@if (displayMode == 'plain') {
-  <table class="table results plain">
-    <thead>
-      @if (corpusType === 'mono') {
-        <tr class="header">
-          <th class="clickable" (click)="sort_results('left_context')">Results</th>
-        </tr>
-      }
-      @if (corpusType !== 'mono') {
-        <tr class="header">
-          @if (corpusType == 'spoken') {
-            <th class="audio">Recording</th>
-            <th class="clickable" (click)="sort_results('left_context')">Transcription</th>
+@switch (displayMode) {
+  @case ('plain'){
+    <div class="view" @replaceView #plainView>
+      <table class="table results plain">
+        <thead>
+          @if (corpusType === 'mono') {
+            <tr class="header">
+              <th class="clickable" (click)="sort_results('left_context')">Results</th>
+            </tr>
           }
-          @for (corpus of parallelCorpora; track corpus.id; let ind = $index) {
-            @if (visible_columns.includes (ind)) {
-              <th class="lang-header" [ngStyle]="{width: get_column_width ()}">
-                @if (ind === visible_columns[0] && shift_possible ('left')) {
-                  <fa-icon class="icon shift-langs-left enlarge clickable" [icon]="arrow_left" (click)="shift ('left')"></fa-icon>
+          @if (corpusType !== 'mono') {
+            <tr class="header">
+              @if (corpusType == 'spoken') {
+                <th class="audio">Recording</th>
+                <th class="clickable" (click)="sort_results('left_context')">Transcription</th>
+              }
+              @for (corpus of parallelCorpora; track corpus.id; let ind = $index) {
+                @if (visible_columns.includes (ind)) {
+                  <th class="lang-header" [ngStyle]="{width: get_column_width ()}">
+                    @if (ind === visible_columns[0] && shift_possible ('left')) {
+                      <fa-icon class="icon shift-langs shift-langs-left enlarge clickable" [icon]="arrow_left" (click)="shift ('left')"></fa-icon>
+                    }
+                    @if (corpora.length > max_visible) {
+                      <mat-checkbox
+                        [checked]="locked.includes (ind)"
+                        (change)="control_locked (ind)"
+                        matTooltip="Lock"
+                        matTooltipPosition="left"
+                        matTooltipShowDelay="500">
+                        {{ corpus.name }}
+                      </mat-checkbox>
+                      <!-- <input type="checkbox" [checked]="locked.includes (ind)" (change)="control_locked (ind)" matTooltip="Lock" matTooltipPosition="left"> -->
+                    }
+                    <!-- {{ corpus.name }} -->
+                    @if ((ind === visible_columns[visible_columns.length - 1]) && shift_possible ('right')) {
+                      <fa-icon class="icon shift-langs shift-langs-right enlarge clickable" [icon]="arrow_right" (click)="shift ('right')"></fa-icon>
+                    }
+                  </th>
                 }
-                @if (corpora.length > max_visible) {
-                  <input type="checkbox" [checked]="locked.includes (ind)" (change)="control_locked (ind)" matTooltip="Lock" matTooltipPosition="left">
-                }
-                {{ corpus.name }}
-                @if ((ind === visible_columns[visible_columns.length - 1]) && shift_possible ('right')) {
-                  <fa-icon class="icon shift-langs-right enlarge clickable" [icon]="arrow_right" (click)="shift ('right')"></fa-icon>
-                }
-              </th>
+              }
+              <th class="selection"></th>
+            </tr>
+          }
+        </thead>
+        @if (results_fetched) {
+          @for (row of currentSlice; track row.id; let ind = $index) {
+            <tr>
+              @if (corpusType == 'spoken') {
+                <td>
+                  <audio #bigAudioControl
+                    controls
+                    preload="none"
+                    (play)="onBigAudioPlay()">
+                    <source [src]="getAudio(ind)">
+                  </audio>
+                </td>
+              }
+              @if (corpusType !== 'parallel' || visible_columns!.includes (0)) {
+                <td [attr.colspan]="corpusType === 'parallel' ? visible_columns.length : 1">
+                  <div class="language-cells">
+                    <div class="lang" [ngStyle]="{ width: 100 / (corpusType === 'parallel' ? visible_columns.length : 1) + '%' }">
+                        <spoco-concordance-row
+                          [row] = row
+                          [mode]="'plain'"
+                          [corpusType]="corpusType"
+                          [annotationDisplay]="currentAnnotationDisplay"
+                          [currentLayer]="currentLayer"
+                          [pattrs_to_show]="pattrs_to_show"
+                          [meta]="getMeta (row.meta)"
+                          [speaker]="audio_speaker"
+                          [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                          [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
+                          [truncateActive]="truncateLongRows && !row_icon_states[ind + currentSliceBegin].expanded"
+                          (expanded)="row_icon_states[ind + currentSliceBegin].expanded = true"
+                          (broaderContextRequest)="getContext(ind, $event)"
+                          (audioEvent)="onChildAudioEvent (row, ind, $event)">
+                        </spoco-concordance-row>
+                    </div>
+                    @for (corpus of row.aligned; track corpus.corpus_name; let ong = $index) {
+                        @if (visible_columns!.includes (ong + 1)) {
+                            <div class="lang" [ngStyle]="{ width: 100 / visible_columns.length + '%' }">
+                                <spoco-concordance-row
+                                [row] = row
+                                [words] = corpus.content
+                                [mode]="'aligned'"
+                                [corpusType]="corpusType"
+                                [annotationDisplay]="currentAnnotationDisplay"
+                                [currentLayer]="currentLayer"
+                                [pattrs_to_show]="pattrs_to_show"
+                                [meta]="[]"
+                                [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
+                                [truncateActive]="truncateLongRows && !row_icon_states[ind + currentSliceBegin].expanded"
+                                (broaderContextRequest)="getContext(ind, $event)">
+                                </spoco-concordance-row>
+                            </div>
+                        }
+                    }
+                  </div>
+                  @if (showMeta) {
+                    <div class="metadata-overlay" @fadeInOut>
+                        <spoco-meta-show [meta]="getMeta(row.meta)"></spoco-meta-show>
+                    </div>
+                  }
+                </td>
+              }       
+              <td>
+                <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
+              </td>
+            </tr>
+          }
+        }
+      </table>
+    </div>
+  }
+  <!-- KWIC MODE -->
+  @case ('kwic') {
+    <div class="view" @replaceView #kwicView>
+      <table class="table results">
+        <thead>
+          <tr class="text-center header">
+            @if (corpusType === 'spoken') {
+              <th class="expand hidden"></th>
             }
-          }
-          <th class="selection"></th>
-        </tr>
-      }
-    </thead>
-    @if (results_fetched) {
-      @for (row of currentSlice; track row.id; let ind = $index) {
-        <tr>
-          @if (corpusType == 'spoken') {
-            <td>
-              <audio #bigAudioControl
-                controls
-                preload="none"
-                (play)="onBigAudioPlay()">
-                <source [src]="getAudio(ind)">
-              </audio>
-            </td>
-          }
-          @if (corpusType !== 'parallel' || visible_columns!.includes (0)) {
-            <td [attr.colspan]="corpusType === 'parallel' ? visible_columns.length : 1">
-              <div class="language-cells">
-                <div class="lang" [ngStyle]="{ width: 100 / (corpusType === 'parallel' ? visible_columns.length : 1) + '%' }">
+            <th class="expand hidden"></th>
+            <th class="content clickable">
+              <div class="row thin">
+                <div class="col-sm-5 clickable" (click)="sort_results('left_context', true)">Left Context</div>
+                <div class="col-sm-2 mx-auto clickable" (click)="sort_results('match', true)">Match</div>
+                <div class="col-sm-5 clickable" (click)="sort_results('right_context', true)">Right Context</div>
+              </div>
+            </th>
+            <th class="selection"></th>
+          </tr>
+        </thead>
+        @if (results_fetched) {
+          @for (row of currentSlice; track row.id; let ind = $index) {
+            <tr>
+              @if (corpusType === 'spoken') {
+                <td>
+                  <fa-icon [icon]="icons[row_icon_states[currentSliceBegin + ind]['playing'] ? 'stop' : 'play']" (click)="playStop(row, ind)" class="darken clickable"></fa-icon>
+                </td>
+              }
+              <td class="expand valign-top">
+                <fa-icon
+                  [icon]="icons[isExtended (ind) ? 'minus' : 'plus']"
+                  class="enlarge expand-icon clickable"
+                  (click)="toggleExtended(ind)">
+                </fa-icon>
+              </td>
+              <td>
+                <div class="thin">
+                  <spoco-concordance-row
+                    [row] = row
+                    [mode]="'kwic'"
+                    [corpusType]="corpusType"
+                    [annotationDisplay]="currentAnnotationDisplay"
+                    [currentLayer]="currentLayer"
+                    [pattrs_to_show]="pattrs_to_show"
+                    [meta]="getMeta (row.meta)"
+                    [speaker]="audio_speaker"
+                    [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
+                    [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
+                    (broaderContextRequest)="getContext(ind, $event)"
+                    (audioEvent)="onChildAudioEvent(row, ind, $event)">
+                  </spoco-concordance-row>
+                </div>
+                @if (isExtended (ind)) {
+                  <div class="col-12 mt-3" @expand>
                     <spoco-concordance-row
                       [row] = row
-                      [mode]="'plain'"
+                      [mode]="'extended'"
                       [corpusType]="corpusType"
                       [annotationDisplay]="currentAnnotationDisplay"
                       [currentLayer]="currentLayer"
@@ -62,122 +180,22 @@
                       [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
                       [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
                       (broaderContextRequest)="getContext(ind, $event)"
-                      (audioEvent)="onChildAudioEvent (row, ind, $event)">
+                      (audioEvent)="onChildAudioEvent(row, ind, $event)">
                     </spoco-concordance-row>
-                </div>
-                @for (corpus of row.aligned; track corpus.corpus_name; let ong = $index) {
-                    @if (visible_columns!.includes (ong + 1)) {
-                        <div class="lang" [ngStyle]="{ width: 100 / visible_columns.length + '%' }">
-                            <spoco-concordance-row
-                            [row] = row
-                            [words] = corpus.content
-                            [mode]="'aligned'"
-                            [corpusType]="corpusType"
-                            [annotationDisplay]="currentAnnotationDisplay"
-                            [currentLayer]="currentLayer"
-                            [pattrs_to_show]="pattrs_to_show"
-                            [meta]="[]"
-                            [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
-                            (broaderContextRequest)="getContext(ind, $event)">
-                            </spoco-concordance-row>
-                        </div>
-                    }
+                  </div>
                 }
-              </div>
-              @if (showMeta) {
-                <div class="metadata-overlay">
-                    <spoco-meta-show [meta]="getMeta(row.meta)"></spoco-meta-show>
-                </div>
-              }
-            </td>
-          }       
-          <td>
-            <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
-          </td>
-        </tr>
-      }
-    }
-  </table>
-}
-
-<!-- KWIC MODE -->
-@if (displayMode == 'kwic') {
-  <table class="table results">
-    <thead>
-      <tr class="text-center header">
-        @if (corpusType === 'spoken') {
-          <th class="expand hidden"></th>
-        }
-        <th class="expand hidden"></th>
-        <th class="content clickable">
-          <div class="row thin">
-            <div class="col-sm-5 clickable" (click)="sort_results('left_context', true)">Left Context</div>
-            <div class="col-sm-2 mx-auto clickable" (click)="sort_results('match', true)">Match</div>
-            <div class="col-sm-5 clickable" (click)="sort_results('right_context', true)">Right Context</div>
-          </div>
-        </th>
-        <th class="selection"></th>
-      </tr>
-    </thead>
-    @if (results_fetched) {
-      @for (row of currentSlice; track row.id; let ind = $index) {
-        <tr>
-          @if (corpusType === 'spoken') {
-            <td>
-              <fa-icon [icon]="icons[row_icon_states[currentSliceBegin + ind]['playing'] ? 'stop' : 'play']" (click)="playStop(row, ind)" class="darken clickable"></fa-icon>
-            </td>
+              </td>
+              <td class="valign-top">
+                <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
+              </td>
+            </tr>
           }
-          <td class="expand">
-            <fa-icon
-              [icon]="icons[isExtended (ind) ? 'minus' : 'plus']"
-              class="enlarge text-bigger clickable"
-              (click)="toggleExtended(ind)">
-            </fa-icon>
-          </td>
-          <td>
-            <div class="thin">
-              <spoco-concordance-row
-                [row] = row
-                [mode]="'kwic'"
-                [corpusType]="corpusType"
-                [annotationDisplay]="currentAnnotationDisplay"
-                [currentLayer]="currentLayer"
-                [pattrs_to_show]="pattrs_to_show"
-                [meta]="getMeta (row.meta)"
-                [speaker]="audio_speaker"
-                [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
-                [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
-                (broaderContextRequest)="getContext(ind, $event)"
-                (audioEvent)="onChildAudioEvent(row, ind, $event)">
-              </spoco-concordance-row>
-            </div>
-            @if (isExtended (ind)) {
-              <div class="col-12 mt-3">
-                <spoco-concordance-row
-                  [row] = row
-                  [mode]="'extended'"
-                  [corpusType]="corpusType"
-                  [annotationDisplay]="currentAnnotationDisplay"
-                  [currentLayer]="currentLayer"
-                  [pattrs_to_show]="pattrs_to_show"
-                  [meta]="getMeta (row.meta)"
-                  [speaker]="audio_speaker"
-                  [currentlyPlaying]="getCurrentlyPlaying(ind, 'child')"
-                  [contextExhausted]="row_icon_states[currentSliceBegin + ind].no_context"
-                  (broaderContextRequest)="getContext(ind, $event)"
-                  (audioEvent)="onChildAudioEvent(row, ind, $event)">
-                </spoco-concordance-row>
-              </div>
-            }
-          </td>
-          <td>
-            <input type="checkbox" [checked]="row.selected" (change)="row.selected = !row.selected">
-          </td>
-        </tr>
-      }
-    }
-  </table>
+        }
+      </table>
+    </div>
+  }
 }
+</div>
 
 <!-- PAGINATOR -->
 

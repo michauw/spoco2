@@ -1,12 +1,13 @@
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ResultsComponent, postData } from '../results.component';
 import { AnnotationDisplay, ConcordanceEntry, ContextEntry, Corpus, PAttribute, Query, SAttribute, Word, metaObj } from 'src/app/dataTypes';
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType } from '@angular/common/http';
 import { BASE_URL } from 'src/environments/environment';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faArrowLeftLong, faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
+import { faArrowAltCircleLeft, faArrowAltCircleRight, faPlus, faMinus, faPlay, faStop, faArrowLeftLong, faArrowRightLong, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
+import { animate, style, transition, trigger } from 'node_modules/@angular/animations';
+import { r } from 'node_modules/@angular/cdk/overlay-module.d-CVO-IcaN';
 interface postDataConcordance extends postData {
     size_limit?: number;
     chunk_size?: number;
@@ -28,10 +29,44 @@ type Direction = 'left' | 'right';
     selector: 'spoco-concordance',
     templateUrl: './concordance.component.html',
     styleUrl: './concordance.component.scss',
-    standalone: false
+    standalone: false,
+    animations: [
+        trigger ('fadeInOut', [
+            transition (':enter', [ // when element is added
+                style ({ opacity: 0, transform: 'translateY(-30px)', height: '0' }),
+                animate ('300ms ease-out', style ({ opacity: 1, transform: 'translateY(0)', height: '*' }))
+            ]),
+            transition (':leave', [ // when element is removed
+                animate ('300ms ease-in', style ({ opacity: 0, transform: 'translateY(-30px)', height: '0' }))
+            ])
+        ]),
+        trigger ('expand', [
+            transition (':enter', [ // when element is added
+                style ({ opacity: 0, transform: 'translateY(-30px)', height: '0' }),
+                animate ('200ms ease-out', style ({ opacity: 1, transform: 'translateY(0)', height: '*' }))
+            ]),
+            transition (':leave', [ // when element is removed
+                animate ('200ms ease-in', style ({ opacity: 0, transform: 'translateY(-30px)', height: '0' }))
+            ])
+        ]),
+        trigger ('replaceView', [
+            transition (':enter', [
+                style ({ opacity: 0, transform: 'translateX(-300px)' }),
+                animate ('350ms 200ms ease-out', style ({ opacity: 1, transform: 'translateX(0)' }))
+            ]),
+            transition (':leave', [
+                style ({ opacity: 1, transform: 'translateX(0)' }),
+                animate ('200ms', style ({ opacity: 0, transform: 'translateX(600px)' }))
+            ])
+        ]),
+  ]
 })
 export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> implements OnInit, OnDestroy {
 
+    @ViewChild ('wrapper') wrapperRef!: ElementRef<HTMLDivElement>;
+    @ViewChild ('plainView') plainRef!: ElementRef<HTMLDivElement>;
+    @ViewChild ('kwicView') kwicRef!: ElementRef<HTMLDivElement>;
+    
     displayMode: string;
     showMeta: boolean;
     parallelCorpora: Corpus[];
@@ -44,7 +79,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     annotationDisplay: AnnotationDisplay[] = ['tooltip', 'mixed', 'inline'];
     currentAnnotationDisplay: AnnotationDisplay;
     currentLayer: string;
-    row_icon_states: {playing: boolean, extended: boolean, no_context: {left: boolean, right: boolean}, child: boolean[]}[] = [];
+    row_icon_states: {playing: boolean, expanded: boolean, extended: boolean, no_context: {left: boolean, right: boolean}, child: boolean[]}[] = [];
     playing: string = '';
     audio: HTMLAudioElement | null = null;
     audio_file: string;
@@ -54,13 +89,16 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     @ViewChildren('bigAudioControl') audioRefs!: QueryList<ElementRef<HTMLAudioElement>>;
     currently_playing: {parent: number, child: number} = {parent: -1, child: -1};
     icons = {'plus': faPlus, 'minus': faMinus, 'play': faPlay, 'stop': faStop}
-    arrow_left = faArrowAltCircleLeft;
-    arrow_right = faArrowAltCircleRight;
+    arrow_left = faArrowLeft;
+    arrow_right = faArrowRight;
     displayModeChangedSub: Subscription;
     displayLayerChangedSub: Subscription;
     showMetaChangedSub: Subscription;
     annotationDisplayChangedSub: Subscription;
     contextIcons = {'both': faPlus, 'left': faArrowLeftLong, 'right': faArrowRightLong};
+    truncateLongRows: boolean = false;
+    TRUNCATE_THRESHOLD = 10000;
+    heightAutoAdjusted = false;
     
     constructor (private http: HttpClient, private snack: MatSnackBar) {
         super (...ResultsComponent.inject_dependencies ());
@@ -131,10 +169,34 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         this.annotationDisplayChangedSub = this.actions.annotationDisplayChanged.subscribe ((setting) => {
             this.currentAnnotationDisplay = setting;
         });
+        console.log ('init');
+    }
+
+    ngAfterViewChecked () {
+        if (this.wrapperRef && !this.heightAutoAdjusted) {
+            let ref;
+            if (this.plainRef)
+                ref = this.plainRef;
+            else if (this.kwicRef)
+                ref = this.kwicRef;
+            else
+                ref = null;
+            if (ref) {
+                const newHeight = ref.nativeElement.offsetHeight;
+                this.wrapperRef.nativeElement.style.height = newHeight + 'px';
+            }
+        }
+        this.heightAutoAdjusted = false;
     }
 
     ngOnChanges(): void {
-        this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, no_context: {left: false, right: false}, child: [false] }));
+        this.row_icon_states = this.results.map (() => ({ 
+            playing: false,
+            expanded: false, 
+            extended: false, 
+            no_context: {left: false, right: false}, 
+            child: [false] 
+        }));
         if (this.corpusType === 'spoken' && this.audio)
             this.audio.pause ();
     }
@@ -366,7 +428,13 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             else if (stages[stage_index] === 'size') {
                                 this.results_number = parseInt (line);
                                 this.results = Array (this.results_number).fill (undefined);
-                                this.row_icon_states = this.results.map (() => ({ playing: false, extended: false, no_context: {left: false, right: false}, child: [false] }));
+                                this.row_icon_states = this.results.map (() => ({ 
+                                    playing: false, 
+                                    expanded: false,
+                                    extended: false, 
+                                    no_context: {left: false, right: false}, 
+                                    child: [false] 
+                                }));
                                 this.results_updated_event.emit (this.results_number);
                             }
                             else {
@@ -375,7 +443,7 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                                     batch.push (line);
                                 if (batch.length === this.corpora.length) {
                                     this.results[this.results_position++] = batch.length === 1 ? this.parse_primary_line (batch[0]) : this.parse_parallel_batch (batch);
-                                    this.token_count += this.count_tokens (this.results[this.results_position - 1]);
+                                    this.token_count += this.count_tokens (this.results[this.results_position - 1], true);
                                     batch = [];
                                     // console.log ('res:', count);
                                 }
@@ -403,6 +471,12 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
                             this.results_fetched_event.emit ({query: post_data.query.primary.query, number_of_results: this.results_number});
                         }
                         this.currentSlice = this.results.slice (0, this.sliceSize);
+                        // console.log ('token count:', this.token_count);
+                        // console.log ('average:', this.token_count / this.sliceSize);
+                        const first_slice_size = this.currentSlice.map (el => this.count_tokens (el, true)).reduce ((acc, curr) => acc + curr);
+                        // console.log ('first slice:', cs);
+                        if (first_slice_size > this.TRUNCATE_THRESHOLD)
+                            this.truncateLongRows = true;
                         // else if (mode === 'partial')
                         //     this.update_page ();
                     }
@@ -421,9 +495,10 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
         });
     }
 
-    private count_tokens (r: ConcordanceEntry) {
+    private count_tokens (r: ConcordanceEntry, only_visible = true) {
         let count = r.left_context.length + r.match.length + r.right_context.length;
-        for (let alg of r.aligned)
+        const aligned = only_visible ? r.aligned.filter ((lang, ind) => this.visible_columns.includes (ind)) : r.aligned;
+        for (let alg of aligned)
             count += alg.content.length;
         return count;
     }
@@ -604,6 +679,21 @@ export class ConcordanceComponent extends ResultsComponent<ConcordanceEntry> imp
     protected override pageChanged(pageNumber: number): void {
         super.pageChanged (pageNumber);
         this.pauseAudio ();
+        console.log ('pch')
+        if (this.wrapperRef) {
+            let ref;
+            if (this.plainRef)
+                ref = this.plainRef;
+            else if (this.kwicRef)
+                ref = this.kwicRef;
+            else
+                ref = null;
+            if (ref) {
+                const newHeight = ref.nativeElement.offsetHeight;
+                this.wrapperRef.nativeElement.style.height = newHeight + 'px';
+                this.heightAutoAdjusted = true;
+            }
+        }
     }
 
     protected override get_aoa (entries: ConcordanceEntry[]) {
